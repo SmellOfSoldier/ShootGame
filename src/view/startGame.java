@@ -5,16 +5,17 @@ import Weapon.Weapon;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.net.URL;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Random;
 import Weapon.*;
 import bullet.*;
+import person.AI;
+import person.EliteSoldier;
+import person.Person;
+import person.Player;
 import utils.MusicPlayer;
 
 public class startGame {
@@ -28,8 +29,8 @@ class GameFrame extends JFrame
 {
     private Random random=new Random();
     private final static int CELL=20;
-    private final static int width=800;
-    private final static int high=600;
+    private final static int width=1200;
+    private final static int high=800;
     private final static int bulletTravalSpeed=5;      //子弹每次移动的格数
     private LinkedList<Player> otherPlayer=new LinkedList<Player>();    //存放其他玩家
     private java.util.List<AI> aiList= Collections.synchronizedList(new LinkedList<AI>());    //存放游戏AI
@@ -44,7 +45,7 @@ class GameFrame extends JFrame
     {
         gameArea=new GameArea();
         createPlayer();
-        createNpc();
+        createAI();
         this.setSize(width+10,high+34);
         this.setResizable(false);
         this.setLocationRelativeTo(null);
@@ -63,35 +64,65 @@ class GameFrame extends JFrame
             initial();
             this.setSize(GameFrame.width,GameFrame.high);
             this.setLayout(null);           //设置为绝对布局
+            /**
+             * 玩家移动
+             */
+            this.addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent e)
+                {
+
+                }
+                @Override
+                public void keyReleased(KeyEvent e)
+                {
+                    super.keyReleased(e);
+                }
+            });
+            /**
+             * 玩家射击
+             */
             this.addMouseListener(new MouseAdapter()
             {
                 @Override
                 public void mouseClicked(MouseEvent mouseEvent)
                 {
-                    Point endPoint=getCentralPoint(mouseEvent.getPoint());
-                    Point startPoint=getCentralPoint(player.getLocation());
-                    attack(startPoint,endPoint,player);    //攻击
-                    MusicPlayer.playShotMusic();
+                    int weaponType=player.getUsingWeaponType();
+                    if(weaponType!=WeaponType.automaticRifle)       //判断是否是间断性攻击武器
+                    {
+                        Point endPoint = getCentralPoint(mouseEvent.getPoint());
+                        Point startPoint = getCentralPoint(player.getLocation());
+                        attack(startPoint, endPoint, player);    //攻击
+                        MusicPlayer.playShotMusic();
+                    }
                 }
-                public void mousePressed(MouseEvent mouseEvent)         //持续开火
+                public void mousePressed(MouseEvent mouseEvent)         //自动步枪连续扫射
                 {
-                    int fireRate=((Gun)player.getUsingWeapon()).getFireRate();         //获取枪的射速
-                    Point endPoint=getCentralPoint(mouseEvent.getPoint());
-                    Point startPoint=getCentralPoint(player.getLocation());
-                    shotThread= new Timer(fireRate, new ActionListener() {       //玩家开火
-                        @Override
-                        public void actionPerformed(ActionEvent e)
+                    int weaponType = player.getUsingWeaponType();
+                    if (weaponType == WeaponType.automaticRifle)
+                    {
+                        int fireRate = ((Gun) player.getUsingWeapon()).getFireRate();         //获取枪的射速
+                        Point endPoint = getCentralPoint(mouseEvent.getPoint());
+
+                        Point startPoint = getCentralPoint(player.getLocation());
+                        if(shotThread==null)
                         {
-                            attack(startPoint,endPoint,player);
-                            MusicPlayer.playShotMusic();
+                            shotThread = new Timer(fireRate, new ActionListener() {       //玩家开火
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    attack(startPoint, endPoint, player);
+                                    MusicPlayer.playShotMusic();
+                                }
+                            });
                         }
-                    });
-                    shotThread.start();
+                        shotThread.start();
+                    }
                 }
                 @Override
                 public void mouseReleased(MouseEvent e)
                 {
-                    shotThread.stop();
+                    if(shotThread.isRunning())
+                        shotThread.stop();
                 }       //玩家停止开火
             });
         }
@@ -175,7 +206,7 @@ class GameFrame extends JFrame
         gameArea.add(bullet);
     }
     //间断性攻击
-    private void attack(Point startPoint,Point endPoint,Person person)
+    private void attack(Point startPoint, Point endPoint, Person person)
     {
         Weapon weapon=person.getUsingWeapon();
         //如果是近战武器
@@ -213,19 +244,19 @@ class GameFrame extends JFrame
         player.peekWeapon(new AKM(),100);
     }
     //创建AI
-    private void createNpc()
+    private void createAI()
     {
         URL url=startGame.class.getResource("/images/apple.png");
         ImageIcon icon=new ImageIcon(url);
         icon.setImage(icon.getImage().getScaledInstance(CELL,CELL,Image.SCALE_DEFAULT));
         for(int i=0;i<5;i++)
         {
-            AI ai=new AI(i,"精英战士",100,10);
-            ai.setSize(CELL,CELL);
-            ai.setLocation(randomPoint());
-            ai.setIcon(icon);
-            gameArea.add(ai);
-            aiList.add(ai);
+            EliteSoldier eliteSoldier=new EliteSoldier(1);
+            eliteSoldier.setSize(CELL,CELL);
+            eliteSoldier.setLocation(randomPoint());
+            eliteSoldier.setIcon(icon);
+            gameArea.add(eliteSoldier);
+            aiList.add(eliteSoldier);
         }
     }
     //随机生成一个坐标
