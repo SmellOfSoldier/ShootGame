@@ -1,4 +1,4 @@
-package view;
+package person;
 
 import javax.swing.*;
 import java.io.Serializable;
@@ -10,6 +10,7 @@ import Weapon.Weapon;
  */
 public class Person extends JLabel implements Serializable
 {
+    private int speed;                      //人物的移动速度
     protected int id;                       //编号
     protected String name;                  //姓名
     private int usingWeapon=3;              //目前使用的武器
@@ -17,18 +18,20 @@ public class Person extends JLabel implements Serializable
     private   int radius;                   //人物的半径
     private int [] bulletNum=new int[Weapon.weaponsTypeNum];      //武器中子弹的数目
     private Weapon []weapons=new Weapon[Weapon.weaponsTypeNum];     //人物持有的武器
-    Person(){}
-    Person(int id,String name,int healthPoint,int radius)
+    protected Person(){}
+    protected Person(int id,String name,int healthPoint,int radius,int speed)
     {
         this.name=name;
         this.id=id;
         this.healthPoint=healthPoint;
         this.radius=radius;
+        this.speed=speed;
     }
     public int getHealthPoint(){return healthPoint;}       //获取人物当前血量
     public int getId(){return id;}                          //获取人物编号
     public int getRadius(){return radius;}                  //获取人物半径
     public String getName(){return name;}                   //获取人物名称
+    public int getSpeed(){return speed;}                    //获取人物的速度
     public void addHealthPoint(int hp)                      //给人物加血
     {
         if(hp+healthPoint>100)
@@ -74,31 +77,3 @@ public class Person extends JLabel implements Serializable
     public Weapon getUsingWeapon(){return weapons[usingWeapon];}     //获取当前使用的武器
 }
 
-/**
- * 游戏玩家
- */
-class Player extends Person implements Serializable
-{
-    Player(int id,String name,int healthPoint,int radius)
-    {
-        super(id,name,healthPoint,radius);
-    }
-    Player(){}
-
-}
-
-/**
- * 电脑玩家
- */
-
-class AI extends Person implements Serializable
-{
-    private boolean isDie=false;        //是否死亡
-    AI(){}
-    AI(int id, String name, int healthPoint,int radius)
-    {
-        super(id,name,healthPoint,radius);
-    }
-    public boolean ifDie(){return isDie;}
-    public void setDie(boolean isDie){this.isDie=isDie;}    //设置AI死亡或复活
-}
