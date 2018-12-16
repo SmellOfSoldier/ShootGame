@@ -15,6 +15,7 @@ import java.util.LinkedList;
 import java.util.Random;
 import Weapon.*;
 import bullet.*;
+import utils.MusicPlayer;
 
 public class startGame {
     public static void main(String[] args)
@@ -48,6 +49,7 @@ class GameFrame extends JFrame
         this.setResizable(false);
         this.setLocationRelativeTo(null);
         this.add(gameArea);
+        MusicPlayer.playBgm();
         this.setVisible(true);
 
     }
@@ -66,19 +68,22 @@ class GameFrame extends JFrame
                 @Override
                 public void mouseClicked(MouseEvent mouseEvent)
                 {
-                    Point endPoint=getCentralPoint(mouseEvent.getLocationOnScreen());
+                    Point endPoint=getCentralPoint(mouseEvent.getPoint());
                     Point startPoint=getCentralPoint(player.getLocation());
                     attack(startPoint,endPoint,player);    //攻击
+                    MusicPlayer.playShotMusic();
                 }
                 public void mousePressed(MouseEvent mouseEvent)         //持续开火
                 {
                     int fireRate=((Gun)player.getUsingWeapon()).getFireRate();         //获取枪的射速
-                    int weaponType=player.getUsingWeaponType();                 //获取枪的类型
+                    Point endPoint=getCentralPoint(mouseEvent.getPoint());
+                    Point startPoint=getCentralPoint(player.getLocation());
                     shotThread= new Timer(fireRate, new ActionListener() {       //玩家开火
                         @Override
                         public void actionPerformed(ActionEvent e)
                         {
-                            continuouslyAttack();
+                            attack(startPoint,endPoint,player);
+                            MusicPlayer.playShotMusic();
                         }
                     });
                     shotThread.start();
@@ -155,19 +160,19 @@ class GameFrame extends JFrame
     //创建子弹
     public void createBullet(Point start,Point end,int bulletType,int damageValue,int gunType)
     {
-        Bullet bullet=new Bullet(bulletType,5,damageValue,bulletTravalSpeed,start,end);
-        bullet.setSize(5,5);
+        int bulletRadius=BulletSize.getBulletRadius(bulletType);        //根据子弹的类型获取子弹的大小
+        Bullet bullet=new Bullet(bulletType,bulletRadius,damageValue,bulletTravalSpeed,start,end);
+        bullet.setSize(bulletRadius,bulletRadius);
         URL url=startGame.class.getResource("/images/red.png");
-
         ImageIcon icon=new ImageIcon(url);
-        icon.setImage(icon.getImage().getScaledInstance(5,5,Image.SCALE_DEFAULT));
+        icon.setImage(icon.getImage().getScaledInstance(bulletRadius,bulletRadius,Image.SCALE_DEFAULT));
         bullet.setIcon(icon);
         switch (gunType)
         {
             case WeaponType.automaticRifle:
                 automaticBulletList.add(bullet);
         }
-        this.add(bullet);
+        gameArea.add(bullet);
     }
     //间断性攻击
     private void attack(Point startPoint,Point endPoint,Person person)
@@ -205,7 +210,7 @@ class GameFrame extends JFrame
         player.setIcon(icon);
         player.setLocation(400,300);
         gameArea.add(player);
-        player.peekWeapon(new Weapon(WeaponType.automaticRifle,"ak-47",WeaponDamageValue.automaticRifleDamageValue,FireRate.automaticRifleFireRate,BulletSpeed.automaticRifleBulletSpeed),100);
+        player.peekWeapon(new AKM(),100);
     }
     //创建AI
     private void createNpc()
@@ -239,8 +244,8 @@ class GameFrame extends JFrame
     private boolean ifHitPerson(Bullet bullet,Person person)
     {
         Point bulletCentralPoint=getCentralPoint(bullet.getLocation());
-        Point personCentralPoint=getCentralPoint(bullet.getLocation());
-        if(bulletCentralPoint.distance(personCentralPoint) < Math.abs(bullet.getRadius()-person.getRadius()))
+        Point personCentralPoint=getCentralPoint(person.getLocation());
+        if(bulletCentralPoint.distance(personCentralPoint) < bullet.getRadius()+person.getRadius())
             return true;
         return false;
     }
