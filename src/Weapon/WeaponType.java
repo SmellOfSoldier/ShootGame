@@ -1,4 +1,4 @@
-package Arsenal;
+package Weapon;
 
 //武器种类
 public interface WeaponType

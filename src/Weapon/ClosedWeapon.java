@@ -1,6 +1,5 @@
 package Weapon;
 
-import Arsenal.WeaponType;
 
 import java.io.Serializable;
  /**

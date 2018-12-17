@@ -1,6 +1,6 @@
 package Weapon;
 
-import Arsenal.WeaponType;
+
 
 import java.io.Serializable;
 
@@ -9,8 +9,9 @@ import java.io.Serializable;
  */
 public class Pistol extends Gun implements Serializable
 {
+    public static int maxBulletNum=10;      //弹夹中最大的子弹量
     protected Pistol(int bulletType,String weaponName,int damageValue,int fireRate,boolean continuedShot)
     {
-        super(WeaponType.pistol,bulletType,weaponName,damageValue,fireRate,continuedShot);
+        super(WeaponType.pistol,bulletType,weaponName,damageValue,fireRate,continuedShot,10);
     }
 }

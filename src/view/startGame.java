@@ -59,16 +59,21 @@ class GameFrame extends JFrame
                 player.setLocation(oldPoint.x+player.getrSpeed()-player.getlSpeed(),oldPoint.y+player.getdSpeed()-player.getuSpeed());
             }
         });
-
         playerMoveThread.start();
         createAI();
+        //关闭窗口推出程序
+        this.addWindowFocusListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                System.exit(0);
+            }
+        });
         this.setSize(width+10,high+34);
         this.setResizable(false);
         this.setLocationRelativeTo(null);
         this.add(gameArea);
         MusicPlayer.playBgm();
         this.setVisible(true);
-
     }
     /**
      * 游戏的画面显示区域
@@ -104,6 +109,14 @@ class GameFrame extends JFrame
                             break;
                         case KeyEvent.VK_A:
                             player.setlSpeed(personTravelSpeed);
+                            break;
+                        case KeyEvent.VK_R:
+                            int weaponType=player.getUsingWeaponType();
+                            //如果玩家当前使用的是枪,则可以换子弹
+                            if(weaponType==WeaponType.automaticRifle || weaponType==WeaponType.sniperRifle || weaponType==WeaponType.pistol)
+                            {
+                                player.reLoad();
+                            }
                             break;
                     }
                 }
@@ -152,7 +165,6 @@ class GameFrame extends JFrame
                         public void actionPerformed(ActionEvent e) {
                             Point startPoint = getCentralPoint(player.getLocation());
                             attack(startPoint, endPoint, player);
-                            //MusicPlayer.playShotMusic();
                         }
                     });
                         shotThread.start();
@@ -160,6 +172,7 @@ class GameFrame extends JFrame
                 @Override
                 public void mouseReleased(MouseEvent e)
                 {
+                    if(shotThread!=null && shotThread.isRunning())
                         shotThread.stop();
                 }       //玩家停止开火
             });
@@ -204,6 +217,7 @@ class GameFrame extends JFrame
                             if(!flag && (newPoint.x<0 || newPoint.x>width || newPoint.y<0 || newPoint.y>high))    //判断子弹是否撞墙
                             {
                                    deleteBullet[++i]=bullet ;           //将撞墙的子弹保存起来
+                                MusicPlayer.playBulletHitWallMusic();
                             }
                         }
                         if(i!=-1)
@@ -261,7 +275,18 @@ class GameFrame extends JFrame
         //如果是枪类武器
         else
         {
-            createBullet(startPoint,endPoint,((Gun)weapon).getBulletType(),weapon.getDamageValue(),weapon.getType());
+            Gun gun=(Gun)weapon;
+            if(!gun.emptyBulletNum() && !player.ifReloading()) //如果还有子弹
+            {
+                createBullet(startPoint, endPoint, ((Gun) weapon).getBulletType(), weapon.getDamageValue(), weapon.getType());
+                gun.reduceBulletNum(1);     //子弹里面的弹夹减1
+                //MusicPlayer.playShotMusic();
+            }
+            else                    //没有子弹
+            {
+                MusicPlayer.playBulletUseOutMusic();        //播放没有子弹的声音
+
+            }
         }
     }
     //创建玩家

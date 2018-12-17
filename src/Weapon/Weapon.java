@@ -1,6 +1,5 @@
 package Weapon;
 
-import Arsenal.WeaponType;
 
 import javax.swing.*;
 import java.io.Serializable;
