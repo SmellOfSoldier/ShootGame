@@ -2,6 +2,8 @@ package person;
 
 import javax.swing.*;
 import java.io.Serializable;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import Weapon.*;
 import utils.MusicPlayer;
@@ -11,6 +13,7 @@ import utils.MusicPlayer;
  */
 public class Person extends JLabel implements Serializable
 {
+    private Lock reLoadLock=new ReentrantLock();    //装子弹的锁
     private boolean isReload=false;                 //人物是否正在装子弹
     private int lSpeed=0;                           //人物每次左边方向移动的像素
     private int rSpeed=0;                           //人物每次右边方向移动的像素
@@ -45,10 +48,15 @@ public class Person extends JLabel implements Serializable
     public int getHealthPoint(){return healthPoint;}       //获取人物当前血量
     public int getId(){return id;}                          //获取人物编号
     public int getRadius(){return radius;}                  //获取人物半径
-    public String getName(){return name;}                   //获取人物名称
-    public int getSpeed(){return speed;}                    //获取人物的速度
-    public void reLoad()            //装填子弹
+    public String getName(){return name;}                   //获取人物名称www
+    public  void  reLoad()            //装填子弹
     {
+        reLoadLock.lock();
+            if(bulletNum[usingWeaponType]==0 || isReload)
+            {
+                MusicPlayer.playBulletUseOutMusic();
+                return;
+            }
             MusicPlayer.playReloadMusic(WeaponType.automaticRifle);
             isReload = true;
             Gun gun = (Gun) weapons[usingWeaponType];
@@ -89,6 +97,7 @@ public class Person extends JLabel implements Serializable
                     isReload=false;
                 }
             }).start();
+
     }
     public boolean ifReloading()
     {
@@ -138,5 +147,6 @@ public class Person extends JLabel implements Serializable
     }
     public int getUsingWeaponType(){return usingWeaponType;}    //获取当前使用的武器类型
     public Weapon getUsingWeapon(){return weapons[usingWeaponType];}     //获取当前使用的武器
+    public int getSpeed(){return speed;}
 }
 

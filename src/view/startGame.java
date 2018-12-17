@@ -90,7 +90,7 @@ class GameFrame extends JFrame
         public void initial()
         {
             /**
-             * 玩家移动键盘监听器
+             * 键盘监听器监听玩家移动，玩家切换武器，装填子弹
              */
             this.addKeyListener(new KeyAdapter() {
                 @Override
@@ -118,6 +118,8 @@ class GameFrame extends JFrame
                                 player.reLoad();
                             }
                             break;
+                        case KeyEvent.VK_1:
+                            //if()
                     }
                 }
                 @Override
@@ -217,7 +219,7 @@ class GameFrame extends JFrame
                             if(!flag && (newPoint.x<0 || newPoint.x>width || newPoint.y<0 || newPoint.y>high))    //判断子弹是否撞墙
                             {
                                    deleteBullet[++i]=bullet ;           //将撞墙的子弹保存起来
-                                MusicPlayer.playBulletHitWallMusic();
+                               // MusicPlayer.playBulletHitWallMusic();
                             }
                         }
                         if(i!=-1)
@@ -341,7 +343,6 @@ class GameFrame extends JFrame
             return true;
         return false;
     }
-
 }
 
 

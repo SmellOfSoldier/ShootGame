@@ -9,7 +9,7 @@ public class Player extends Person implements Serializable
 {
     public Player(int id,String name,int healthPoint)
     {
-        super(id,name,healthPoint,10,10);
+        super(id,name,healthPoint,10,20);
     }
     public Player(){}
 
