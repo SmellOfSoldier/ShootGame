@@ -7,9 +7,9 @@ import java.io.Serializable;
  */
 public class Player extends Person implements Serializable
 {
-    public Player(int id,String name,int healthPoint,int radius)
+    public Player(int id,String name,int healthPoint)
     {
-        super(id,name,healthPoint,radius,5);
+        super(id,name,healthPoint,10,10);
     }
     public Player(){}
 

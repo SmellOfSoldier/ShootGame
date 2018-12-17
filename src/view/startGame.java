@@ -27,11 +27,13 @@ public class startGame {
 
 class GameFrame extends JFrame
 {
+    private Point endPoint=new Point();
     private Random random=new Random();
-    private final static int CELL=20;
+    private final static int CELL=20;   //每个人物的大小
     private final static int width=1200;
     private final static int high=800;
-    private final static int bulletTravalSpeed=5;      //子弹每次移动的格数
+    private final static int bulletTravelSpeed=5;      //子弹每次移动的像素
+    private final static int personTravelSpeed=2;       //人物每次移动的像素
     private LinkedList<Player> otherPlayer=new LinkedList<Player>();    //存放其他玩家
     private java.util.List<AI> aiList= Collections.synchronizedList(new LinkedList<AI>());    //存放游戏AI
     private java.util.List<Bullet> automaticBulletList =Collections.synchronizedList(new LinkedList<Bullet>());
@@ -41,10 +43,24 @@ class GameFrame extends JFrame
     private Timer automaticBulletThread=null;   //自动步枪子弹飞行线程
     private Timer sniperBulletThread=null;      //狙击步枪子弹飞行线程
     private Timer pistolBulletThread=null;      //手枪子弹的飞行线程
+    private Timer playerMoveThread=null;        //玩家移动的线程
     GameFrame()
     {
         gameArea=new GameArea();
         createPlayer();
+        /**
+         * 初始化控制人物移动的线程
+         */
+        playerMoveThread=new Timer(player.getSpeed(), new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                Point oldPoint=player.getLocation();
+                player.setLocation(oldPoint.x+player.getrSpeed()-player.getlSpeed(),oldPoint.y+player.getdSpeed()-player.getuSpeed());
+            }
+        });
+
+        playerMoveThread.start();
         createAI();
         this.setSize(width+10,high+34);
         this.setResizable(false);
@@ -64,70 +80,89 @@ class GameFrame extends JFrame
             initial();
             this.setSize(GameFrame.width,GameFrame.high);
             this.setLayout(null);           //设置为绝对布局
+
+        }
+        public void initial()
+        {
             /**
-             * 玩家移动
+             * 玩家移动键盘监听器
              */
             this.addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyPressed(KeyEvent e)
                 {
-
+                    switch (e.getKeyCode())
+                    {
+                        case KeyEvent.VK_W:
+                            player.setuSpeed(personTravelSpeed);
+                            break;
+                        case KeyEvent.VK_S:
+                            player.setdSpeed(personTravelSpeed);
+                            break;
+                        case KeyEvent.VK_D:
+                            player.setrSpeed(personTravelSpeed);
+                            break;
+                        case KeyEvent.VK_A:
+                            player.setlSpeed(personTravelSpeed);
+                            break;
+                    }
                 }
                 @Override
                 public void keyReleased(KeyEvent e)
                 {
-                    super.keyReleased(e);
+                    switch (e.getExtendedKeyCode())
+                    {
+                        case KeyEvent.VK_W:
+                            player.setuSpeed(0);
+                            break;
+                        case KeyEvent.VK_S:
+                            player.setdSpeed(0);
+                            break;
+                        case KeyEvent.VK_D:
+                            player.setrSpeed(0);
+                            break;
+                        case KeyEvent.VK_A:
+                            player.setlSpeed(0);
+                            break;
+                    }
                 }
             });
-            /**
-             * 玩家射击
-             */
+            //将JPanel设置成可焦点化
+            this.setFocusable(true);
+
+            this.addMouseMotionListener(new MouseMotionAdapter() {
+                @Override
+                public void mouseMoved(MouseEvent e)
+                {
+                    endPoint=e.getPoint();
+                }
+            });
+            //玩家射击
             this.addMouseListener(new MouseAdapter()
             {
                 @Override
-                public void mouseClicked(MouseEvent mouseEvent)
-                {
-                    int weaponType=player.getUsingWeaponType();
-                    if(weaponType!=WeaponType.automaticRifle)       //判断是否是间断性攻击武器
-                    {
-                        Point endPoint = getCentralPoint(mouseEvent.getPoint());
-                        Point startPoint = getCentralPoint(player.getLocation());
-                        attack(startPoint, endPoint, player);    //攻击
-                        MusicPlayer.playShotMusic();
-                    }
-                }
                 public void mousePressed(MouseEvent mouseEvent)         //自动步枪连续扫射
                 {
-                    int weaponType = player.getUsingWeaponType();
-                    if (weaponType == WeaponType.automaticRifle)
-                    {
+                        int weaponType = player.getUsingWeaponType();
                         int fireRate = ((Gun) player.getUsingWeapon()).getFireRate();         //获取枪的射速
-                        Point endPoint = getCentralPoint(mouseEvent.getPoint());
-
+                        //Point endPoint = getCentralPoint(mouseEvent.getPoint());
                         Point startPoint = getCentralPoint(player.getLocation());
-                        if(shotThread==null)
-                        {
                             shotThread = new Timer(fireRate, new ActionListener() {       //玩家开火
                                 @Override
                                 public void actionPerformed(ActionEvent e) {
+                                    System.out.println(endPoint);
                                     attack(startPoint, endPoint, player);
                                     MusicPlayer.playShotMusic();
                                 }
                             });
-                        }
                         shotThread.start();
-                    }
                 }
                 @Override
                 public void mouseReleased(MouseEvent e)
                 {
-                    if(shotThread.isRunning())
                         shotThread.stop();
                 }       //玩家停止开火
             });
-        }
-        public void initial()
-        {
             automaticBulletThread=new Timer(BulletSpeed.automaticBulletSpeed, new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e)
@@ -162,7 +197,7 @@ class GameFrame extends JFrame
                                     break;
                                 }
                             }
-                            if(!flag && (newPoint.x<0 || newPoint.x>800 || newPoint.y<0 || newPoint.y>600))    //判断子弹是否撞墙
+                            if(!flag && (newPoint.x<0 || newPoint.x>width || newPoint.y<0 || newPoint.y>high))    //判断子弹是否撞墙
                             {
                                    deleteBullet[++i]=bullet ;           //将撞墙的子弹保存起来
                             }
@@ -183,7 +218,7 @@ class GameFrame extends JFrame
         }
         public void paintComponent(Graphics g)
         {
-            URL url=startGame.class.getResource("/images/bg.png");
+            URL url=startGame.class.getResource("/images/backGround.png");
             ImageIcon icon=new ImageIcon(url);
             g.drawImage(icon.getImage(),0,0,GameFrame.width,GameFrame.high,null);
         }
@@ -192,7 +227,7 @@ class GameFrame extends JFrame
     public void createBullet(Point start,Point end,int bulletType,int damageValue,int gunType)
     {
         int bulletRadius=BulletSize.getBulletRadius(bulletType);        //根据子弹的类型获取子弹的大小
-        Bullet bullet=new Bullet(bulletType,bulletRadius,damageValue,bulletTravalSpeed,start,end);
+        Bullet bullet=new Bullet(bulletType,bulletRadius,damageValue,bulletTravelSpeed,start,end);
         bullet.setSize(bulletRadius,bulletRadius);
         URL url=startGame.class.getResource("/images/red.png");
         ImageIcon icon=new ImageIcon(url);
@@ -225,19 +260,15 @@ class GameFrame extends JFrame
             createBullet(startPoint,endPoint,((Gun)weapon).getBulletType(),weapon.getDamageValue(),weapon.getType());
         }
     }
-    //持续性攻击
-    private void continuouslyAttack(Point startPoint ,Point endPoint ,Person person)
-    {
-
-    }
     //创建玩家
     private void createPlayer()
     {
-        player=new Player(1,"DJF",100,10);
-        player.setSize(CELL,CELL);
+        player=new Player(1,"DJF",100);
+        int size=2*(player.getRadius());
+        player.setSize(size,size);
         URL url=startGame.class.getResource("/images/header_b.png");
         ImageIcon icon=new ImageIcon(url);
-        icon.setImage(icon.getImage().getScaledInstance(CELL,CELL,Image.SCALE_DEFAULT));
+        icon.setImage(icon.getImage().getScaledInstance(size,size,Image.SCALE_DEFAULT));
         player.setIcon(icon);
         player.setLocation(400,300);
         gameArea.add(player);
@@ -246,13 +277,14 @@ class GameFrame extends JFrame
     //创建AI
     private void createAI()
     {
+        int size=2*(new EliteSoldier(0).getRadius());
         URL url=startGame.class.getResource("/images/apple.png");
         ImageIcon icon=new ImageIcon(url);
-        icon.setImage(icon.getImage().getScaledInstance(CELL,CELL,Image.SCALE_DEFAULT));
+        icon.setImage(icon.getImage().getScaledInstance(size,size,Image.SCALE_DEFAULT));
         for(int i=0;i<5;i++)
         {
             EliteSoldier eliteSoldier=new EliteSoldier(1);
-            eliteSoldier.setSize(CELL,CELL);
+            eliteSoldier.setSize(size,size);
             eliteSoldier.setLocation(randomPoint());
             eliteSoldier.setIcon(icon);
             gameArea.add(eliteSoldier);

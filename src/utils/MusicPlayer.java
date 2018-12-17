@@ -30,7 +30,6 @@ public class MusicPlayer
     }
     public static void playShotMusic()
     {
-        System.out.println(shotUrl);
         Applet.newAudioClip(shotUrl).play();
     }
     public static void playDieMusic(String name)
