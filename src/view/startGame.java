@@ -132,7 +132,7 @@ class GameFrame extends JFrame
 
             this.addMouseMotionListener(new MouseMotionAdapter() {
                 @Override
-                public void mouseMoved(MouseEvent e)
+                public void mouseDragged(MouseEvent e)
                 {
                     endPoint=e.getPoint();
                 }
@@ -143,18 +143,18 @@ class GameFrame extends JFrame
                 @Override
                 public void mousePressed(MouseEvent mouseEvent)         //自动步枪连续扫射
                 {
-                        int weaponType = player.getUsingWeaponType();
-                        int fireRate = ((Gun) player.getUsingWeapon()).getFireRate();         //获取枪的射速
-                        //Point endPoint = getCentralPoint(mouseEvent.getPoint());
-                        Point startPoint = getCentralPoint(player.getLocation());
-                            shotThread = new Timer(fireRate, new ActionListener() {       //玩家开火
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    System.out.println(endPoint);
-                                    attack(startPoint, endPoint, player);
-                                    MusicPlayer.playShotMusic();
-                                }
-                            });
+                    int weaponType = player.getUsingWeaponType();
+                    int fireRate = ((Gun) player.getUsingWeapon()).getFireRate();         //获取枪的射速sa
+                    Point startPoint = getCentralPoint(player.getLocation());
+                    attack(startPoint, endPoint, player);
+                    shotThread = new Timer(fireRate, new ActionListener() {       //玩家开火
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            Point startPoint = getCentralPoint(player.getLocation());
+                            attack(startPoint, endPoint, player);
+                            //MusicPlayer.playShotMusic();
+                        }
+                    });
                         shotThread.start();
                 }
                 @Override
@@ -163,6 +163,10 @@ class GameFrame extends JFrame
                         shotThread.stop();
                 }       //玩家停止开火
             });
+            /**
+             * 控制自动步枪自动移动的线程
+             * 判断每个子弹是否撞到人，
+             */
             automaticBulletThread=new Timer(BulletSpeed.automaticBulletSpeed, new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e)
