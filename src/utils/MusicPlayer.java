@@ -19,6 +19,8 @@ public class MusicPlayer
     private static URL bulletLandUrl=MusicPlayer.class.getResource("/musics/other/bulletLand.wav"); //子弹壳落地的声音
     private static URL bulletUseOutUrl=MusicPlayer.class.getResource("/musics/other/bulletUseOut.wav");    //子弹落用完的使用
     private static AudioClip bgmPlayer=null;
+    private static AudioClip continueousShotPlayer=null;
+    private static AudioClip shotPlayer=null;
 
     private static Timer bgmThread=new Timer(bgmTime, new ActionListener() {
         @Override
@@ -35,13 +37,28 @@ public class MusicPlayer
     public static void playShotMusic(String gunName)
     {
         shotUrl=MusicPlayer.class.getResource("/musics/shot/"+gunName+".wav");
-        System.out.println(gunName);
-        Applet.newAudioClip(shotUrl).play();
+        if(shotPlayer!=null)
+        {
+            shotPlayer.stop();
+        }
+       shotPlayer= Applet.newAudioClip(shotUrl);
+        shotPlayer.play();
+    }
+    public static void playContinueousShotMusic(String name)
+    {
+        URL url=MusicPlayer.class.getResource("/musics/shot/AKM30.wav");
+        continueousShotPlayer=Applet.newAudioClip(url);
+        continueousShotPlayer.play();
+
     }
     public static void playDieMusic(String name)
     {
         dieUrl=MusicPlayer.class.getResource("/musics/die/"+name+".wav");
         Applet.newAudioClip(dieUrl).play();
+    }
+    public static void stopContinueousShotMusic()
+    {
+       //continueousShotPlayer.stop();
     }
     public static void playBgm()        //播放背景音乐
     {

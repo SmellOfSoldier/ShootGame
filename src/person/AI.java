@@ -29,10 +29,12 @@ public class AI extends Person implements Serializable
 
         }
 
+
     }
     public void nextStep()              //ai移动下一步，改变
     {
-
+        //bhbnkjnuknkmnjiminnu
     }
+
 
 }
