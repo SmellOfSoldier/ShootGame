@@ -8,20 +8,19 @@ import java.awt.*;
 import java.awt.event.*;
 import java.net.URL;
 import java.util.Collections;
+import java.util.EventListener;
 import java.util.LinkedList;
 import java.util.Random;
 import Weapon.*;
 import bullet.*;
-import person.AI;
-import person.EliteSoldier;
-import person.Person;
-import person.Player;
+import person.*;
 import utils.MusicPlayer;
 
 public class startGame {
     public static void main(String[] args)
     {
         new GameFrame();
+
     }
 }
 
@@ -35,9 +34,14 @@ class GameFrame extends JFrame
     private final static int bulletTravelSpeed=5;      //子弹每次移动的像素
     private final static int personTravelSpeed=2;       //人物每次移动的像素
     private LinkedList<Player> otherPlayer=new LinkedList<Player>();    //存放其他玩家
-    private java.util.List<AI> aiList= Collections.synchronizedList(new LinkedList<AI>());    //存放游戏AI
+    //存放自动步枪子弹的链表
     private java.util.List<Bullet> automaticBulletList =Collections.synchronizedList(new LinkedList<Bullet>());
+    //存放狙击枪子弹的链表
     private java.util.List<Bullet> sniperBulletList =Collections.synchronizedList(new LinkedList<Bullet>());
+    //存放精英战士的链表
+    private java.util.List<EliteSoldier> eliteSoldierList=Collections.synchronizedList(new LinkedList<EliteSoldier>());
+    //存放所有AI的链表
+    private java.util.List<AI> aiList= Collections.synchronizedList(new LinkedList<AI>());
     private Player player;                      //游戏玩家
     private Timer shotThread=null;              //开火线程
     private GameArea gameArea=new GameArea();
@@ -180,6 +184,7 @@ class GameFrame extends JFrame
                     int fireRate = ((Gun) player.getUsingWeapon()).getFireRate();         //获取枪的射速sa
                     Point startPoint = getCentralPoint(player.getLocation());
                     attack(startPoint, endPoint, player);
+
                     shotThread = new Timer(fireRate, new ActionListener() {       //玩家开火
                         @Override
                         public void actionPerformed(ActionEvent e)
@@ -193,6 +198,7 @@ class GameFrame extends JFrame
                 @Override
                 public void mouseReleased(MouseEvent e)
                 {
+                    MusicPlayer.stopContinueousShotMusic();
                     if(shotThread!=null && shotThread.isRunning())
                         shotThread.stop();
                 }       //玩家停止开火
@@ -225,6 +231,7 @@ class GameFrame extends JFrame
                                     {
                                         ai.setVisible(false);
                                         ai.setDie(true);            //设置AI死亡
+                                        bullet.setVisible(false);
                                     }
                                     else
                                     {
@@ -268,7 +275,7 @@ class GameFrame extends JFrame
                         int i=-1;
                         Bullet[] deleteBullet=new Bullet[automaticBulletList.size()];
                         for(Bullet bullet:automaticBulletList)
-                        {
+                            {
                             boolean flag=false;             //标记该子弹是否击中人
                             Point oldPoint=bullet.getLocation();
                             Point newPoint=new Point(oldPoint.x+bullet.getxSpeed(),oldPoint.y+bullet.getySpeed());
@@ -370,6 +377,7 @@ class GameFrame extends JFrame
             {
                 MusicPlayer.playBulletUseOutMusic();        //播放没有子弹的声音
                 shotThread.stop();
+                //MusicPlayer.stopContinueousShotMusic();
             }
         }
     }
@@ -412,7 +420,6 @@ class GameFrame extends JFrame
         int y=random.nextInt(GameFrame.high/CELL)*CELL;
         return new Point(x,y);
     }
-
     //获取人物的中心坐标
     private Point getCentralPoint(Point topLeftCornerPoint)
     {

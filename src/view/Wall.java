@@ -2,7 +2,6 @@ package view;
 
 public class Wall
 {
-
     public static int oringemap[][]=new int[20][30];
     public static int map[][]=new int[40][60];
     static {

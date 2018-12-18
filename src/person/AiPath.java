@@ -26,6 +26,15 @@ public class AiPath implements Serializable
     {
         this.path=path;
     }
+    public void printPath()
+    {
+        {
+            for(int i=0;i<path.length;i++)
+            {
+                System.out.println(path[i]);
+            }
+        }
+    }
     public void clearPath(){path=null;}
     public void setPath(MyPoint[] path){this.path=path;}
     public boolean ifFinishedAll(){return currentPosition==path.length-1;}    //判断是否走完了整个路
