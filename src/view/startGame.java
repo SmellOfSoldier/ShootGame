@@ -37,6 +37,7 @@ class GameFrame extends JFrame
     private LinkedList<Player> otherPlayer=new LinkedList<Player>();    //存放其他玩家
     private java.util.List<AI> aiList= Collections.synchronizedList(new LinkedList<AI>());    //存放游戏AI
     private java.util.List<Bullet> automaticBulletList =Collections.synchronizedList(new LinkedList<Bullet>());
+    private java.util.List<Bullet> sniperBulletList =Collections.synchronizedList(new LinkedList<Bullet>());
     private Player player;                      //游戏玩家
     private Timer shotThread=null;              //开火线程
     private GameArea gameArea=new GameArea();
@@ -110,7 +111,7 @@ class GameFrame extends JFrame
                         case KeyEvent.VK_A:
                             player.setlSpeed(personTravelSpeed);
                             break;
-                        case KeyEvent.VK_R:
+                        case KeyEvent.VK_R:             //装填子弹
                             int weaponType=player.getUsingWeaponType();
                             //如果玩家当前使用的是枪,则可以换子弹
                             if(weaponType==WeaponType.automaticRifle || weaponType==WeaponType.sniperRifle || weaponType==WeaponType.pistol)
@@ -118,8 +119,22 @@ class GameFrame extends JFrame
                                 player.reLoad();
                             }
                             break;
+                            //切换武器
                         case KeyEvent.VK_1:
-                            //if()
+                            player.changeWeapon(WeaponType.closedWeapon);
+                            break;
+                        case KeyEvent.VK_2:
+                            player.changeWeapon(WeaponType.pistol);
+                            break;
+                        case KeyEvent.VK_3:
+                            player.changeWeapon(WeaponType.automaticRifle);
+                            break;
+                        case KeyEvent.VK_4:
+                            player.changeWeapon(WeaponType.sniperRifle);
+                            break;
+                        case KeyEvent.VK_5:
+                            player.changeWeapon(WeaponType.grenade);
+                            break;
                     }
                 }
                 @Override
@@ -151,6 +166,10 @@ class GameFrame extends JFrame
                 {
                     endPoint=e.getPoint();
                 }
+                public void mouseMoved(MouseEvent e)
+                {
+                    endPoint=e.getPoint();
+                }
             });
             //玩家射击
             this.addMouseListener(new MouseAdapter()
@@ -158,13 +177,13 @@ class GameFrame extends JFrame
                 @Override
                 public void mousePressed(MouseEvent mouseEvent)         //自动步枪连续扫射
                 {
-                    int weaponType = player.getUsingWeaponType();
                     int fireRate = ((Gun) player.getUsingWeapon()).getFireRate();         //获取枪的射速sa
                     Point startPoint = getCentralPoint(player.getLocation());
                     attack(startPoint, endPoint, player);
                     shotThread = new Timer(fireRate, new ActionListener() {       //玩家开火
                         @Override
-                        public void actionPerformed(ActionEvent e) {
+                        public void actionPerformed(ActionEvent e)
+                        {
                             Point startPoint = getCentralPoint(player.getLocation());
                             attack(startPoint, endPoint, player);
                         }
@@ -179,6 +198,63 @@ class GameFrame extends JFrame
                 }       //玩家停止开火
             });
             /**
+             * 控制狙击步枪移动的线程
+             */
+            sniperBulletThread=new Timer(BulletSpeed.sniperBulletSpeed, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e)
+                {
+                    if(!sniperBulletList.isEmpty())
+                    {
+                        int i=-1;
+                        Bullet[] deleteBullet=new Bullet[sniperBulletList.size()];
+                        for(Bullet bullet:sniperBulletList)
+                        {
+                            boolean flag=false;             //标记该子弹是否击中人
+                            Point oldPoint=bullet.getLocation();
+                            Point newPoint=new Point(oldPoint.x+bullet.getxSpeed(),oldPoint.y+bullet.getySpeed());
+                            bullet.setLocation(newPoint);
+                            for(AI ai:aiList)          //判断每个敌人是否被子弹击中
+                            {
+                                if((ifHitPerson(bullet,ai)) && !ai.ifDie())      //如果击中
+                                {
+                                    flag=true;
+                                    bullet.setVisible(false);                   //击中目标后子弹消失
+                                    int healthPoint =ai.getHealthPoint();
+                                    if(healthPoint-bullet.getDamageValue()<=0)
+                                    {
+                                        ai.setVisible(false);
+                                        ai.setDie(true);            //设置AI死亡
+                                    }
+                                    else
+                                    {
+                                        ai.reduceHealthPoint(bullet.getDamageValue());
+                                    }
+                                    deleteBullet[++i]=bullet;       //将击中目标的子弹保存起来
+                                    break;
+                                }
+                            }
+                            if(!flag && (newPoint.x<0 || newPoint.x>width || newPoint.y<0 || newPoint.y>high))    //判断子弹是否撞墙
+                            {
+                                deleteBullet[++i]=bullet ;           //将撞墙的子弹保存起来
+                                // MusicPlayer.playBulletHitWallMusic();
+                            }
+                        }
+                        if(i!=-1)
+                        {
+                            for(int j=0;j<=i;j++)
+                            {
+                                gameArea.remove(deleteBullet[j]);  //将子弹从gameArea中删除
+                                sniperBulletList.remove(deleteBullet[j]);                //将子弹从自动步枪子弹中删除
+                            }
+                        }
+                        gameArea.repaint();
+                    }
+                }
+            });
+            sniperBulletThread.start();
+            /**
+             *
              * 控制自动步枪自动移动的线程
              * 判断每个子弹是否撞到人，
              */
@@ -257,6 +333,10 @@ class GameFrame extends JFrame
         {
             case WeaponType.automaticRifle:
                 automaticBulletList.add(bullet);
+                break;
+            case WeaponType.sniperRifle:
+                sniperBulletList.add(bullet);
+                break;
         }
         gameArea.add(bullet);
     }
@@ -282,12 +362,12 @@ class GameFrame extends JFrame
             {
                 createBullet(startPoint, endPoint, ((Gun) weapon).getBulletType(), weapon.getDamageValue(), weapon.getType());
                 gun.reduceBulletNum(1);     //子弹里面的弹夹减1
-                //MusicPlayer.playShotMusic();
+                MusicPlayer.playShotMusic(weapon.getWeaponName());
             }
             else                    //没有子弹
             {
                 MusicPlayer.playBulletUseOutMusic();        //播放没有子弹的声音
-
+                shotThread.stop();
             }
         }
     }
@@ -304,6 +384,7 @@ class GameFrame extends JFrame
         player.setLocation(400,300);
         gameArea.add(player);
         player.peekWeapon(new AKM(),100);
+        player.peekWeapon(new AWM(),10);
     }
     //创建AI
     private void createAI()

@@ -26,7 +26,7 @@ public class Person extends JLabel implements Serializable
     private int healthPoint;                //生命值
     private   int radius;                   //人物的半径
     private int [] bulletNum=new int[Weapon.weaponsTypeNum];      //武器中子弹的数目
-    private Weapon []weapons=new Weapon[Weapon.weaponsTypeNum];     //人物持有的武器
+    private Weapon []weapons=new Weapon[Weapon.weaponsTypeNum+1];     //人物持有的武器
     protected Person(){}
     protected Person(int id,String name,int healthPoint,int radius,int speed)
     {
@@ -52,12 +52,16 @@ public class Person extends JLabel implements Serializable
     public  void  reLoad()            //装填子弹
     {
         reLoadLock.lock();
-            if(bulletNum[usingWeaponType]==0 || isReload)
+            //如果没有子弹可以装填
+            if(bulletNum[usingWeaponType]==0)
             {
                 MusicPlayer.playBulletUseOutMusic();
                 return;
             }
-            MusicPlayer.playReloadMusic(WeaponType.automaticRifle);
+            //如果已经在装填中
+            if(isReload)
+                return;
+            MusicPlayer.playReloadMusic(weapons[usingWeaponType].getWeaponName());
             isReload = true;
             Gun gun = (Gun) weapons[usingWeaponType];
             int bulletLeft = gun.getBulletLeft();
@@ -75,20 +79,20 @@ public class Person extends JLabel implements Serializable
                     break;
             }
             addBullet = maxBulletNum - bulletLeft;
-
             if (bulletNum[usingWeaponType] < addBullet)        //如果人物携带的子弹量小于预计加装的子弹量
             {
                 addBullet = bulletNum[usingWeaponType];
             }
             gun.addBulletNum(addBullet);
             bulletNum[usingWeaponType] -= addBullet;
+            //这个线程用于计算换弹夹的时间
             new Thread(new Runnable() {
                 @Override
                 public void run()
                 {
                     try
                     {
-                        Thread.currentThread().sleep(2000);
+                        Thread.currentThread().sleep(gun.getReloadTime());
                     }
                     catch (Exception ex)
                     {
@@ -143,7 +147,14 @@ public class Person extends JLabel implements Serializable
     }
     public void changeWeapon(int type)                  //切换武器
     {
-        usingWeaponType=type;
+        if (weapons[type]!=null)    //如果这把武器存在
+        {
+            usingWeaponType=type;
+        }
+        else                       //不存在
+        {
+
+        }
     }
     public int getUsingWeaponType(){return usingWeaponType;}    //获取当前使用的武器类型
     public Weapon getUsingWeapon(){return weapons[usingWeaponType];}     //获取当前使用的武器

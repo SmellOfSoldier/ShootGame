@@ -35,6 +35,7 @@ public class MusicPlayer
     public static void playShotMusic(String gunName)
     {
         shotUrl=MusicPlayer.class.getResource("/musics/shot/"+gunName+".wav");
+        System.out.println(gunName);
         Applet.newAudioClip(shotUrl).play();
     }
     public static void playDieMusic(String name)
@@ -52,18 +53,9 @@ public class MusicPlayer
         bgmPlayer.stop();
         bgmThread.stop();
     }
-    public static void playReloadMusic(int weaponType)    //播放换子弹的声音
+    public static void playReloadMusic(String name)    //播放换子弹的声音
     {
-        URL url=null;
-        switch (weaponType)
-        {
-            case WeaponType.automaticRifle:
-                url=MusicPlayer.class.getResource("/musics/other/automaticRifleReload.wav");
-                break;
-            case WeaponType.sniperRifle:
-                url=MusicPlayer.class.getResource("/music/other/sniperRifleReload.wav");
-                break;
-        }
+        URL url=MusicPlayer.class.getResource("/musics/reload/"+name+".wav");
         Applet.newAudioClip(url).play();
     }
     public static void playBulletLandMuisc()        //播放子弹壳落地的声音
@@ -77,5 +69,10 @@ public class MusicPlayer
     public static void playBulletUseOutMusic()  //播放子弹用完的声音
     {
         Applet.newAudioClip(bulletUseOutUrl).play();
+    }
+    public static void playExchangeWeaponMusic(String weaponName)    //播放切换武器的声音
+    {
+        URL url=MusicPlayer.class.getResource("/musics/exchangeWeapon/"+weaponName+".wav");
+        Applet.newAudioClip(url).play();
     }
 }
