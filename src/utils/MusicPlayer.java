@@ -70,9 +70,9 @@ public class MusicPlayer
     {
         Applet.newAudioClip(bulletUseOutUrl).play();
     }
-    public static void playExchangeWeaponMusic(String weaponName)    //播放切换武器的声音
+    public static void playChangeWeaponMusic(String weaponName)    //播放切换武器的声音
     {
-        URL url=MusicPlayer.class.getResource("/musics/exchangeWeapon/"+weaponName+".wav");
+        URL url=MusicPlayer.class.getResource("/musics/changeWeapon/"+weaponName+".wav");
         Applet.newAudioClip(url).play();
     }
 }

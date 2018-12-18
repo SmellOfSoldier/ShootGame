@@ -148,12 +148,13 @@ public class Person extends JLabel implements Serializable
     public void changeWeapon(int type)                  //切换武器
     {
         if (weapons[type]!=null)    //如果这把武器存在
-        {
+        {//TODO:
             usingWeaponType=type;
+            MusicPlayer.playChangeWeaponMusic(weapons[type].getWeaponName());
         }
         else                       //不存在
         {
-
+            MusicPlayer.playBulletUseOutMusic();
         }
     }
     public int getUsingWeaponType(){return usingWeaponType;}    //获取当前使用的武器类型

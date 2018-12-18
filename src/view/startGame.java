@@ -69,7 +69,7 @@ class GameFrame extends JFrame
                 System.exit(0);
             }
         });
-        this.setSize(width+10,high+34);
+        this.setSize(width+6,high+35);
         this.setResizable(false);
         this.setLocationRelativeTo(null);
         this.add(gameArea);
@@ -237,6 +237,7 @@ class GameFrame extends JFrame
                             if(!flag && (newPoint.x<0 || newPoint.x>width || newPoint.y<0 || newPoint.y>high))    //判断子弹是否撞墙
                             {
                                 deleteBullet[++i]=bullet ;           //将撞墙的子弹保存起来
+                                bullet.setVisible(false);
                                 // MusicPlayer.playBulletHitWallMusic();
                             }
                         }
@@ -294,6 +295,7 @@ class GameFrame extends JFrame
                             }
                             if(!flag && (newPoint.x<0 || newPoint.x>width || newPoint.y<0 || newPoint.y>high))    //判断子弹是否撞墙
                             {
+                                    bullet.setVisible(false);
                                    deleteBullet[++i]=bullet ;           //将撞墙的子弹保存起来
                                // MusicPlayer.playBulletHitWallMusic();
                             }

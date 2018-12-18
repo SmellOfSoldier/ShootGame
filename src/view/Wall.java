@@ -3,6 +3,8 @@ package view;
 public class Wall
 {
     public static int oringemap[][]=new int[20][30];
+    //TODO:将40*40的地图转化为20*20的地图保存到map中
+    public static int map[][]=null;
 
     static
     {
