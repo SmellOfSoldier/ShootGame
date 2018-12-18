@@ -19,5 +19,7 @@ public class AI extends Person implements Serializable
     }
     public boolean ifDie(){return isDie;}                   //电脑是否死亡
     public void setDie(boolean isDie){this.isDie=isDie;}    //设置AI死亡或复活
-
+    public void testgit(){
+        //用于测试github分支合并
+    }
 }
