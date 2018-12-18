@@ -2,13 +2,14 @@ package view;
 
 public class Wall
 {
-    public static int oringemap[][]=new int[20][30];
-    //TODO:将40*40的地图转化为20*20的地图保存到map中
-    public static int map[][]=null;
 
-    static
-    {
+    public static int oringemap[][]=new int[20][30];
+    public static int map[][]=new int[40][60];
+    static {
+
         int n = 20, m = 30;
+        int n2 = 40, m2 = 60;
+        //为四周添加墙块bylijie
         for (int i = 0; i < m; i++) {
             oringemap[0][i] = 1;
             oringemap[n - 1][i] = 1;
@@ -17,6 +18,7 @@ public class Wall
             oringemap[i][0] = 1;
             oringemap[i][m - 1] = 1;
         }
+        //20*30初始化
         oringemap[2][22] = 1;
         oringemap[2][23] = 1;
         oringemap[3][22] = 1;
@@ -81,6 +83,21 @@ public class Wall
         oringemap[16][17] = 1;
         oringemap[16][24] = 1;
         oringemap[16][25] = 1;
-
+        //设置出口
+        oringemap[13][0]=0;
+        oringemap[0][20]=0;
+        oringemap[19][8]=0;
+        oringemap[15][29]=0;
+        //遍历扩充
+        for (int i = 0; i < 20; i++) {
+            for (int j = 0; j < 30; j++) {
+                if (oringemap[i][j] == 1) {
+                    map[i * 2][j * 2] = 1;
+                    map[i * 2 + 1][j * 2] = 1;
+                    map[i * 2][j * 2 + 1] = 1;
+                    map[i * 2 + 1][j * 2 + 1] = 1;
+                }
+            }
+        }
     }
 }
