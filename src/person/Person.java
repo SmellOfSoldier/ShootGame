@@ -15,10 +15,6 @@ public class Person extends JLabel implements Serializable
 {
     private Lock reLoadLock=new ReentrantLock();    //装子弹的锁
     private boolean isReload=false;                 //人物是否正在装子弹
-    private int lSpeed=0;                           //人物每次左边方向移动的像素
-    private int rSpeed=0;                           //人物每次右边方向移动的像素
-    private int uSpeed=0;                           //人物每次上边方向移动的像素
-    private int dSpeed=0;                           //人物每次下边方向移动的像素
     private int speed;                      //人物的移动速度
     protected int id;                       //编号
     protected String name;                  //姓名
@@ -36,15 +32,6 @@ public class Person extends JLabel implements Serializable
         this.radius=radius;
         this.speed=speed;
     }
-    public void setlSpeed(int lSpeed){this.lSpeed=lSpeed;}
-    public void setrSpeed(int rSpeed){this.rSpeed=rSpeed;}
-    public void setuSpeed(int uSpeed){this.uSpeed=uSpeed;}
-    public void setdSpeed(int dSpeed){this.dSpeed=dSpeed;}
-    public int getlSpeed(){return lSpeed;}
-    public int getrSpeed(){return rSpeed;}
-    public int getuSpeed(){return uSpeed;}
-    public int getdSpeed(){return dSpeed;}
-    public void stop(){lSpeed=0;rSpeed=0;uSpeed=0;dSpeed=0;}    //人物停止运动
     public int getHealthPoint(){return healthPoint;}       //获取人物当前血量
     public int getId(){return id;}                          //获取人物编号
     public int getRadius(){return radius;}                  //获取人物半径

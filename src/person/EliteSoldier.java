@@ -1,5 +1,7 @@
 package person;
 
+import Arsenal.AKM;
+
 import java.io.Serializable;
 
 /**
@@ -7,8 +9,10 @@ import java.io.Serializable;
  */
 public class EliteSoldier extends AI implements Serializable
 {
+    private static int vision=400;
     public EliteSoldier(int id)
     {
-        super(id,"精英战士",140,10,300);
+        super(id,"精英战士",140,10,300,vision);
+        this.peekWeapon(new AKM(),240);
     }
 }

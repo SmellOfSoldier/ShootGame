@@ -1,5 +1,7 @@
 package person;
 
+import Arsenal.AWM;
+
 import java.io.Serializable;
 
 /**
@@ -7,8 +9,11 @@ import java.io.Serializable;
  */
 public class Hider extends AI implements Serializable
 {
+    private static int vision=700;
     public Hider(int id)
     {
-        super(id,"隐匿者",100,10,400);
+        super(id,"隐匿者",100,10,400,vision);
+        this.peekWeapon(new AWM(),100);
     }
+
 }

@@ -29,9 +29,9 @@ public class AiPath implements Serializable
     public void clearPath(){path=null;}
     public void setPath(MyPoint[] path){this.path=path;}
     public boolean ifFinishedAll(){return currentPosition==path.length-1;}    //判断是否走完了整个路
-    /*public boolean ifFinishedCurrentPoint(Point position)                     //判断是否走完了这个
+    public void nextStep(Integer xSpeed,Integer ySpeed)
     {
-
-    }*/
+        
+    }
 }
 
