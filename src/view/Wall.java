@@ -82,6 +82,8 @@ public class Wall
         oringemap[16][17] = 1;
         oringemap[16][24] = 1;
         oringemap[16][25] = 1;
+        oringemap[17][1]=1;
+        oringemap[17][2]=1;
         //设置出口
         oringemap[13][0]=0;
         oringemap[0][20]=0;

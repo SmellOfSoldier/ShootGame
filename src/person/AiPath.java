@@ -27,7 +27,6 @@ public class AiPath implements Serializable {
 
     AiPath(MyPoint[] path) {
         this.path = path;
-        printPath();
     }
 
     public void printPath() {
@@ -44,31 +43,35 @@ public class AiPath implements Serializable {
 
     public boolean hasNext()            //如果AI还能按照地图继续走，返回true
     {
-        if (path != null && !(currentPosition == path.length - 1 )) {
+        if (path != null && !( currentPosition == path.length - 1 && process==processBetweenTwoPoint))
+        {
             return true;
         }
         return false;
-
     }
-
     //AI按照path走下一步，xSpeed、ySpeed表示Ai
     public void next(AI ai) {
-        int xSpeed;
-        int ySpeed;
-        if (process == 4) {
-            currentPosition++;
-        }
-        try {
-            process = (process + 1) % processBetweenTwoPoint;
-            ySpeed = (path[currentPosition + 1].x - path[currentPosition].x) * TravelSpeed.personTravelSpeed;
-            xSpeed = (path[currentPosition + 1].y - path[currentPosition].y) * TravelSpeed.personTravelSpeed;
-            Point oldPoint = ai.getLocation();
-            ai.setLocation(oldPoint.x + xSpeed, oldPoint.y + ySpeed);
-        }
-        catch (Exception ex)
-        {
-            System.out.println(currentPosition+"  "+path.length);
-        }
+            try {
+                int xSpeed;
+                int ySpeed;
+                ySpeed = (path[currentPosition + 1].x - path[currentPosition].x) * TravelSpeed.personTravelSpeed;
+                xSpeed = (path[currentPosition + 1].y - path[currentPosition].y) * TravelSpeed.personTravelSpeed;
+                Point oldPoint = ai.getLocation();
+                ai.setLocation(oldPoint.x + xSpeed, oldPoint.y + ySpeed);
+                if (process == processBetweenTwoPoint - 1) {
+                    currentPosition++;
+                }
+                process ++;
+                if(currentPosition!=path.length-1)
+                {
+                    process=process % processBetweenTwoPoint;
+                }
+            } catch (Exception ex) {
+                System.out.println(currentPosition);
+                System.out.println(path.length);
+                ex.printStackTrace();
+            }
+
 
     }
 }

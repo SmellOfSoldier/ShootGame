@@ -21,6 +21,7 @@ import java.util.Random;
 
 public class GameFrame extends JFrame
 {
+    private Point[] entrance=new Point[]{new Point(800,20),new Point(1040,280),new Point(1160,600), new Point(320,760),new Point(20,520)};         //刷怪位置
     private Point endPoint=new Point();
     private Random random=new Random();
     private final static int CELL=20;   //每个人物的大小
@@ -43,6 +44,8 @@ public class GameFrame extends JFrame
     private Timer pistolBulletThread=null;      //手枪子弹的飞行线程
     private Timer playerMoveThread=null;        //玩家移动的线程
     private Timer eliteSoldierMoveThread=null;  //精英战士移动线程
+    private Timer reLiveAiThread=null;          //复活AI线程
+
     GameFrame()
     {
         gameArea=new GameArea();
@@ -50,7 +53,7 @@ public class GameFrame extends JFrame
         createAI();
         initial();
         //关闭窗口推出程序
-        this.addWindowFocusListener(new WindowAdapter() {
+        this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
                 System.exit(0);
@@ -73,7 +76,9 @@ public class GameFrame extends JFrame
             public void actionPerformed(ActionEvent e)
             {
                 Point oldPoint=player.getLocation();
-                player.setLocation(oldPoint.x+player.getrSpeed()-player.getlSpeed(),oldPoint.y+player.getdSpeed()-player.getuSpeed());
+                Point newPoint=new Point(oldPoint.x+player.getrSpeed()-player.getlSpeed(),oldPoint.y+player.getdSpeed()-player.getuSpeed());
+                if(!ifhitWall(newPoint,player.getRadius()))
+                    player.setLocation(newPoint);
             }
         });
         /**
@@ -92,8 +97,32 @@ public class GameFrame extends JFrame
                 }
             }
         });
-        //eliteSoldierMoveThread.start();
+        /**
+         * 初始化复活Ai线程
+         */
+        reLiveAiThread=new Timer(3000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                for(EliteSoldier eliteSoldier:eliteSoldierList)
+                {
+                    if (eliteSoldier.ifDie())
+                    {
+                        eliteSoldier.setLocation(entrance[random.nextInt(entrance.length)]);
+                        eliteSoldier.setPath(eliteSoldier.getLocation(),player.getLocation());
+                        eliteSoldier.setDie(false);
+                        eliteSoldier.setVisible(true);
+                    }
+                }
+            }
+        });
+        eliteSoldierMoveThread.start();
         playerMoveThread.start();
+        reLiveAiThread.start();
+    }
+    private void reLiveAi(AI ai)
+    {
+
     }
     /**
      * 内部类
@@ -154,9 +183,6 @@ public class GameFrame extends JFrame
                             break;
                         case KeyEvent.VK_5:
                             player.changeWeapon(WeaponType.grenade);
-                            break;
-                        case KeyEvent.VK_T:
-                            eliteSoldierMoveThread.start();
                             break;
                     }
                 }
@@ -260,7 +286,7 @@ public class GameFrame extends JFrame
                                     break;
                                 }
                             }
-                            if(!flag && (newPoint.x<0 || newPoint.x>width || newPoint.y<0 || newPoint.y>high))    //判断子弹是否撞墙
+                            if(!flag && (ifhitWall(bullet.getLocation(),bullet.getRadius())))    //判断子弹是否撞墙
                             {
                                 deleteBullet[++i]=bullet ;           //将撞墙的子弹保存起来
                                 bullet.setVisible(false);
@@ -319,7 +345,7 @@ public class GameFrame extends JFrame
                                     break;
                                 }
                             }
-                            if(!flag && (newPoint.x<0 || newPoint.x>width || newPoint.y<0 || newPoint.y>high))    //判断子弹是否撞墙
+                            if(!flag && (ifhitWall(bullet.getLocation(),bullet.getRadius())))    //判断子弹是否撞墙
                             {
                                     bullet.setVisible(false);
                                    deleteBullet[++i]=bullet ;           //将撞墙的子弹保存起来
@@ -347,6 +373,42 @@ public class GameFrame extends JFrame
             g.drawImage(icon.getImage(),0,0,GameFrame.width,GameFrame.high,null);
         }
     }
+    //判断子弹是否撞墙,radius为物体的半径
+    public boolean ifhitWall(Point point,int radius)
+    {
+        //
+        try {
+            if (point.x < 0 || point.y < 0 || point.x + radius > GameFrame.width || point.y + radius > GameFrame.high)
+                return true;
+            //分别判断物体的左上、右上、左下、右下角是与墙重
+            int y = point.x / 20;       //物体在map中的纵坐标
+            int x = point.y / 20;       //物体在map中的横坐标
+            if (Wall.map[x][y] == 1) {
+                return true;
+            }
+            y = (point.x + 2 * radius) / 20;
+            x = point.y / 20;
+            if (Wall.map[x][y] == 1) {
+                return true;
+            }
+            y = (point.x / 20);
+            x = (point.y + 2 * radius) / 20;
+            if (Wall.map[x][y] == 1) {
+                return true;
+            }
+            y = (point.x + 2 * radius) / 20;
+            x = (point.y + 2 * radius) / 20;
+            if (Wall.map[x][y] == 1) {
+                return true;
+            }
+            return false;
+        }
+        catch (Exception ex)
+        {
+            return true;
+        }
+    }
+
     //创建子弹
     public void createBullet(Point start,Point end,int bulletType,int damageValue,int gunType)
     {
@@ -390,7 +452,7 @@ public class GameFrame extends JFrame
             {
                 createBullet(startPoint, endPoint, ((Gun) weapon).getBulletType(), weapon.getDamageValue(), weapon.getType());
                 gun.reduceBulletNum(1);     //子弹里面的弹夹减1
-                //MusicPlayer.playShotMusic(weapon.getWeaponName());
+                MusicPlayer.playShotMusic(weapon.getWeaponName());
             }
             else                    //没有子弹
             {
@@ -426,15 +488,13 @@ public class GameFrame extends JFrame
         {
             EliteSoldier eliteSoldier=new EliteSoldier(1);
             eliteSoldier.setSize(size,size);
-            eliteSoldier.setLocation(randomPoint());
+            eliteSoldier.setLocation(entrance[random.nextInt(entrance.length)]);
+            //eliteSoldier.setLocation(randomPoint());
             eliteSoldier.setIcon(icon);
-            Point endPoint=player.getLocation();
-            Point startPoint=eliteSoldier.getLocation();
-            int x1=startPoint.y/20;
-            int y1=startPoint.x/20;
-            int x2=endPoint.y/20;
-            int y2=endPoint.x/20;
-            eliteSoldier.setPath( FindPath.findPath(new MyPoint(x1,y1),new MyPoint(x2,y2)));
+
+            Point endPoint=player.getLocation();        //获取玩家坐标作为寻路终点
+            Point startPoint=eliteSoldier.getLocation();    //AI当前坐标为寻路起点
+            eliteSoldier.setPath(startPoint,endPoint);
             gameArea.add(eliteSoldier);
             aiList.add(eliteSoldier);
             eliteSoldierList.add(eliteSoldier);

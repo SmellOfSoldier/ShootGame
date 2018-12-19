@@ -25,7 +25,14 @@ public class AI extends Person implements Serializable
     }
     public boolean ifDie(){return isDie;}                   //电脑是否死亡
     public void setDie(boolean isDie){this.isDie=isDie;}    //设置AI死亡或复活
-    public void setPath(AiPath path ){this.path=path;}
+    public void setPath(Point startPoint,Point endPoint)
+    {
+        int x1=startPoint.y/20;
+        int y1=startPoint.x/20;
+        int x2=endPoint.y/20;
+        int y2=endPoint.x/20;
+        path= FindPath.findPath(new MyPoint(x1,y1),new MyPoint(x2,y2));
+    }
     public void setMoveCommend(boolean commend)
     {
         moveCommend=commend;
