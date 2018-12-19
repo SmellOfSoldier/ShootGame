@@ -10,9 +10,10 @@ import java.io.Serializable;
 public class EliteSoldier extends AI implements Serializable
 {
     private static int vision=400;
+    public static final int speed=20;
     public EliteSoldier(int id)
     {
-        super(id,"精英战士",140,10,300,vision);
+        super(id,"精英战士",140,10,speed,vision);
         this.peekWeapon(new AKM(),240);
     }
 }

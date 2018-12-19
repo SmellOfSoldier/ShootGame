@@ -6,20 +6,20 @@ import java.awt.*;
 import java.util.*;
 
 public class FindPath {
-    int dp[][];
+    static int dp[][];
 
-    Vector<MyPoint>ans;
-    int n,m;
-    public Boolean check(int x,int y)
+    static Vector<MyPoint>ans;
+    static int n=40,m=60;
+    public static Boolean check(int x,int y)
     {
         if(x<0||y<0||x>=n||y>=m)return false;
         return true;
     }
-    public AiPath findPath (MyPoint start,MyPoint end)
+    public static AiPath findPath (MyPoint start,MyPoint end)
     {
         int xi=start.x,yi=start.y,xe=end.x,ye=end.y;
         dp=new int[100][100];
-        int n=40,m=60;
+        //n=40,m=60;
         for(int i=0;i<n;i++)
         {
             for(int j=0;j<m;j++)
@@ -28,7 +28,6 @@ public class FindPath {
                 else dp[i][j]=100000000;
             }
         }
-
         Queue<MyPoint>s= new LinkedList<MyPoint>();
         dp[xi][yi]=1;
         s.offer(new MyPoint(xi,yi));
@@ -51,11 +50,13 @@ public class FindPath {
                 }
                 if(di>=4&&check(i,j)&&dp[i][temp.y]!=-1&&dp[temp.x][j]!=-1&&dp[temp.x][temp.y]+1<dp[i][j])
                 {
+
                     dp[i][j]=dp[temp.x][temp.y]+1;
                     s.offer(new MyPoint(i,j));
                 }
                 if(di<4&&check(i,j)&&dp[i][j]!=-1&&dp[temp.x][temp.y]+1<dp[i][j])
                 {
+
                     dp[i][j]=dp[temp.x][temp.y]+1;
                     s.offer(new MyPoint(i,j));
                 }
@@ -66,7 +67,7 @@ public class FindPath {
 
 
     }
-    public MyPoint[] print(int xi, int yi, int xe, int ye)
+    public static MyPoint[] print(int xi, int yi, int xe, int ye)
     {
         ans=new Vector<>(100);
         //if(dp[xe][ye]==10000000||dp[xe][ye]==-1){System.out.println("没有路径");return ;}
@@ -107,8 +108,5 @@ public class FindPath {
             path[i]=ans.get(j);
         }
         return path;
-    }
-    public static void main(String[] args) {
-        new FindPath();
     }
 }
