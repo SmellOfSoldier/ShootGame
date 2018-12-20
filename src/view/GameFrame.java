@@ -52,6 +52,7 @@ public class GameFrame extends JFrame
 
     GameFrame()
     {
+
         gameArea=new GameArea();
         createPlayer();
         createAI();
