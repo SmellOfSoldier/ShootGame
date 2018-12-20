@@ -12,6 +12,7 @@ public class Gun extends Weapon implements Serializable
     private int fireRate;               //武器的射速
     private int bulletType;             //使用的子弹类型
     private int bulletLeft ;  //弹夹中的子弹
+    private int maxBulletNum;     //该武器的最大子弹数目
     protected Gun(int weaponType,int bulletType,String weaponName,int damageValue,int fireRate,boolean continuedShot,int bulletNumInCartridgeClip,int reloadTime)
     {
         super(weaponType,weaponName,damageValue);
@@ -20,8 +21,9 @@ public class Gun extends Weapon implements Serializable
         this.fireRate=fireRate;
         this.bulletLeft=bulletNumInCartridgeClip;
         this.reloadTime=reloadTime;
+        this.maxBulletNum=bulletNumInCartridgeClip;
     }
-
+    public int getMaxBulletNum(){return maxBulletNum;}  //返回该武器的最大子弹数目
     public int getFireRate(){return fireRate;}          //返回武器的射速
     public int getBulletType(){return bulletType;}      //返回子弹的类型
     public boolean ifContinuedShot(){return continuedShot;}//是否能连续射击

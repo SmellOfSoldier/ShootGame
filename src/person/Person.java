@@ -23,6 +23,7 @@ public class Person extends JLabel implements Serializable
     private   int radius;                   //人物的半径
     private int [] bulletNum=new int[Weapon.weaponsTypeNum];      //武器中子弹的数目
     private Weapon []weapons=new Weapon[Weapon.weaponsTypeNum+1];     //人物持有的武器
+    private boolean isDie=false;        //是否死亡
     protected Person(){}
     protected Person(int id,String name,int healthPoint,int radius,int speed)
     {
@@ -36,10 +37,13 @@ public class Person extends JLabel implements Serializable
     public int getId(){return id;}                          //获取人物编号
     public int getRadius(){return radius;}                  //获取人物半径
     public String getName(){return name;}                   //获取人物名称www
+    public boolean ifDie(){return isDie;}                   //电脑是否死亡
+    public void setDie(boolean isDie){this.isDie=isDie;}    //设置AI死亡或复活
     public  void  reLoad()            //装填子弹
     {
-        //如果已经在装填中
-        if(isReload)
+        Gun gun = (Gun) weapons[usingWeaponType];
+        //如果已经在装填中，或子弹是满的
+        if(isReload || gun.getBulletLeft()==gun.getMaxBulletNum())
             return;
             //如果没有子弹可以装填
             if(bulletNum[usingWeaponType]==0)
@@ -49,7 +53,6 @@ public class Person extends JLabel implements Serializable
             }
             MusicPlayer.playReloadMusic(weapons[usingWeaponType].getWeaponName());
             isReload = true;
-            Gun gun = (Gun) weapons[usingWeaponType];
             int bulletLeft = gun.getBulletLeft();
             int addBullet;          //预计加装的子弹量
             int maxBulletNum = 0;       //弹夹中最大子弹量
@@ -95,7 +98,7 @@ public class Person extends JLabel implements Serializable
     }
     public void addHealthPoint(int hp)                      //给人物加血
     {
-        if(hp+healthPoint>100)
+        if(hp+healthPoint>500)
         {
             healthPoint=100;
         }
