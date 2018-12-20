@@ -13,14 +13,13 @@ import java.util.Map;
 
 public class LoginFrame extends JFrame {
     private boolean isConnected;//标记是否与服务器连接
-    private JFrame frame;
     private JTextArea contentArea;
     private JLabel accountlable;
     private JLabel passwordlable;
     private JButton btn_register;
     private JButton btn_link;
     private JTextField txt_account;
-    private JTextField txt_password;
+    private JPasswordField txt_password;
     private LoginPanel loginPanel;
     //private JList userlist;
     //private DefaultListModel listModel;
@@ -72,7 +71,7 @@ public class LoginFrame extends JFrame {
             btn_link=new JButton("登陆");
             btn_register=new JButton("注册");
             txt_account=new JTextField();
-            txt_password=new JTextField();
+            txt_password=new JPasswordField();
             contentArea=new JTextArea();
             this.add(accountlable);
             this.add(passwordlable);
