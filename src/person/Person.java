@@ -38,16 +38,15 @@ public class Person extends JLabel implements Serializable
     public String getName(){return name;}                   //获取人物名称www
     public  void  reLoad()            //装填子弹
     {
-        reLoadLock.lock();
+        //如果已经在装填中
+        if(isReload)
+            return;
             //如果没有子弹可以装填
             if(bulletNum[usingWeaponType]==0)
             {
                 MusicPlayer.playBulletUseOutMusic();
                 return;
             }
-            //如果已经在装填中
-            if(isReload)
-                return;
             MusicPlayer.playReloadMusic(weapons[usingWeaponType].getWeaponName());
             isReload = true;
             Gun gun = (Gun) weapons[usingWeaponType];
@@ -124,7 +123,8 @@ public class Person extends JLabel implements Serializable
     {
         int type=weapon.getType();
         weapons[type]=weapon;
-        bulletNum[type]=bn;
+        bulletNum[type]+=bn;
+        usingWeaponType=type;
     }
     public boolean ifHaveWeapon(int type)               //判断是否拥有该武器
     {
@@ -134,14 +134,16 @@ public class Person extends JLabel implements Serializable
     }
     public void changeWeapon(int type)                  //切换武器
     {
-        if (weapons[type]!=null)    //如果这把武器存在
-        {//TODO:
-            usingWeaponType=type;
-            MusicPlayer.playChangeWeaponMusic(weapons[type].getWeaponName());
-        }
-        else                       //不存在
+        if(type!=usingWeaponType)
         {
-            MusicPlayer.playBulletUseOutMusic();
+            if (weapons[type] != null)    //如果这把武器存在
+            {//TODO:
+                usingWeaponType = type;
+                MusicPlayer.playChangeWeaponMusic(weapons[type].getWeaponName());
+            } else                       //不存在
+            {
+                MusicPlayer.playBulletUseOutMusic();
+            }
         }
     }
     public int getUsingWeaponType(){return usingWeaponType;}    //获取当前使用的武器类型

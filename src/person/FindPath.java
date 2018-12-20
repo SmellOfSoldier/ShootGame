@@ -24,8 +24,8 @@ public class FindPath {
         {
             for(int j=0;j<m;j++)
             {
-                if(Wall.map[i][j]==1)dp[i][j]=-1;
-                else dp[i][j]=100000000;
+                if(Wall.map[i][j]==0)dp[i][j]=100000000;
+                else dp[i][j]=-1;
             }
         }
         Queue<MyPoint>s= new LinkedList<MyPoint>();

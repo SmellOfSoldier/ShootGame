@@ -2,6 +2,7 @@ package person;
 
 import view.GameFrame;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.Serializable;
 
@@ -31,7 +32,8 @@ public class AI extends Person implements Serializable
         int y1=startPoint.x/20;
         int x2=endPoint.y/20;
         int y2=endPoint.x/20;
-        path= FindPath.findPath(new MyPoint(x1,y1),new MyPoint(x2,y2));
+        if(!(x1==x2 && y1==y2))
+            path= FindPath.findPath(new MyPoint(x1,y1),new MyPoint(x2,y2));
     }
     public void setMoveCommend(boolean commend)
     {

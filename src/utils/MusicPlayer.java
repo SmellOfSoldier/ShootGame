@@ -15,12 +15,14 @@ public class MusicPlayer
     private static URL bgmUrl=null;         //bgm的路径
     private static URL dieUrl=null;         //人物死亡声音的路径
     private static URL systemPromotUrl=null;    //系统提示声音的路径
-    private static URL bulletHitWallUrl=MusicPlayer.class.getResource("/musics/other/bulletHitWall.wav");   //子弹撞墙的声音路径
-    private static URL bulletLandUrl=MusicPlayer.class.getResource("/musics/other/bulletLand.wav"); //子弹壳落地的声音
-    private static URL bulletUseOutUrl=MusicPlayer.class.getResource("/musics/other/bulletUseOut.wav");    //子弹落用完的使用
-    private static AudioClip bgmPlayer=null;
+    private static URL bulletHitWallUrl=MusicPlayer.class.getResource("/musics/other/bulletHitWall.wav");   //子弹撞墙的音效文件路径
+    private static URL bulletLandUrl=MusicPlayer.class.getResource("/musics/other/bulletLand.wav"); //子弹壳落地的音效文件路径
+    private static URL bulletUseOutUrl=MusicPlayer.class.getResource("/musics/other/bulletUseOut.wav");    //子弹落用完的音效路径
+    private static URL peekRewardPropUrl=MusicPlayer.class.getResource("/musics/other/peekRewardProp.wav"); //拾起道具音效文件路径
+    private static AudioClip bgmPlayer=null;                    //bgm播放器
     private static AudioClip continueousShotPlayer=null;
-    private static AudioClip shotPlayer=null;
+    private static AudioClip shotPlayer=null;                   //开火音效播放器
+    private static AudioClip peekRewardPropPlayer=null;         //拾起道具音效播放器
 
     private static Timer bgmThread=new Timer(bgmTime, new ActionListener() {
         @Override
@@ -33,6 +35,7 @@ public class MusicPlayer
     {
         bgmUrl=MusicPlayer.class.getResource("/musics/bgm/bgm.wav");
         bgmPlayer=Applet.newAudioClip(bgmUrl);
+        peekRewardPropPlayer=Applet.newAudioClip(peekRewardPropUrl);
     }
     public static void playShotMusic(String gunName)
     {
@@ -91,5 +94,9 @@ public class MusicPlayer
     {
         URL url=MusicPlayer.class.getResource("/musics/changeWeapon/"+weaponName+".wav");
         Applet.newAudioClip(url).play();
+    }
+    public static void playePeekRewardPropMuisc()               //播放拾起道具的音效
+    {
+        peekRewardPropPlayer.play();
     }
 }

@@ -3,7 +3,7 @@ package view;
 import Arsenal.AKM;
 import Arsenal.AWM;
 import Weapon.Gun;
-import Weapon.Weapon;
+import Weapon.*;
 import Weapon.WeaponType;
 import bullet.Bullet;
 import bullet.BulletSize;
@@ -24,18 +24,21 @@ public class GameFrame extends JFrame
     private Point[] entrance=new Point[]{new Point(800,20),new Point(1040,280),new Point(1160,600), new Point(320,760),new Point(20,520)};         //刷怪位置
     private Point endPoint=new Point();
     private Random random=new Random();
-    private final static int CELL=20;   //每个人物的大小
-    private final static int width=1200;
-    private final static int high=800;
+    public final static int CELL=20;   //每个人物的大小
+    public final static int width=1200;
+    public final static int high=800;
     private LinkedList<Player> otherPlayer=new LinkedList<Player>();    //存放其他玩家
     //存放自动步枪子弹的链表
-    private java.util.List<Bullet> automaticBulletList = Collections.synchronizedList(new LinkedList<Bullet>());
+    public java.util.List<Bullet> automaticBulletList = Collections.synchronizedList(new LinkedList<Bullet>());
     //存放狙击枪子弹的链表
-    private java.util.List<Bullet> sniperBulletList =Collections.synchronizedList(new LinkedList<Bullet>());
+    public java.util.List<Bullet> sniperBulletList =Collections.synchronizedList(new LinkedList<Bullet>());
     //存放精英战士的链表
     private java.util.List<EliteSoldier> eliteSoldierList=Collections.synchronizedList(new LinkedList<EliteSoldier>());
     //存放所有AI的链表
     private java.util.List<AI> aiList= Collections.synchronizedList(new LinkedList<AI>());
+    //存放掉落物品的链表
+    private java.util.List<RewardProp> rewardPropList=Collections.synchronizedList(new LinkedList<RewardProp>());
+
     private static Player player;                      //游戏玩家
     private Timer shotThread=null;              //开火线程
     private GameArea gameArea=new GameArea();
@@ -45,6 +48,7 @@ public class GameFrame extends JFrame
     private Timer playerMoveThread=null;        //玩家移动的线程
     private Timer eliteSoldierMoveThread=null;  //精英战士移动线程
     private Timer reLiveAiThread=null;          //复活AI线程
+
 
     GameFrame()
     {
@@ -77,7 +81,7 @@ public class GameFrame extends JFrame
             {
                 Point oldPoint=player.getLocation();
                 Point newPoint=new Point(oldPoint.x+player.getrSpeed()-player.getlSpeed(),oldPoint.y+player.getdSpeed()-player.getuSpeed());
-                if(!ifhitWall(newPoint,player.getRadius()))
+                if(!ifHitWall(newPoint,player.getRadius(),false))
                     player.setLocation(newPoint);
             }
         });
@@ -93,6 +97,10 @@ public class GameFrame extends JFrame
                     if(eliteSoldier.hasNext())
                     {
                         eliteSoldier.nextStep();
+                    }
+                    else
+                    {
+                        eliteSoldier.setPath(eliteSoldier.getLocation(),player.getLocation());
                     }
                 }
             }
@@ -168,21 +176,63 @@ public class GameFrame extends JFrame
                                 player.reLoad();
                             }
                             break;
+                            //玩家捡起道具
+                        case KeyEvent.VK_F:
+                            Point playerPoint=player.getLocation();
+                            int index=-1;
+                            int i=0;
+                            for(RewardProp rewardProp:rewardPropList)
+                            {
+                                if (playerPoint.distance(rewardProp.getLocation()) < CELL)
+                                {
+                                    //如果道具是医疗包
+                                    MusicPlayer.playePeekRewardPropMuisc();
+                                    rewardProp.setVisible(false);
+                                    if(rewardProp.getType()==0)
+                                    {
+                                        MedicalPackage medicalPackage=(MedicalPackage) rewardProp.getReward();
+                                        player.addHealthPoint(medicalPackage.getHealthPoint());
+                                    }
+                                    //如果道具是枪
+                                    else
+                                    {
+                                        player.peekWeapon((Weapon) rewardProp.getReward(),0);
+                                    }
+                                    index=i;
+                                }
+                                i++;
+                            }
+                            if(index!=-1)
+                            {
+                                gameArea.remove(rewardPropList.get(index));
+                                rewardPropList.remove(index);
+                            }
+                            break;
                             //切换武器
                         case KeyEvent.VK_1:
                             player.changeWeapon(WeaponType.closedWeapon);
+                            if (shotThread!=null &&shotThread.isRunning())
+                                shotThread.stop();
                             break;
                         case KeyEvent.VK_2:
                             player.changeWeapon(WeaponType.pistol);
+                            if (shotThread!=null &&shotThread.isRunning())
+                                shotThread.stop();
                             break;
                         case KeyEvent.VK_3:
                             player.changeWeapon(WeaponType.automaticRifle);
+                            if (shotThread!=null &&shotThread.isRunning())
+                                shotThread.stop();
                             break;
                         case KeyEvent.VK_4:
                             player.changeWeapon(WeaponType.sniperRifle);
+                            if (shotThread!=null &&shotThread.isRunning())
+                                shotThread.stop();
                             break;
                         case KeyEvent.VK_5:
                             player.changeWeapon(WeaponType.grenade);
+                            if (shotThread!=null &&shotThread.isRunning())
+                                shotThread.stop();
                             break;
                     }
                 }
@@ -229,16 +279,17 @@ public class GameFrame extends JFrame
                     int fireRate = ((Gun) player.getUsingWeapon()).getFireRate();         //获取枪的射速sa
                     Point startPoint = getCentralPoint(player.getLocation());
                     attack(startPoint, endPoint, player);
-
-                    shotThread = new Timer(fireRate, new ActionListener() {       //玩家开火
-                        @Override
-                        public void actionPerformed(ActionEvent e)
-                        {
-                            Point startPoint = getCentralPoint(player.getLocation());
-                            attack(startPoint, endPoint, player);
-                        }
-                    });
-                        shotThread.start();
+                    if(shotThread==null)
+                    {
+                        shotThread = new Timer(fireRate, new ActionListener() {       //玩家开火
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                Point startPoint = getCentralPoint(player.getLocation());
+                                attack(startPoint, endPoint, player);
+                            }
+                        });
+                    }
+                    shotThread.start();
                 }
                 @Override
                 public void mouseReleased(MouseEvent e)
@@ -276,7 +327,7 @@ public class GameFrame extends JFrame
                                     {
                                         ai.setVisible(false);
                                         ai.setDie(true);            //设置AI死亡
-                                        bullet.setVisible(false);
+                                        createRewardProp(ai.getLocation());     //掉落物品
                                     }
                                     else
                                     {
@@ -286,7 +337,7 @@ public class GameFrame extends JFrame
                                     break;
                                 }
                             }
-                            if(!flag && (ifhitWall(bullet.getLocation(),bullet.getRadius())))    //判断子弹是否撞墙
+                            if(!flag && (ifHitWall(bullet.getLocation(),bullet.getRadius(),true)))    //判断子弹是否撞墙
                             {
                                 deleteBullet[++i]=bullet ;           //将撞墙的子弹保存起来
                                 bullet.setVisible(false);
@@ -336,6 +387,7 @@ public class GameFrame extends JFrame
                                     {
                                         ai.setVisible(false);
                                         ai.setDie(true);            //设置AI死亡
+                                        createRewardProp(ai.getLocation());     //掉落物品
                                     }
                                     else
                                     {
@@ -345,7 +397,7 @@ public class GameFrame extends JFrame
                                     break;
                                 }
                             }
-                            if(!flag && (ifhitWall(bullet.getLocation(),bullet.getRadius())))    //判断子弹是否撞墙
+                            if(!flag && (ifHitWall(bullet.getLocation(),bullet.getRadius(),true)))    //判断子弹是否撞墙
                             {
                                     bullet.setVisible(false);
                                    deleteBullet[++i]=bullet ;           //将撞墙的子弹保存起来
@@ -366,6 +418,10 @@ public class GameFrame extends JFrame
             });
             automaticBulletThread.start();
         }
+        public void peekThings(Player player)
+        {
+
+        }
         public void paintComponent(Graphics g)
         {
             URL url=startGame.class.getResource("/images/backGround.png");
@@ -374,32 +430,58 @@ public class GameFrame extends JFrame
         }
     }
     //判断子弹是否撞墙,radius为物体的半径
-    public boolean ifhitWall(Point point,int radius)
+    public boolean ifHitWall(Point point,int radius,boolean isBullet)
     {
         //
         try {
             if (point.x < 0 || point.y < 0 || point.x + radius > GameFrame.width || point.y + radius > GameFrame.high)
                 return true;
             //分别判断物体的左上、右上、左下、右下角是与墙重
-            int y = point.x / 20;       //物体在map中的纵坐标
-            int x = point.y / 20;       //物体在map中的横坐标
-            if (Wall.map[x][y] == 1) {
-                return true;
+            if(!isBullet)
+            {
+                int y = point.x / 20;       //物体在map中的纵坐标
+                int x = point.y / 20;       //物体在map中的横坐标
+                if (Wall.map[x][y] !=0) {
+                    return true;
+                }
+                y = (point.x + 2 * radius) / 20;
+                x = point.y / 20;
+                if (Wall.map[x][y] != 0) {
+                    return true;
+                }
+                y = (point.x / 20);
+                x = (point.y + 2 * radius) / 20;
+                if (Wall.map[x][y] != 0) {
+                    return true;
+                }
+                y = (point.x + 2 * radius) / 20;
+                x = (point.y + 2 * radius) / 20;
+                if (Wall.map[x][y] != 0) {
+                    return true;
+                }
             }
-            y = (point.x + 2 * radius) / 20;
-            x = point.y / 20;
-            if (Wall.map[x][y] == 1) {
-                return true;
-            }
-            y = (point.x / 20);
-            x = (point.y + 2 * radius) / 20;
-            if (Wall.map[x][y] == 1) {
-                return true;
-            }
-            y = (point.x + 2 * radius) / 20;
-            x = (point.y + 2 * radius) / 20;
-            if (Wall.map[x][y] == 1) {
-                return true;
+            else
+            {
+                int y = point.x / 20;       //物体在map中的纵坐标
+                int x = point.y / 20;       //物体在map中的横坐标
+                if (Wall.map[x][y] ==1) {
+                    return true;
+                }
+                y = (point.x + 2 * radius) / 20;
+                x = point.y / 20;
+                if (Wall.map[x][y] ==1) {
+                    return true;
+                }
+                y = (point.x / 20);
+                x = (point.y + 2 * radius) / 20;
+                if (Wall.map[x][y] ==1) {
+                    return true;
+                }
+                y = (point.x + 2 * radius) / 20;
+                x = (point.y + 2 * radius) / 20;
+                if (Wall.map[x][y] ==1) {
+                    return true;
+                }
             }
             return false;
         }
@@ -415,7 +497,7 @@ public class GameFrame extends JFrame
         int bulletRadius= BulletSize.getBulletRadius(bulletType);        //根据子弹的类型获取子弹的大小
         Bullet bullet=new Bullet(bulletType,bulletRadius,damageValue,TravelSpeed.bulletTravelSpeed,start,end);
         bullet.setSize(bulletRadius,bulletRadius);
-        URL url=startGame.class.getResource("/images/red.png");
+        URL url=startGame.class.getResource("/images/bullet/Bullet.png");
         ImageIcon icon=new ImageIcon(url);
         icon.setImage(icon.getImage().getScaledInstance(bulletRadius,bulletRadius,Image.SCALE_DEFAULT));
         bullet.setIcon(icon);
@@ -429,6 +511,20 @@ public class GameFrame extends JFrame
                 break;
         }
         gameArea.add(bullet);
+    }
+    //添加掉落道具
+    public void createRewardProp(Point point)
+    {
+        //进行一次抽签，看脸掉不掉道具
+        int result=random.nextInt(100);
+        if(result%10==0)
+        {
+            int type=random.nextInt(RewardProp.totalTypeNum);
+            RewardProp rewardProp=new RewardProp(type,point);
+            rewardPropList.add(rewardProp);
+            gameArea.add(rewardProp);
+            gameArea.repaint();
+        }
     }
     //间断性攻击
     private void attack(Point startPoint, Point endPoint, Person person)
@@ -444,21 +540,42 @@ public class GameFrame extends JFrame
         {
 
         }
-        //如果是枪类武器
-        else
+        //如果是狙击步枪
+        else if(weapon.getType()==WeaponType.sniperRifle)
         {
-            Gun gun=(Gun)weapon;
-            if(!gun.emptyBulletNum() && !player.ifReloading()) //如果还有子弹
+            SniperRifle gun=(SniperRifle) weapon;
+            //判断狙击枪是否在上膛或拉栓状态，如果不是则可以开枪
+            if(!player.ifReloading() && !gun.isPollBolt())
             {
-                createBullet(startPoint, endPoint, ((Gun) weapon).getBulletType(), weapon.getDamageValue(), weapon.getType());
-                gun.reduceBulletNum(1);     //子弹里面的弹夹减1
-                MusicPlayer.playShotMusic(weapon.getWeaponName());
+                if (!gun.emptyBulletNum() ) //如果还有子弹
+                {
+                    gun.setPollBolt(true);      //狙击枪进入拉栓状态
+                    createBullet(startPoint, endPoint, ((Gun) weapon).getBulletType(), weapon.getDamageValue(), weapon.getType());
+                    gun.reduceBulletNum(1);     //子弹里面的弹夹减1
+                    MusicPlayer.playShotMusic(weapon.getWeaponName());
+                } else                    //没有子弹
+                {
+                    MusicPlayer.playBulletUseOutMusic();        //播放没有子弹的声音
+                    shotThread.stop();
+                }
             }
-            else                    //没有子弹
+        }
+        //如果是自动步枪
+        else if(weapon.getType()==WeaponType.automaticRifle)
+        {
+            AutomaticRifle gun=(AutomaticRifle) weapon;
+            if(!player.ifReloading() )
             {
-                MusicPlayer.playBulletUseOutMusic();        //播放没有子弹的声音
-                shotThread.stop();
-                //MusicPlayer.stopContinueousShotMusic();
+                if (!gun.emptyBulletNum() ) //如果还有子弹
+                {
+                    createBullet(startPoint, endPoint, ((Gun) weapon).getBulletType(), weapon.getDamageValue(), weapon.getType());
+                    gun.reduceBulletNum(1);     //子弹里面的弹夹减1
+                    MusicPlayer.playShotMusic(weapon.getWeaponName());
+                } else                    //没有子弹
+                {
+                    MusicPlayer.playBulletUseOutMusic();        //播放没有子弹的声音
+                    shotThread.stop();
+                }
             }
         }
     }
@@ -474,8 +591,8 @@ public class GameFrame extends JFrame
         player.setIcon(icon);
         player.setLocation(400,300);
         gameArea.add(player);
-        player.peekWeapon(new AKM(),100);
-        player.peekWeapon(new AWM(),10);
+        player.peekWeapon(new AKM(),10000);
+        player.peekWeapon(new AWM(),100);
     }
     //创建AI
     private void createAI()
