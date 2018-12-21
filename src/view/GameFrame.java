@@ -475,7 +475,7 @@ public class GameFrame extends JFrame
                             Point oldPoint=bullet.getLocation();
                             Point newPoint=new Point(oldPoint.x+bullet.getxSpeed(),oldPoint.y+bullet.getySpeed());
                             bullet.setLocation(newPoint);
-                                if(ifHitPerson(bullet,player) && player.equals(bullet.getFromPerson()))          //是否击中玩家,并且这个子弹不属于该玩家
+                                if(ifHitPerson(bullet,player) && !player.equals(bullet.getFromPerson()))          //是否击中玩家,并且这个子弹不属于该玩家
                                 {
                                     flag=true;
                                     bullet.setVisible(false);
