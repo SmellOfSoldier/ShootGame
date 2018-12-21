@@ -67,8 +67,6 @@ public class AiPath implements Serializable {
                     process=process % processBetweenTwoPoint;
                 }
             } catch (Exception ex) {
-                System.out.println(currentPosition);
-                System.out.println(path.length);
                 ex.printStackTrace();
             }
 
