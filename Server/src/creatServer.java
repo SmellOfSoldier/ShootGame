@@ -34,11 +34,15 @@ public class creatServer {
     private ServerSocket serverSocket;//ServerSocket线程
     private ServerThread serverThread;
     public static  ArrayList<clientThread> playerclientThreads;//List用于储存所有玩家服务线程
-    public static  DefaultListModel listModel;//储存玩家列表
+    public static  ArrayList<Player> onlinePlayers;//储存所有在线玩家
+    public static  DefaultListModel listModel;//GUI玩家列表
     private boolean isStart=false;
     public static void main(String[] args) {
         new creatServer();
     }
+
+
+    
     /**
      * 服务端GUI界面构造区域
      */
@@ -92,6 +96,9 @@ public class creatServer {
             }
         });
     }
+
+
+
     /**
      * @param maxPlayer 最大可连接的玩家数目
      * @param port 服务器开启的监听端口
@@ -115,6 +122,7 @@ public class creatServer {
             throw new BindException("服务器开启错误。");
         }
     }
+
 
     /**
      * 关闭服务器函数进行关闭和扫尾工作
@@ -140,7 +148,6 @@ public class creatServer {
         //TODO:转发给其它玩家函数
 
     }
-
     /**
      * ServerJPanel统一管理服务器界面布局
      */
@@ -154,7 +161,7 @@ public class creatServer {
             contentArea.setEditable(false);
             txt_max=new JTextField("20");
             txt_mes=new JTextField();
-            txt_port=new JTextField("10086");
+            txt_port=new JTextField("25565");
             btn_send=new JButton("输入");
             btn_start=new JButton("开启");
             btn_stop=new JButton("停止");

@@ -1,8 +1,12 @@
 public interface Sign
 {
     String Register="REGISTER_COMMEND";                       //注册
-    String login="LOGIN_COMMEND";                          //登录
+    String Login="LOGIN_COMMEND";                          //登录
+    String OpenGame="OPEN_GAME";                           //玩家打开了点击了多人游戏
+    String SuccessConnected="SUCCESS_CONNEXTED";            //用于返还给客户端成功连接的消息
     String WrongPassword="WRONG_PASSWORD";                 //错误的密码
+    String IsNotRegistered="IS_NOT_REGISTERED";                   //还没有注册过
+    String IsRegistered="IS_REGISTERED";                       //已经注册过了
     String SendPrivateMessage="SEND_PRIVATE_MESSAGE_COMMEND";           //给个人发送信息
     String SendPublicMessage="SEND_PUBLIC_MESSAGE_COMMEND";          //给所有人发送信息
     String ClientExit="CLIENT_EXIT_COMMEND";                 //退出客户端

@@ -17,6 +17,7 @@ class ServerThread extends Thread{
     public ServerThread(ServerSocket serverSocket,int maxplayer){
         this.serverSocket=serverSocket;
         this.maxplayer=maxplayer;
+        System.out.println("服务器线程已经创建。" );//测试
     }
     /**
      * 服务器线程不断循环等待客户端的连接
@@ -35,10 +36,13 @@ class ServerThread extends Thread{
                     socket.close();
                     continue;//拒绝连接后跳出本次循环等待下次连接
                 }
+                System.out.println("尝试连接成功消息");
+                sendStream.println(Sign.SuccessConnected);//返回给尝试连接的客户端成功信息
+                sendStream.flush();
                 clientThread aplayerClient=new clientThread(socket,sendStream,getStream);//创建一个服务线程
                 creatServer.playerclientThreads.add(aplayerClient);//将此服务线程压入playerclientThreads中保存
                 aplayerClient.start();//启动该服务线程
-                creatServer.listModel.addElement(aplayerClient.getGamer().getName());//在在线用户中添加新的用户
+                System.out.println("成功建立一个玩家连接。");
             } catch (IOException e) {
                 e.printStackTrace();
             }

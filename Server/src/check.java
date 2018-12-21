@@ -9,27 +9,30 @@ public class check {
 
     /**
      * 登陆信息检查函数
-     * @param getStream 获取客户端到服务端的输入流
-     * @return 检查无误返回true 否则返回false
+     * @param line 登陆信息
+     * @return 检查无误返回1 未注册返回 -1   否则返回0
      */
-    public static boolean checkLoginInfo(BufferedReader getStream) throws IOException {
-        try {
-            String LoginLine=getStream.readLine();//读取一条登陆信息
-            if(LoginLine.startsWith(Sign.login)){
-                //去掉开头的登陆命令串
-                String LoginInfo=getRealMessage(LoginLine,Sign.login);
-                //分割出登陆者id和密码
-                String playerid=LoginInfo.split(Sign.SplitSign)[0];
-                String password=LoginInfo.split(Sign.SplitSign)[1];
-                //TODO：密码判定函数
-                if(checkPassword(playerid,password)) return true;
-                else return false;
-            }
-            else return false;
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new IOException("读取的此字符串并非登陆信息流串，函数使用位置可能有错。");
-        }
+    public static int checkLoginInfo(String line) throws IOException {
+        //解析出包含的玩家id和发送过来的登陆密码
+        String realMessage=getRealMessage(line,Sign.Login);
+        String playerid=realMessage.split(Sign.SplitSign)[0];
+        String password=realMessage.split(Sign.SplitSign)[1];
+        //TODO：密码判定函数
+        if(!isRegistered(playerid)) return -1;
+        else if(checkPassword(playerid,password)) return 1;
+        else return 0;
+    }
+
+    /**
+     * 通过登陆的line信息创建一个player
+     * @param secondline  第二次信息（接收到的玩家的登陆的账号密码信息）
+     * @return 返回一个Playe实例对象
+     */
+    public static Player creatPlayer(String secondline){
+        String realMessage=getRealMessage(secondline,Sign.Login);
+        String playerid=realMessage.split(Sign.SplitSign)[0];
+        String password=realMessage.split(Sign.SplitSign)[1];
+        return  new Player(playerid,password);
     }
 
     /**
@@ -45,13 +48,25 @@ public class check {
     }
 
     /**
+     * 检查ID是否被注册过
+     * @param id 玩家发送过来的玩家ID
+     * @return 注册过返回 true 否则返回false
+     */
+    private static boolean isRegistered(String id){
+        //TODO:检查是否已经注册bylijie
+        return true;
+    }
+
+    /**
      * 密码检查函数判断玩家密码是否正确
      * @param id 玩家id
      * @param password 玩家密码
      * @return 密码正确返回true 否则返回false
      */
     private static boolean checkPassword(String id,String password){
-        //TODO:密码检查函数
+        //TODO:密码检查函数bylijie
         return true;
     }
+
+
 }
