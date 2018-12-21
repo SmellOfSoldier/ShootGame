@@ -9,9 +9,10 @@ import java.io.Serializable;
 public class Grenade extends Weapon implements Serializable
 {
 
-    private int throwDistance;       //投掷距离
-    private int damageRadius;        //伤害半径
-    protected Grenade(int damageValue,String weaponName,int throwDistance,int damageRadius)
+    private static int throwDistance;       //投掷距离
+    private static int damageRadius=60;        //伤害半径
+    private static int damageValue=200;     //爆炸伤害
+    protected Grenade(String weaponName,int throwDistance,int damageRadius)
     {
         super(WeaponType.grenade,weaponName,damageValue);
         this.throwDistance=throwDistance;

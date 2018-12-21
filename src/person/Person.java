@@ -21,8 +21,8 @@ public class Person extends JLabel implements Serializable
     private int usingWeaponType=3;              //目前使用的武器的种类
     private int healthPoint;                //生命值
     private   int radius;                   //人物的半径
-    private int [] bulletNum=new int[Weapon.weaponsTypeNum];      //武器中子弹的数目
-    private Weapon []weapons=new Weapon[Weapon.weaponsTypeNum+1];     //人物持有的武器
+    private int [] bulletNum=new int[WeaponType.typeNum+1];      //武器中子弹的数目
+    private Weapon []weapons=new Weapon[WeaponType.typeNum+1];     //人物持有的武器
     private boolean isDie=false;        //是否死亡
     protected Person(){}
     protected Person(int id,String name,int healthPoint,int radius,int speed)
@@ -140,7 +140,7 @@ public class Person extends JLabel implements Serializable
         if(type!=usingWeaponType)
         {
             if (weapons[type] != null)    //如果这把武器存在
-            {//TODO:
+            {
                 usingWeaponType = type;
                 MusicPlayer.playChangeWeaponMusic(weapons[type].getWeaponName());
             } else                       //不存在
@@ -152,5 +152,8 @@ public class Person extends JLabel implements Serializable
     public int getUsingWeaponType(){return usingWeaponType;}    //获取当前使用的武器类型
     public Weapon getUsingWeapon(){return weapons[usingWeaponType];}     //获取当前使用的武器
     public int getSpeed(){return speed;}
+    public void reduceMineNum(int num){bulletNum[WeaponType.mine]-=num;}        //减少人物携带的地雷数量
+    public boolean ifEmptyMine(){return bulletNum[WeaponType.mine]==0;}         //判断人类是否还有地雷
+
 }
 

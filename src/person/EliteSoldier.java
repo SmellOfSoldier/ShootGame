@@ -51,7 +51,7 @@ public class EliteSoldier extends AI implements Serializable
                 {
                     int radius=BulletSize.getBulletRadius(akm.getType());
                     java.util.List bulletList=GameFrame.getAutomaticBulletList();
-                    Bullet bullet=new Bullet(akm.getBulletType(),radius,akm.getDamageValue(), TravelSpeed.bulletTravelSpeed,bulletStartPoint(),GameFrame.getPlayer().getLocation());
+                    Bullet bullet=new Bullet(EliteSoldier.this,akm.getBulletType(),radius,akm.getDamageValue(), TravelSpeed.bulletTravelSpeed,EliteSoldier.this.getLocation(),GameFrame.getPlayer().getLocation());
                     int bulletRadius=bullet.getRadius();
                     bullet.setSize(bulletRadius,bulletRadius);
                     URL url= startGame.class.getResource("/images/bullet/Bullet.png");
@@ -81,31 +81,5 @@ public class EliteSoldier extends AI implements Serializable
         }
         shotPlayer= Applet.newAudioClip(shotUrl);
         shotPlayer.play();
-    }
-    //子弹射出的位置
-    private Point bulletStartPoint ()
-    {
-        int radius=BulletSize.getBulletRadius(akm.getBulletType());
-        Point playerPoint=GameFrame.getPlayer().getLocation();
-        Point AiPoint=this.getLocation();
-        int x=playerPoint.x-AiPoint.x;
-        int y=playerPoint.y-AiPoint.y;
-        if(x>0)
-        {
-            x=AiPoint.x+radius*2;
-        }
-        else
-        {
-            x=AiPoint.x-radius*2;
-        }
-        if(y>0)
-        {
-            y=AiPoint.y+radius*2;
-        }
-        else
-        {
-            y=AiPoint.y-radius*2;
-        }
-        return new Point(x,y);
     }
 }
