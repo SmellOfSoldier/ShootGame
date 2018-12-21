@@ -33,8 +33,8 @@ public class creatServer {
     private  JList users;
     private ServerSocket serverSocket;//ServerSocket线程
     private ServerThread serverThread;
-    private ArrayList<clientThread> playerclients;//List用于储存所有玩家服务线程
-    private DefaultListModel listModel;
+    public static  ArrayList<clientThread> playerclientThreads;//List用于储存所有玩家服务线程
+    public static  DefaultListModel listModel;//储存玩家列表
     private boolean isStart=false;
     public static void main(String[] args) {
         new creatServer();
@@ -99,7 +99,7 @@ public class creatServer {
      */
     public void startServer(int maxPlayer,int port) throws BindException {
         try {
-            playerclients=new ArrayList<clientThread>();//创建玩家列表
+            playerclientThreads=new ArrayList<clientThread>();//创建玩家列表
             serverSocket=new ServerSocket(port);//创建服务Socket
             serverThread=new ServerThread(serverSocket,30);//创建服务器线程
             serverThread.start();//服务器线程开启
@@ -124,7 +124,7 @@ public class creatServer {
         if(serverThread!=null) serverThread.interrupt();//服务端主线程如果存在则停止服务端主线程
         System.out.println("服务端线程成功关闭。");//测试使用
         contentArea.append("服务器已经成功关闭"+"\r\n");
-        for(int i=0;i<playerclients.size();i++){
+        for(int i=0;i<playerclientThreads.size();i++){
             //TODO:转发给所有玩家服务端被关闭
         }
         if(serverSocket!=null) serverSocket.close();//如果serverSocket存在则关闭它
@@ -139,68 +139,6 @@ public class creatServer {
     public void sendToOther(){
         //TODO:转发给其它玩家函数
 
-    }
-    //服务器线程
-    class ServerThread extends Thread{
-        private ServerSocket serverSocket;
-        private int maxplayer;
-        /**
-         * 服务器线程构造函数
-         * @param serverSocket 传入的serverSocket
-         * @param maxplayer 传入的最大在线人数
-         */
-        public ServerThread(ServerSocket serverSocket,int maxplayer){
-            this.serverSocket=serverSocket;
-            this.maxplayer=maxplayer;
-        }
-        /**
-         * 服务器线程不断循环等待客户端的连接
-         */
-        public void run(){
-            while(!this.isInterrupted()){
-                try {
-                    Socket socket=serverSocket.accept();//得到一个客户端与服务器的Socket连接对象并保存
-                    if(playerclients.size()==maxplayer){//当前人数已满
-                        //TODO:服务器人数已满返回给现要连接的客户端信息
-                        socket.close();
-                        continue;//拒绝连接后跳出本次循环等待下次连接
-                    }
-                    clientThread aplayerClient=new clientThread(socket);//创建一个服务线程
-                    playerclients.add(aplayerClient);//将此服务线程压入playerclients中保存
-                    aplayerClient.start();//启动该服务线程
-                    listModel.addElement(aplayerClient.getGamer().getName());//在在线用户中添加新的用户
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    /**
-     * 玩家服务线程
-     */
-    class clientThread extends Thread{
-        private Gamer player;
-        private Socket socket;
-        /**
-         * 获取此线程实例对象的Gamer
-         * @return
-         */
-        public Gamer getGamer(){
-            return player;
-        }
-        /**
-         * 玩家服务线程构造
-         * @param socket 属于实例对象(一位玩家)的Socket通道
-         */
-        public clientThread(Socket socket){
-            this.socket=socket;
-            //TODO:服务线程构造函数待完成部分
-            System.out.println("服务器成功建立与"+player.getName()+"的连接。");
-        }
-        public void run(){
-            //TODO:服务线程run待完成
-        }
     }
 
     /**
