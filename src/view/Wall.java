@@ -19,8 +19,8 @@ public class Wall
             oringemap[i][m - 1] = 1;
         }
         //20*30初始化
-        oringemap[0][13]=0;
-        oringemap[0][14]=0;
+        oringemap[0][13]=2;
+        oringemap[0][14]=2;
         oringemap[19][16]=2;
         oringemap[19][17]=2;
         oringemap[2][22] = 1;

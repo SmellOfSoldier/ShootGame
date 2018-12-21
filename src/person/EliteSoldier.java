@@ -37,6 +37,11 @@ public class EliteSoldier extends AI implements Serializable
         super(id,"精英战士",healthPoint,10,speed,vision);
         this.peekWeapon(akm,240);
         changeWeapon(WeaponType.automaticRifle);
+        URL url=startGame.class.getResource("/images/apple.png");
+        ImageIcon icon=new ImageIcon(url);
+        icon.setImage(icon.getImage().getScaledInstance(GameFrame.CELL,GameFrame.CELL,Image.SCALE_DEFAULT));
+        this.setSize(GameFrame.CELL,GameFrame.CELL);
+        this.setIcon(icon);
     }
     //射击
     public void shot(Point endPoint, JPanel gameArea)
@@ -49,7 +54,7 @@ public class EliteSoldier extends AI implements Serializable
                 @Override
                 public void actionPerformed(ActionEvent e)
                 {
-                    int radius=BulletSize.getBulletRadius(akm.getType());
+                    int radius=BulletSize.getBulletRadius(akm.getBulletType());
                     java.util.List bulletList=GameFrame.getAutomaticBulletList();
                     Bullet bullet=new Bullet(EliteSoldier.this,akm.getBulletType(),radius,akm.getDamageValue(), TravelSpeed.bulletTravelSpeed,EliteSoldier.this.getLocation(),GameFrame.getPlayer().getLocation());
                     int bulletRadius=bullet.getRadius();

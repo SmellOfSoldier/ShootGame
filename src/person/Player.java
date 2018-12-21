@@ -1,5 +1,8 @@
 package person;
 
+import view.GameFrame;
+
+import javax.swing.*;
 import java.io.Serializable;
 
 /**
@@ -7,6 +10,7 @@ import java.io.Serializable;
  */
 public class Player extends Person implements Serializable
 {
+    public static final int maxHealthPoint=10000;
     private int lSpeed=0;                           //人物每次左边方向移动的像素
     private int rSpeed=0;                           //人物每次右边方向移动的像素
     private int uSpeed=0;                           //人物每次上边方向移动的像素
@@ -14,6 +18,7 @@ public class Player extends Person implements Serializable
     public Player(int id,String name,int healthPoint)
     {
         super(id,name,healthPoint,10,20);
+        GameFrame.healthLevel.setValue(healthPoint);
     }
     public Player(){}
     public void setlSpeed(int lSpeed){this.lSpeed=lSpeed;}
@@ -25,5 +30,4 @@ public class Player extends Person implements Serializable
     public int getuSpeed(){return uSpeed;}
     public int getdSpeed(){return dSpeed;}
     public void stop(){lSpeed=0;rSpeed=0;uSpeed=0;dSpeed=0;}    //人物停止运动
-
 }

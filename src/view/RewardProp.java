@@ -1,6 +1,8 @@
 package view;
 
 import Arsenal.*;
+import Weapon.Mine;
+import person.Person;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,9 +21,6 @@ public class RewardProp extends JLabel
         {
             case RewardType.MedicalPackage:
                 rewardPropName="MedicalPackage";
-                break;
-            case RewardType.P92:
-                rewardPropName="P92";
                 break;
             case RewardType.AKM:
                 rewardPropName="AKM";
@@ -55,8 +54,6 @@ public class RewardProp extends JLabel
         {
             case RewardType.MedicalPackage:
                 return new MedicalPackage();
-            case RewardType.P92:
-                return new P92();
             case RewardType.AKM:
                 return new AKM();
             case RewardType.M4A1:
@@ -65,6 +62,8 @@ public class RewardProp extends JLabel
                 return new AWM();
             case RewardType.Barret:
                 return new Barret();
+            case RewardType.Mine:
+                return new Mine();
                 default:
                     return null;
         }

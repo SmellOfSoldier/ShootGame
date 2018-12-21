@@ -2,6 +2,7 @@ package Weapon;
 
 import person.Person;
 import utils.MusicPlayer;
+import view.GameFrame;
 
 import javax.swing.*;
 import java.applet.Applet;
@@ -25,9 +26,12 @@ public class Mine extends Weapon
         ImageIcon icon=new ImageIcon(url);
         boomEffect.setIcon(icon);
     }
-    public Mine(Person fromPerson)
+    public Mine()
     {
         super(WeaponType.mine,"Mine",damageValue);
+    }
+    public void setFromPerson(Person person)
+    {
         this.fromPerson=fromPerson;
     }
     public void boom(JPanel gameArea, Point point)       //爆炸

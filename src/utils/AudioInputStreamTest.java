@@ -76,7 +76,6 @@ class AePlayWave extends Thread
                 nByteRead=audioInputStream.read(abData,0,abData.length);
                 nByteRead2=audioInputStream2.read(abData,0,abData2.length);
 
-                System.out.println(nByteRead);
                 if(nByteRead>=0)
                 {
                     auline.write(abData, 0, nByteRead);
