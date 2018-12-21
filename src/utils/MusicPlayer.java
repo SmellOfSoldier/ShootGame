@@ -5,12 +5,15 @@ import java.applet.AudioClip;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
+import java.util.Random;
 import javax.swing.Timer;
 import Weapon.*;
 
 public class MusicPlayer
 {
-    private static int bgmTime=206000;
+    private static Random random=new Random();
+    private static String []actionMusicFile=new String[]{"action01.wav","action02.wav","action03.wav","action04.wav"};
+    private static int bgmTime=120000;
     private static URL shotUrl=null;        //开火的声音路径
     private static URL bgmUrl=null;         //bgm的路径
     private static URL dieUrl=null;         //人物死亡声音的路径
@@ -23,6 +26,8 @@ public class MusicPlayer
     private static AudioClip continueousShotPlayer=null;
     private static AudioClip shotPlayer=null;                   //开火音效播放器
     private static AudioClip peekRewardPropPlayer=null;         //拾起道具音效播放器
+    private static AudioClip actionPlayer=null;                 //播放战斗音乐
+
 
     private static Timer bgmThread=new Timer(bgmTime, new ActionListener() {
         @Override
@@ -76,6 +81,7 @@ public class MusicPlayer
     public static void playReloadMusic(String name)    //播放换子弹的声音
     {
         URL url=MusicPlayer.class.getResource("/musics/reload/"+name+".wav");
+
         Applet.newAudioClip(url).play();
     }
     public static void playBulletLandMuisc()        //播放子弹壳落地的声音
@@ -95,8 +101,18 @@ public class MusicPlayer
         URL url=MusicPlayer.class.getResource("/musics/changeWeapon/"+weaponName+".wav");
         Applet.newAudioClip(url).play();
     }
-    public static void playePeekRewardPropMuisc()               //播放拾起道具的音效
+    public static void playPeekRewardPropMusic()               //播放拾起道具的音效
     {
         peekRewardPropPlayer.play();
+    }
+    public static void playActionMusic()                //播放战斗音乐
+    {
+        URL url=MusicPlayer.class.getResource("/musics/bgm/battle/"+actionMusicFile[random.nextInt(actionMusicFile.length)]);
+        actionPlayer=Applet.newAudioClip(url);
+        actionPlayer.loop();
+    }
+    public static void stopActionMusic()                //停止播放战斗音乐
+    {
+        actionPlayer.stop();
     }
 }

@@ -2,18 +2,24 @@ package view;
 
 import Arsenal.AKM;
 import Arsenal.AWM;
+import Arsenal.M4A1;
 import Weapon.Gun;
 import Weapon.*;
 import Weapon.WeaponType;
 import bullet.Bullet;
 import bullet.BulletSize;
 import bullet.BulletSpeed;
+import javafx.scene.transform.Rotate;
 import person.*;
 import utils.MusicPlayer;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -52,7 +58,6 @@ public class GameFrame extends JFrame
 
     GameFrame()
     {
-
         gameArea=new GameArea();
         createPlayer();
         createAI();
@@ -68,7 +73,7 @@ public class GameFrame extends JFrame
         this.setResizable(false);
         this.setLocationRelativeTo(null);
         this.add(gameArea);
-        MusicPlayer.playBgm();
+        MusicPlayer.playActionMusic();
         this.setVisible(true);
     }
     private void initial()
@@ -196,7 +201,7 @@ public class GameFrame extends JFrame
                                 if (playerPoint.distance(rewardProp.getLocation()) < CELL)
                                 {
                                     //如果道具是医疗包
-                                    MusicPlayer.playePeekRewardPropMuisc();
+                                    MusicPlayer.playPeekRewardPropMusic();
                                     rewardProp.setVisible(false);
                                     if(rewardProp.getType()==0)
                                     {
@@ -273,6 +278,7 @@ public class GameFrame extends JFrame
                 @Override
                 public void mouseDragged(MouseEvent e)
                 {
+                    Point oldPoint=endPoint;
                     endPoint=e.getPoint();
                 }
                 public void mouseMoved(MouseEvent e)
@@ -661,7 +667,7 @@ public class GameFrame extends JFrame
     //重新开始游戏
     private void restStart()
     {
-        MusicPlayer.stopBgm();
+        MusicPlayer.stopActionMusic();
         gameArea.remove(player);
         for(AI ai:aiList)
         {
@@ -689,28 +695,38 @@ public class GameFrame extends JFrame
         eliteSoldierList.clear();
         sniperBulletList.clear();
         rewardPropList.clear();
-        automaticBulletThread.setRepeats(true);
-        sniperBulletThread.setRepeats(true);
         System.gc();
         createPlayer();
         createAI();
-        MusicPlayer.playBgm();
+        MusicPlayer.playActionMusic();
         gameArea.repaint();
     }
     //创建玩家
     private void createPlayer()
+
     {
-        player=new Player(1,"DJF",500);
-        int size=2*(player.getRadius());
-        player.setSize(size,size);
-        URL url=startGame.class.getResource("/images/header_b.png");
-        ImageIcon icon=new ImageIcon(url);
-        icon.setImage(icon.getImage().getScaledInstance(size,size,Image.SCALE_DEFAULT));
-        player.setIcon(icon);
-        player.setLocation(400,300);
-        gameArea.add(player);
-        player.peekWeapon(new AKM(),10000);
-        player.peekWeapon(new AWM(),100);
+        try {
+
+
+            Rotate rotate = new Rotate();
+            player = new Player(1, "DJF", 500);
+            int size = 2 * (player.getRadius());
+            player.setSize(size, size);
+            InputStream is = startGame.class.getResourceAsStream("/images/header_b.png");
+            BufferedImage bufferedImage = ImageIO.read(is);
+            ImageIcon icon = new ImageIcon();
+            icon.setImage(bufferedImage);
+            icon.setImage(icon.getImage().getScaledInstance(size, size, Image.SCALE_DEFAULT));
+            player.setIcon(icon);
+            player.setLocation(400, 300);
+            gameArea.add(player);
+            player.peekWeapon(new AWM(), 100);
+            player.peekWeapon(new M4A1(), 10000);
+        }
+        catch (IOException ioe)
+        {
+            ioe.printStackTrace();
+        }
     }
     //创建AI
     private void createAI()
