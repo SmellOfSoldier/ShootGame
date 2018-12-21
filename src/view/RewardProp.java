@@ -9,12 +9,11 @@ import java.net.URL;
 //击杀怪物掉落的奖励道具
 public class RewardProp extends JLabel
 {
-    public static final int totalTypeNum=6;
     private int type;
     RewardProp(int type,Point point)
     {
         this.type=type;
-        this.setSize(GameFrame.CELL,GameFrame.CELL);
+        this.setSize(80,45);
         String rewardPropName=null;
         switch (type)
         {
@@ -35,6 +34,9 @@ public class RewardProp extends JLabel
                break;
             case RewardType.Barret:
                 rewardPropName="Barret";
+                break;
+            case RewardType.Mine:
+                rewardPropName="Mine";
                 break;
         }
         URL url =RewardProp.class.getResource("/images/rewardProp/"+rewardPropName+".png");

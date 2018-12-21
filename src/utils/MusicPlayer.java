@@ -115,4 +115,9 @@ public class MusicPlayer
     {
         actionPlayer.stop();
     }
+    public static void playBoomMusic(String name)           //播放爆炸音乐
+    {
+        URL url=MusicPlayer.class.getResource("/musics/boom/"+name+".wav");
+         Applet.newAudioClip(url).play();
+    }
 }

@@ -9,7 +9,6 @@ import java.io.Serializable;
  */
 public  class Weapon extends JLabel implements Serializable
 {
-    public static int weaponsTypeNum=5; //武器种类的数量
     private String weaponName=null;   //武器的名称
     private int type;                 //武器的种类
     private int damageValue;          //武器伤害大小
