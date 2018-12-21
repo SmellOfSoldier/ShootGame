@@ -30,8 +30,9 @@ public class Mine extends Weapon
         super(WeaponType.mine,"Mine",damageValue);
         this.fromPerson=fromPerson;
     }
-    public void boom(JPanel gameArea, Point boomPoint)       //爆炸
+    public void boom(JPanel gameArea, Point point)       //爆炸
     {
+        Point boomPoint =new Point(point.x-damageRadius,point.y-damageRadius);
         boomEffect.setLocation(boomPoint);
         MusicPlayer.playBoomMusic("MineBoom");
         new Thread(new Runnable() {
