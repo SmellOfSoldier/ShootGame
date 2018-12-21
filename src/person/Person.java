@@ -153,6 +153,7 @@ public class Person extends JLabel implements Serializable
     public Weapon getUsingWeapon(){return weapons[usingWeaponType];}     //获取当前使用的武器
     public int getSpeed(){return speed;}
     public void reduceMineNum(int num){bulletNum[WeaponType.mine]-=num;}        //减少人物携带的地雷数量
+    public boolean ifEmptyMine(){return bulletNum[WeaponType.mine]==0;}         //判断人类是否还有地雷
 
 }
 

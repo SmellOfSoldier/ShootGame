@@ -667,8 +667,15 @@ public class GameFrame extends JFrame
         //如果是安装地雷
         else if(weapon.getType()==WeaponType.mine)
         {
-            MusicPlayer.playShotMusic(weapon.getWeaponName());
-            stepMine(player.getLocation(),person);
+            if(!person.ifEmptyMine())
+            {
+                MusicPlayer.playShotMusic(weapon.getWeaponName());
+                stepMine(player.getLocation(), person);
+            }
+            else
+            {
+                MusicPlayer.playBulletUseOutMusic();
+            }
         }
         //如果是狙击步枪
         else if(weapon.getType()==WeaponType.sniperRifle)
