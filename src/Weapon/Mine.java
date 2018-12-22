@@ -2,11 +2,8 @@ package Weapon;
 
 import person.Person;
 import utils.MusicPlayer;
-import view.GameFrame;
 
 import javax.swing.*;
-import java.applet.Applet;
-import java.applet.AudioClip;
 import java.awt.*;
 import java.net.URL;
 

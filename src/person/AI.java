@@ -1,8 +1,5 @@
 package person;
 
-import view.GameFrame;
-
-import javax.swing.*;
 import java.awt.*;
 import java.io.Serializable;
 

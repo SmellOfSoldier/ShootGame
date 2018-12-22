@@ -1,6 +1,8 @@
-package view;
+package reward;
 
-//奖励道具的种类
+/**
+ * 击杀怪物掉落的道具种类
+ */
 public interface RewardType
 {
     int typeNum=6;              //奖励物品种类的数目

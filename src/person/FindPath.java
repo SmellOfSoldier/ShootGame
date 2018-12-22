@@ -1,8 +1,5 @@
 package person;
 
-import view.Wall;
-
-import java.awt.*;
 import java.util.*;
 
 public class FindPath {

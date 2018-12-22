@@ -4,12 +4,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.Serializable;
 import java.net.URL;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import Weapon.*;
 import utils.MusicPlayer;
-import view.GameFrame;
+import view.SinglePersonModel;
 
 /**
  * 游戏人物
@@ -130,7 +128,7 @@ public class Person extends JLabel implements Serializable
         healthPoint+=hp;
         if(this instanceof Player)
         {
-            GameFrame.healthLevel.setValue(healthPoint);
+            SinglePersonModel.healthLevel.setValue(healthPoint);
         }
     }
     public void reduceHealthPoint(int hp)               //给人物扣血
@@ -145,7 +143,7 @@ public class Person extends JLabel implements Serializable
         }
         if (this instanceof Player)
         {
-            GameFrame.healthLevel.setValue(healthPoint);
+            SinglePersonModel.healthLevel.setValue(healthPoint);
         }
     }
     public void dicardWeapon(int type)              //丢弃武器,type为要丢弃武器的种类

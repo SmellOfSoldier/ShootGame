@@ -4,10 +4,8 @@ import Arsenal.AKM;
 import Weapon.WeaponType;
 import bullet.Bullet;
 import bullet.BulletSize;
-import bullet.BulletType;
 import utils.MusicPlayer;
-import view.GameFrame;
-import view.TravelSpeed;
+import view.SinglePersonModel;
 import view.startGame;
 
 import java.applet.Applet;
@@ -39,8 +37,8 @@ public class EliteSoldier extends AI implements Serializable
         changeWeapon(WeaponType.automaticRifle);
         URL url=startGame.class.getResource("/images/apple.png");
         ImageIcon icon=new ImageIcon(url);
-        icon.setImage(icon.getImage().getScaledInstance(GameFrame.CELL,GameFrame.CELL,Image.SCALE_DEFAULT));
-        this.setSize(GameFrame.CELL,GameFrame.CELL);
+        icon.setImage(icon.getImage().getScaledInstance(SinglePersonModel.CELL, SinglePersonModel.CELL,Image.SCALE_DEFAULT));
+        this.setSize(SinglePersonModel.CELL, SinglePersonModel.CELL);
         this.setIcon(icon);
     }
     //射击
@@ -55,8 +53,8 @@ public class EliteSoldier extends AI implements Serializable
                 public void actionPerformed(ActionEvent e)
                 {
                     int radius=BulletSize.getBulletRadius(akm.getBulletType());
-                    java.util.List bulletList=GameFrame.getAutomaticBulletList();
-                    Bullet bullet=new Bullet(EliteSoldier.this,akm.getBulletType(),radius,akm.getDamageValue(), TravelSpeed.bulletTravelSpeed,EliteSoldier.this.getLocation(),GameFrame.getPlayer().getLocation());
+                    java.util.List bulletList= SinglePersonModel.getAutomaticBulletList();
+                    Bullet bullet=new Bullet(EliteSoldier.this,akm.getBulletType(),radius,akm.getDamageValue(), TravelSpeed.bulletTravelSpeed,EliteSoldier.this.getLocation(), SinglePersonModel.getPlayer().getLocation());
                     int bulletRadius=bullet.getRadius();
                     bullet.setSize(bulletRadius,bulletRadius);
                     URL url= startGame.class.getResource("/images/bullet/Bullet.png");

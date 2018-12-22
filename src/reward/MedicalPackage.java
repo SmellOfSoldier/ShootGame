@@ -1,4 +1,4 @@
-package view;
+package reward;
 
 import javax.swing.*;
 import java.util.Random;

@@ -1,18 +1,20 @@
-package view;
+package reward;
 
 import Arsenal.*;
 import Weapon.Mine;
-import person.Person;
+import view.SinglePersonModel;
 
 import javax.swing.*;
 import java.awt.*;
 import java.net.URL;
 
-//击杀怪物掉落的奖励道具
+/**
+ * 击杀AI掉落道具
+ */
 public class RewardProp extends JLabel
 {
     private int type;
-    RewardProp(int type,Point point)
+    public RewardProp(int type,Point point)
     {
         this.type=type;
         this.setSize(80,45);
@@ -40,7 +42,7 @@ public class RewardProp extends JLabel
         }
         URL url =RewardProp.class.getResource("/images/rewardProp/"+rewardPropName+".png");
         ImageIcon icon=new ImageIcon(url);
-        icon.setImage(icon.getImage().getScaledInstance(2*GameFrame.CELL,2*GameFrame.CELL,Image.SCALE_DEFAULT));
+        icon.setImage(icon.getImage().getScaledInstance(2* SinglePersonModel.CELL,2* SinglePersonModel.CELL,Image.SCALE_DEFAULT));
         this.setIcon(icon);
         this.setLocation(point);
 

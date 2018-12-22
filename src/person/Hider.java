@@ -1,13 +1,10 @@
 package person;
 
-import Arsenal.AKM;
 import Arsenal.AWM;
 import Weapon.WeaponType;
 import bullet.Bullet;
 import bullet.BulletSize;
-import bullet.BulletType;
-import view.GameFrame;
-import view.TravelSpeed;
+import view.SinglePersonModel;
 import view.startGame;
 
 import javax.swing.*;
@@ -18,8 +15,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.Serializable;
 import java.net.URL;
-
-import static person.EliteSoldier.shotSpeed;
 
 /**
  * 隐匿者,使用AWM
@@ -39,8 +34,8 @@ public class Hider extends AI implements Serializable
         changeWeapon(WeaponType.automaticRifle);
         URL url=startGame.class.getResource("/images/orange.png");
         ImageIcon icon=new ImageIcon(url);
-        icon.setImage(icon.getImage().getScaledInstance(GameFrame.CELL,GameFrame.CELL,Image.SCALE_DEFAULT));
-        this.setSize(GameFrame.CELL,GameFrame.CELL);
+        icon.setImage(icon.getImage().getScaledInstance(SinglePersonModel.CELL, SinglePersonModel.CELL,Image.SCALE_DEFAULT));
+        this.setSize(SinglePersonModel.CELL, SinglePersonModel.CELL);
         this.setIcon(icon);
         this.peekWeapon(awm,100);
     }
@@ -55,8 +50,8 @@ public class Hider extends AI implements Serializable
                 public void actionPerformed(ActionEvent e)
                 {
                     int radius= BulletSize.getBulletRadius(awm.getBulletType());
-                    java.util.List bulletList= GameFrame.getSniperBulletList();
-                    Bullet bullet=new Bullet(Hider.this,awm.getBulletType(),radius,awm.getDamageValue(), TravelSpeed.bulletTravelSpeed,Hider.this.getLocation(),GameFrame.getPlayer().getLocation());
+                    java.util.List bulletList= SinglePersonModel.getSniperBulletList();
+                    Bullet bullet=new Bullet(Hider.this,awm.getBulletType(),radius,awm.getDamageValue(), TravelSpeed.bulletTravelSpeed,Hider.this.getLocation(), SinglePersonModel.getPlayer().getLocation());
                     int bulletRadius=bullet.getRadius();
                     bullet.setSize(bulletRadius,bulletRadius);
                     URL url= startGame.class.getResource("/images/bullet/Bullet.png");

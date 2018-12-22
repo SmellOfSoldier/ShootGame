@@ -1,6 +1,8 @@
-package view;
+package person;
 
-//存放所有物体每次移动的像素
+/**
+ * 子弹和人物每次移动的像素
+ */
 
 public interface TravelSpeed
 {

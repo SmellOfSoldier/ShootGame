@@ -1,33 +1,34 @@
 package view;
 
-import Arsenal.AWM;
-import Arsenal.M4A1;
-import Weapon.Gun;
-import Weapon.*;
+import reward.MedicalPackage;
+import reward.RewardProp;
+import reward.RewardType;
+import Weapon.Mine;
+import Weapon.Weapon;
 import Weapon.WeaponType;
 import bullet.Bullet;
 import bullet.BulletSize;
 import bullet.BulletSpeed;
 import bullet.BulletType;
-import javafx.scene.transform.Rotate;
 import person.*;
 import utils.MusicPlayer;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Random;
+import Weapon.*;
 
-public class GameFrame extends JFrame
+/**
+ * 该模式为多人联机模式
+ */
+public class MultiPlayerModel extends JFrame
 {
-    private Point[] entrance=new Point[]{new Point(800,20),new Point(1040,280),new Point(1160,600), new Point(320,760),new Point(20,520)};         //刷怪位置
+    private Point[] entrance=new Point[]{new Point(800,20),new Point(1040,280),new Point(1160,600), new Point(320,760),new Point(20,520)}; //刷怪位置
     private Point endPoint=new Point();
     private Random random=new Random();
     public final static int CELL=20;   //每个方格的大小
@@ -36,7 +37,7 @@ public class GameFrame extends JFrame
     public final static int gameFrameWidth=1206;
     public final static int gameFrameHeight=974;
     private JLabel healthLevelTip=new JLabel("生命值");
-    public static JProgressBar healthLevel=new JProgressBar(0,Player.maxHealthPoint);        //显示玩家生命的进度条
+    public static JProgressBar healthLevel=new JProgressBar(0, Player.maxHealthPoint);        //显示玩家生命的进度条
     private static LinkedList<Player> otherPlayer=new LinkedList<Player>();    //存放其他玩家
     //存放自动步枪子弹的链表
     private static java.util.List<Bullet> automaticBulletList = Collections.synchronizedList(new LinkedList<Bullet>());
@@ -44,14 +45,10 @@ public class GameFrame extends JFrame
     private static java.util.List<Bullet> sniperBulletList =Collections.synchronizedList(new LinkedList<Bullet>());
     //存放地雷的链表
     private static java.util.List<Mine> mineList=Collections.synchronizedList(new LinkedList<Mine>());
-    //存放精英战士的链表
-    private static java.util.List<EliteSoldier> eliteSoldierList=Collections.synchronizedList(new LinkedList<EliteSoldier>());
-    //存放隐匿者的链表
-    private static java.util.List<Hider> hiderList=Collections.synchronizedList(new LinkedList<Hider>());
+    //存放所有玩家的链表
+    private static java.util.List<Player> playerList=Collections.synchronizedList(new ArrayList<Player>());
     //存放掉落物品的链表
     private static java.util.List<RewardProp> rewardPropList=Collections.synchronizedList(new LinkedList<RewardProp>());
-    //存放所有Person的链表
-    private static java.util.List<Person> personList=Collections.synchronizedList(new LinkedList<Person>());
     //存放物品栏
     public static JLabel[] itemBars=new JLabel[]{new JLabel(),new JLabel(),new JLabel(),new JLabel()};
     private static Player player;                      //游戏玩家
@@ -59,18 +56,11 @@ public class GameFrame extends JFrame
     private GameArea gameArea=new GameArea();
     private Timer automaticBulletThread=null;   //自动步枪子弹飞行线程
     private Timer sniperBulletThread=null;      //狙击步枪子弹飞行线程
-    private Timer pistolBulletThread=null;      //手枪子弹的飞行线程
     private Timer playerMoveThread=null;        //玩家移动的线程
-    private Timer eliteSoldierMoveThread=null;  //精英战士移动线程
-    private Timer hiderMoveThread=null;         //隐匿者线程
-    private Timer reLiveAiThread=null;          //复活AI线程
-
-
-    GameFrame()
+    MultiPlayerModel()
     {
         gameArea=new GameArea();
         createPlayer();
-        createAI();
         initial();
         //关闭窗口推出程序
         this.addWindowListener(new WindowAdapter() {
@@ -101,176 +91,6 @@ public class GameFrame extends JFrame
                     player.setLocation(newPoint);
             }
         });
-        /**
-         * 初始化控制精英战士移动的线程
-         */
-        eliteSoldierMoveThread=new Timer(EliteSoldier.speed, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                java.util.List<Mine> list=new LinkedList<Mine>();   //存放爆炸的地雷
-                for (EliteSoldier eliteSoldier:eliteSoldierList)
-                {
-                    //判断精英战士是否踩了地雷
-                    for(Mine mine :mineList)
-                    {
-                        int damageValue=mine.getDamageValue();
-                        Point minePoint=getCentralPoint(mine.getLocation());
-                        Point eliteSoldierPoint=getCentralPoint(eliteSoldier.getLocation());
-                        //如果精英战士踩到地雷,并且这个地雷不是自己埋下的
-                        if(ifStepMine(mine,eliteSoldier))
-                        {
-                            list.add(mine);
-                            mine.boom(gameArea,eliteSoldierPoint);
-                            mine.setVisible(false);
-                            //寻找在爆炸半径内的所有人
-                            for(Person person:personList)
-                            {
-                                //精英战士的中心位置
-                                Point cp=getCentralPoint(person.getLocation());
-                                //如果在爆炸范围内,并且精英战士不是死亡状态
-                                if(cp.distance(minePoint)<mine.getDamageRadius() && !person.ifDie())
-                                {
-                                    person.dieSpecialEffect(gameArea);
-                                    person.setDie(true);
-                                    //如果被炸到的是玩家
-                                    if(person instanceof Player)
-                                    {
-                                        int choice= JOptionPane.showConfirmDialog(null,"你扑街了！再来一把？","",JOptionPane.YES_NO_CANCEL_OPTION);
-                                        if(choice==0)
-                                        {
-                                            restStart();
-                                        }
-                                        else
-                                        {
-                                            System.exit(0);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    for(Mine mine:list)
-                    {
-                        mineList.remove(mine);
-                    }
-
-                    //判断精英战士是否发现玩家，如果发现则开火
-                    if(eliteSoldier.isIfFindPlayer(player.getLocation()) && !eliteSoldier.ifDie())
-                    {
-                        eliteSoldier.shot(player.getLocation(),gameArea);
-                    }
-                    else
-                    {
-                        eliteSoldier.stopShot();
-                    }
-                    //判断精英战士当前路径是否完成，如果完成则生成新的路径，否则继续走
-                    if(eliteSoldier.hasNext())
-                    {
-                        eliteSoldier.nextStep();
-                    }
-                    else
-                    {
-                        eliteSoldier.setPath(eliteSoldier.getLocation(),player.getLocation());
-                    }
-                }
-            }
-        });
-        hiderMoveThread=new Timer(Hider.speed, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                java.util.List<Mine> list=new LinkedList<Mine>();   //存放爆炸的地雷
-                for (Hider hider:hiderList)
-                {
-                    //判断隐匿者是否踩到地雷s
-                    for(Mine mine :mineList)
-                    {
-                        Point minePoint=getCentralPoint(mine.getLocation());
-                        Point hiderSoldierPoint=getCentralPoint(hider.getLocation());
-                        //如果隐匿者踩到雷,并且这个地雷不是自己埋下的
-                        if(ifStepMine(mine,hider))
-                        {
-                            list.add(mine);
-                            mine.boom(gameArea,hiderSoldierPoint);
-                            mine.setVisible(false);
-                            //寻找在爆炸半径内的所有人
-                            for(Person person:personList)
-                            {
-                                person.dieSpecialEffect(gameArea);
-                                person.setDie(true);
-                                //如果被炸到的是玩家
-                                if(person instanceof Player)
-                                {
-                                    int choice= JOptionPane.showConfirmDialog(null,"你扑街了！再来一把？","",JOptionPane.YES_NO_CANCEL_OPTION);
-                                    if(choice==0)
-                                    {
-                                        restStart();
-                                    }
-                                    else
-                                    {
-                                        System.exit(0);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    for(Mine mine:list)
-                    {
-                        mineList.remove(mine);
-                    }
-
-                    //判断精英战士是否发现玩家，如果发现则开火
-                    if(hider.isIfFindPlayer(player.getLocation()) && !hider.ifDie())
-                    {
-                        hider.shot(player.getLocation(),gameArea);
-                    }
-                    else
-                    {
-                        hider.stopShot();
-                    }
-                    //判断精英战士当前路径是否完成，如果完成则生成新的路径，否则继续走
-                    if(hider.hasNext() && !hider.isIfFindPlayer(player.getLocation()))
-                    {
-                        hider.nextStep();
-                    }
-                    else
-                    {
-                        hider.setPath(hider.getLocation(),player.getLocation());
-                    }
-                }
-
-            }
-        });
-        hiderMoveThread.start();
-
-        /**
-         * 初始化复活Ai线程
-         */
-        reLiveAiThread=new Timer(3000, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                for(Person person:personList)
-                {
-                    if (person.ifDie() && !(person instanceof Player))
-                    {
-                        AI ai=(AI)person;
-                        ai.setLocation(entrance[random.nextInt(entrance.length)]);
-                        ai.setPath(ai.getLocation(),player.getLocation());
-                        ai.setDie(false);
-                        ai.setVisible(true);
-                        ai.addHealthPoint(EliteSoldier.healthPoint);
-                    }
-                }
-            }
-        });
-        eliteSoldierMoveThread.start();
-        playerMoveThread.start();
-        reLiveAiThread.start();
-    }
-    private void reLiveAi(AI ai)
-    {
-
     }
     /**
      * 内部类
@@ -292,7 +112,7 @@ public class GameFrame extends JFrame
 
             this.add(healthLevel);
             this.add(healthLevelTip);
-            this.setSize(GameFrame.gameFrameWidth,GameFrame.gameFrameHeight);
+            this.setSize(MultiPlayerModel.gameFrameWidth, MultiPlayerModel.gameFrameHeight);
             this.setLayout(null);           //设置为绝对布局
         }
 
@@ -310,17 +130,17 @@ public class GameFrame extends JFrame
             itemBars[1].setLocation(400,800);
             itemBars[2].setLocation(800,800);
             itemBars[3].setLocation(1050,800);
-           for(int i=0;i<itemBars.length;i++)
-           {
-               int k=i+1;
-               int width=itemBars[i].getWidth();
-               int height=itemBars[i].getHeight();
-               URL url=GameFrame.class.getResource("/images/itemBars/itemBar"+k+".png");
-               ImageIcon icon=new ImageIcon(url);
-               icon.setImage(icon.getImage().getScaledInstance(width,height,Image.SCALE_DEFAULT));
-               itemBars[i].setIcon(icon);
-               this.add(itemBars[i]);
-           }
+            for(int i=0;i<itemBars.length;i++)
+            {
+                int k=i+1;
+                int width=itemBars[i].getWidth();
+                int height=itemBars[i].getHeight();
+                URL url= MultiPlayerModel.class.getResource("/images/itemBars/itemBar"+k+".png");
+                ImageIcon icon=new ImageIcon(url);
+                icon.setImage(icon.getImage().getScaledInstance(width,height,Image.SCALE_DEFAULT));
+                itemBars[i].setIcon(icon);
+                this.add(itemBars[i]);
+            }
         }
 
         /**
@@ -358,7 +178,7 @@ public class GameFrame extends JFrame
                                 player.reLoad();
                             }
                             break;
-                            //玩家捡起道具
+                        //玩家捡起道具
                         case KeyEvent.VK_F:
                             Point playerPoint=player.getLocation();
                             int index=-1;
@@ -376,7 +196,7 @@ public class GameFrame extends JFrame
                                         player.addHealthPoint(medicalPackage.getHealthPoint());
                                     }
                                     //如果的hi地雷
-                                    else if(rewardProp.getType()==RewardType.Mine)
+                                    else if(rewardProp.getType()== RewardType.Mine)
                                     {
                                         player.peekWeapon((Weapon) rewardProp.getReward(),1);
                                     }
@@ -395,7 +215,7 @@ public class GameFrame extends JFrame
                                 rewardPropList.remove(index);
                             }
                             break;
-                            //切换武器
+                        //切换武器
                         case KeyEvent.VK_1:
                             player.changeWeapon(WeaponType.automaticRifle);
                             if (shotThread!=null &&shotThread.isRunning())
@@ -510,35 +330,23 @@ public class GameFrame extends JFrame
                             Point oldPoint=bullet.getLocation();
                             Point newPoint=new Point(oldPoint.x+bullet.getxSpeed(),oldPoint.y+bullet.getySpeed());
                             bullet.setLocation(newPoint);
-                            for(Person person:personList)          //判断每个人是否被子弹击中
+                            for(Player player:playerList)          //判断每个人是否被子弹击中
                             {
-                                if((ifHitPerson(bullet,person)) && !person.ifDie() && !person.equals(bullet.getFromPerson()))    //如果击中AI
+                                if((ifHitPerson(bullet,player)) && !player.ifDie() && !player.equals(bullet.getFromPerson()))    //如果击中AI
                                 {
                                     flag=true;
                                     bullet.setVisible(false);                   //击中目标后子弹消失
-                                    int healthPoint =person.getHealthPoint();
+                                    int healthPoint =player.getHealthPoint();
                                     if(healthPoint-bullet.getDamageValue()<=0)      //如果目标死亡
                                     {
-                                        person.dieSpecialEffect(gameArea);
-                                        person.setVisible(false);
-                                        person.setDie(true);            //设置AI死亡
-                                        if(person instanceof Player)
-                                        {
-                                            int choice= JOptionPane.showConfirmDialog(null,"你扑街了！再来一把？","",JOptionPane.YES_NO_CANCEL_OPTION);
-                                            if(choice==0)
-                                            {
-                                                restStart();
-                                            }
-                                            else
-                                            {
-                                                System.exit(0);
-                                            }
-                                        }
-                                        createRewardProp(person.getLocation());     //掉落物品
+                                        player.dieSpecialEffect(gameArea);
+                                        player.setVisible(false);
+                                        player.setDie(true);            //设置AI死亡
+                                        createRewardProp(player.getLocation());     //掉落物品
                                     }
                                     else
                                     {
-                                        person.reduceHealthPoint(bullet.getDamageValue());
+                                        player.reduceHealthPoint(bullet.getDamageValue());
                                     }
                                     deleteBullet[++i]=bullet;       //将击中目标的子弹保存起来
                                     break;
@@ -578,40 +386,28 @@ public class GameFrame extends JFrame
                         int i=-1;
                         Bullet[] deleteBullet=new Bullet[automaticBulletList.size()];
                         for(Bullet bullet:automaticBulletList)
-                            {
+                        {
                             boolean flag=false;             //标记该子弹是否击中人
                             Point oldPoint=bullet.getLocation();
                             Point newPoint=new Point(oldPoint.x+bullet.getxSpeed(),oldPoint.y+bullet.getySpeed());
                             bullet.setLocation(newPoint);
-                            for(Person person:personList)          //判断每个敌人是否被子弹击中
+                            for(Player player:playerList)          //判断每个敌人是否被子弹击中
                             {
-                                if((ifHitPerson(bullet,person)) && !person.ifDie() && !person.equals(bullet.getFromPerson()))    //如果击中AI
+                                if((ifHitPerson(bullet,player)) && !player.ifDie() && !player.equals(bullet.getFromPerson()))    //如果击中AI
                                 {
                                     flag=true;
                                     bullet.setVisible(false);                   //击中目标后子弹消失
-                                    int healthPoint =person.getHealthPoint();
+                                    int healthPoint =player.getHealthPoint();
                                     if(healthPoint-bullet.getDamageValue()<=0)
                                     {
-                                        person.dieSpecialEffect(gameArea);
-                                        if(person instanceof Player)
-                                        {
-                                            int choice= JOptionPane.showConfirmDialog(null,"你扑街了！再来一把？","",JOptionPane.YES_NO_CANCEL_OPTION);
-                                            if(choice==0)
-                                            {
-                                                restStart();
-                                            }
-                                            else
-                                            {
-                                                System.exit(0);
-                                            }
-                                        }
-                                        person.setVisible(false);
-                                        person.setDie(true);            //设置AI死亡
-                                        createRewardProp(person.getLocation());     //掉落物品
+                                        player.dieSpecialEffect(gameArea);
+                                        player.setVisible(false);
+                                        player.setDie(true);            //设置AI死亡
+                                        createRewardProp(player.getLocation());     //掉落物品
                                     }
                                     else
                                     {
-                                        person.reduceHealthPoint(bullet.getDamageValue());
+                                        player.reduceHealthPoint(bullet.getDamageValue());
                                     }
                                     deleteBullet[++i]=bullet;       //将击中目标的子弹保存起来
                                     break;
@@ -619,9 +415,9 @@ public class GameFrame extends JFrame
                             }
                             if(!flag && (ifHitWall(bullet.getLocation(),bullet.getRadius(),true)))    //判断子弹是否撞墙
                             {
-                                    bullet.setVisible(false);
-                                   deleteBullet[++i]=bullet ;           //将撞墙的子弹保存起来
-                               // MusicPlayer.playBulletHitWallMusic();
+                                bullet.setVisible(false);
+                                deleteBullet[++i]=bullet ;           //将撞墙的子弹保存起来
+                                // MusicPlayer.playBulletHitWallMusic();
                             }
                         }
                         if(i!=-1)
@@ -643,7 +439,7 @@ public class GameFrame extends JFrame
         {
             URL url=startGame.class.getResource("/images/backGround.png");
             ImageIcon icon=new ImageIcon(url);
-            g.drawImage(icon.getImage(),0,0,GameFrame.gameAreaWidth,GameFrame.gameAreaHeight,null);
+            g.drawImage(icon.getImage(),0,0, MultiPlayerModel.gameAreaWidth, MultiPlayerModel.gameAreaHeight,null);
         }
     }
 
@@ -659,7 +455,7 @@ public class GameFrame extends JFrame
         //
         try {
             //先判断物体是否超出地图边界
-            if (point.x < 0 || point.y < 0 || point.x + radius > GameFrame.gameAreaWidth || point.y + radius > GameFrame.gameAreaHeight)
+            if (point.x < 0 || point.y < 0 || point.x + radius > MultiPlayerModel.gameAreaWidth || point.y + radius > MultiPlayerModel.gameAreaHeight)
                 return true;
             //分别判断物体的左上、右上、左下、右下角是与墙重
             if(!isBullet)
@@ -830,78 +626,13 @@ public class GameFrame extends JFrame
             }
         }
     }
-    //重新开始游戏
-    public void restStart()
-    {
-        MusicPlayer.stopActionMusic();
-        for(Person person:personList)
-        {
-            gameArea.remove(person);
-        }
-        for(EliteSoldier eliteSoldier:eliteSoldierList)
-        {
-            eliteSoldier.stopShot();
-        }
-        for(Hider hider :hiderList)
-        {
-            hider.stopShot();
-        }
-        for(Bullet bullet:automaticBulletList)
-        {
-            gameArea.remove(bullet);
-        }
-        for(Bullet bullet:sniperBulletList)
-        {
-            gameArea.remove(bullet);
-        }
-        for(RewardProp rewardProp:rewardPropList)
-        {
-            gameArea.remove(rewardProp);
-        }
-        for(Mine mine:mineList)
-        {
-            gameArea.remove(mine);
-        }
-        mineList.clear();
-        automaticBulletList.clear();
-        eliteSoldierList.clear();
-        hiderList.clear();
-        sniperBulletList.clear();
-        rewardPropList.clear();
-        personList.clear();
-        System.gc();
-        createPlayer();
-        createAI();
-        MusicPlayer.playActionMusic();
-        gameArea.repaint();
-    }
-    //创建玩家
+
+    /**
+     * 创建所有玩家
+     */
     private void createPlayer()
-
     {
-        try {
-            Rotate rotate = new Rotate();
-            player = new Player(1, "DJF", Player.maxHealthPoint);
-            int size = 2 * (player.getRadius());
-            player.setSize(size, size);
-            InputStream is = startGame.class.getResourceAsStream("/images/header_b.png");
-            BufferedImage bufferedImage = ImageIO.read(is);
-            ImageIcon icon = new ImageIcon();
-            icon.setImage(bufferedImage);
-            icon.setImage(icon.getImage().getScaledInstance(size, size, Image.SCALE_DEFAULT));
-            player.setIcon(icon);
-            player.setLocation(400, 300);
-            gameArea.add(player);
-            player.peekWeapon(new AWM(), 100);
-            player.peekWeapon(new Mine(),5);
-            player.peekWeapon(new M4A1(), 10000);
-            personList.add(player);
 
-        }
-        catch (IOException ioe)
-        {
-            ioe.printStackTrace();
-        }
     }
     //安装地雷
     private void stepMine(Point point,Person fromPerson)
@@ -910,7 +641,7 @@ public class GameFrame extends JFrame
         Mine mine=new Mine();
         mine.setFromPerson(fromPerson);
         mine.setLocation(point);
-        URL url=GameFrame.class.getResource("/images/Weapon/BoomWeapon/Mine.png");
+        URL url= MultiPlayerModel.class.getResource("/images/Weapon/BoomWeapon/Mine.png");
         ImageIcon icon=new ImageIcon(url);
         icon.setImage(icon.getImage().getScaledInstance(20,20,Image.SCALE_DEFAULT));
         mine.setSize(20,20);
@@ -918,33 +649,6 @@ public class GameFrame extends JFrame
         mineList.add(mine);
         gameArea.add(mine);
 
-    }
-    //创建AI
-    private void createAI()
-    {
-        //创建精英战士
-        for(int i=0;i<5;i++)
-        {
-            EliteSoldier eliteSoldier=new EliteSoldier(personList.size());
-            eliteSoldier.setLocation(entrance[random.nextInt(entrance.length)]);
-            Point endPoint=player.getLocation();        //获取玩家坐标作为寻路终点
-            Point startPoint=eliteSoldier.getLocation();    //AI当前坐标为寻路起点
-            eliteSoldier.setPath(startPoint,endPoint);
-            gameArea.add(eliteSoldier);
-            eliteSoldierList.add(eliteSoldier);
-            personList.add(eliteSoldier);
-        }
-        for(int i=0;i<2;i++)
-        {
-            Hider hider=new Hider(personList.size());
-            hider.setLocation(entrance[random.nextInt(entrance.length)]);
-            Point endPoint=player.getLocation();        //获取玩家坐标作为寻路终点
-            Point startPoint=hider.getLocation();    //AI当前坐标为寻路起点
-            hider.setPath(startPoint,endPoint);
-            gameArea.add(hider);
-            hiderList.add(hider);
-            personList.add(hider);
-        }
     }
     //是否踩到地雷
     private boolean ifStepMine(Mine mine,Person person)
@@ -960,8 +664,8 @@ public class GameFrame extends JFrame
     //随机生成一个坐标
     private Point randomPoint()
     {
-        int x=random.nextInt(GameFrame.gameAreaWidth /CELL)*CELL;
-        int y=random.nextInt(GameFrame.gameAreaHeight/CELL)*CELL;
+        int x=random.nextInt(MultiPlayerModel.gameAreaWidth /CELL)*CELL;
+        int y=random.nextInt(MultiPlayerModel.gameAreaHeight/CELL)*CELL;
         return new Point(x,y);
     }
     //获取人物的中心坐标
@@ -988,3 +692,4 @@ public class GameFrame extends JFrame
     }
 
 }
+
