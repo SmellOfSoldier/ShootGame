@@ -9,7 +9,9 @@ public class ClientPort {
     public static PrintStream sendStream;
     public static BufferedReader getStream;
 
-    public static void main(String[] args) {
+    public static void main(String[] args)
+    {
+        new LoginFrame();
 
     }
 }

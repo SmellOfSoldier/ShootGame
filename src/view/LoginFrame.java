@@ -104,6 +104,7 @@ public class LoginFrame{
                 switch (result){
                     case Sign.LoginSuccess:{//登陆成功
                         JOptionPane.showMessageDialog(loginJFrame, "登陆成功", "提示", JOptionPane.INFORMATION_MESSAGE);//弹出提示框
+                        new GameHall(new Client("1","13"));
                         break;
                     }
                     case Sign.WrongPassword:{//密码错误

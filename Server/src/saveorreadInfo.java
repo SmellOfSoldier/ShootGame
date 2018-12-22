@@ -52,7 +52,7 @@ class saveorreadInfo {
      */
     public static void  savePlayerInfo(Client player){
         try {
-            File allPlayerFile=new File("","allPlayerInfo.txt");
+            File allPlayerFile=new File(".","allPlayerInfo.txt");
             if(!allPlayerFile.exists()) allPlayerFile.createNewFile();
             //创建文件写入流
             FileOutputStream  writeInfo=new FileOutputStream(allPlayerFile,true);
@@ -77,7 +77,7 @@ class saveorreadInfo {
     public static void  readAllInfo(ArrayList<Client> allPlayer){
             try {
                 //创建文件对象如不存在则自动创建一个
-                File allPlayerFile=new File("","allPlayerInfo.txt");
+                File allPlayerFile=new File(".","allPlayerInfo.txt");
                 if(!allPlayerFile.exists()) {
                     allPlayerFile.createNewFile();
                 }
@@ -94,7 +94,7 @@ class saveorreadInfo {
                         e.printStackTrace();
                     }
             } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println("加载用户信息成功！");
             }
         }
 

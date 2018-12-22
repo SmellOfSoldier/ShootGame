@@ -1,6 +1,8 @@
 package person;
 
 
+import view.SinglePersonModel;
+
 import java.io.Serializable;
 
 /**
@@ -8,7 +10,7 @@ import java.io.Serializable;
  */
 public class Player extends Person implements Serializable
 {
-    public static final int maxHealthPoint=10000;    //最大生命值
+    public static final int maxHealthPoint=1000;    //最大生命值
     private int lSpeed=0;                           //人物每次左边方向移动的像素
     private int rSpeed=0;                           //人物每次右边方向移动的像素
     private int uSpeed=0;                           //人物每次上边方向移动的像素
@@ -36,7 +38,7 @@ public class Player extends Person implements Serializable
         if (die) {
             super.setDie(true);
             dieNum++;
+            SinglePersonModel.healthLevel.setValue(0);
         }
     }
-
 }

@@ -5,14 +5,15 @@ import java.applet.AudioClip;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Random;
 import javax.swing.Timer;
-import Weapon.*;
 
 public class MusicPlayer
 {
     private static Random random=new Random();
     private static String []actionMusicFile=new String[]{"action01.wav","action02.wav","action03.wav","action04.wav"};
+    private static String []weaponName=new String[]{"AKM","M4A1","AWM","Barret","Mine"};
     private static int bgmTime=120000;
     private static URL shotUrl=null;        //开火的声音路径
     private static URL bgmUrl=null;         //bgm的路径
@@ -22,11 +23,17 @@ public class MusicPlayer
     private static URL bulletLandUrl=MusicPlayer.class.getResource("/musics/other/bulletLand.wav"); //子弹壳落地的音效文件路径
     private static URL bulletUseOutUrl=MusicPlayer.class.getResource("/musics/other/bulletUseOut.wav");    //子弹落用完的音效路径
     private static URL peekRewardPropUrl=MusicPlayer.class.getResource("/musics/other/peekRewardProp.wav"); //拾起道具音效文件路径
+    private static URL continueAttackURL=null;
     private static AudioClip bgmPlayer=null;                    //bgm播放器
-    private static AudioClip continueousShotPlayer=null;
-    private static AudioClip shotPlayer=null;                   //开火音效播放器
     private static AudioClip peekRewardPropPlayer=null;         //拾起道具音效播放器
     private static AudioClip actionPlayer=null;                 //播放战斗音乐
+    private static AudioClip akmPlayer=null;
+    private static HashMap<String,AudioClip> weaponAudioClipMap=new HashMap<>();      //存放武器开火音效的AudioClip
+    private static AudioClip currentWeaponAudioClip;            //目前正在播放的武器音效AudioClip
+    private static HashMap<String,AudioClip> changeWeaponAudioClipMap=new HashMap<>();  //存放切换武器音效的AudioClip
+    private static HashMap<String,AudioClip> reloadAudioClipMap=new HashMap<>();        //存放武器上膛的音效的AudioClip
+    private static AudioClip[] actionMusicAudioClips =new AudioClip[actionMusicFile.length];   //存放战斗音乐的AudioClip
+    private static AudioClip currentActionMusicAudioClip=null;     //当前正在使用的战斗音乐AudioClip
 
 
     private static Timer bgmThread=new Timer(bgmTime, new ActionListener() {
@@ -38,35 +45,63 @@ public class MusicPlayer
     });
     static
     {
+
         bgmUrl=MusicPlayer.class.getResource("/musics/bgm/bgm.wav");
         bgmPlayer=Applet.newAudioClip(bgmUrl);
         peekRewardPropPlayer=Applet.newAudioClip(peekRewardPropUrl);
-    }
-    public static void playShotMusic(String gunName)
-    {
-        shotUrl=MusicPlayer.class.getResource("/musics/shot/"+gunName+".wav");
-        if(shotPlayer!=null)
-        {
-            shotPlayer.stop();
-        }
-       shotPlayer= Applet.newAudioClip(shotUrl);
-        shotPlayer.play();
-    }
-    public static void playContinueousShotMusic(String name)
-    {
-        URL url=MusicPlayer.class.getResource("/musics/shot/AKM30.wav");
-        continueousShotPlayer=Applet.newAudioClip(url);
-        continueousShotPlayer.play();
 
+        //初始化武器开火的AudioClipMap
+        for(String name:weaponName)
+        {
+            URL url=MusicPlayer.class.getResource("/musics/shot/"+name+".wav");
+            AudioClip audioClip=Applet.newAudioClip(url);
+            weaponAudioClipMap.put(name,audioClip);
+        }
+
+        //初始化切换武器的AudioClipMap
+        for(String name:weaponName)
+        {
+            URL url=MusicPlayer.class.getResource("/musics/changeWeapon/"+name+".wav");
+            AudioClip audioClip= Applet.newAudioClip(url);
+            changeWeaponAudioClipMap.put(name,audioClip);
+        }
+        //初始化武器上膛的AudioClipMap
+        for(String name:weaponName)
+        {
+            URL url=MusicPlayer.class.getResource("/musics/reload/"+name+".wav");
+
+            AudioClip audioClip=Applet.newAudioClip(url);
+            reloadAudioClipMap.put(name,audioClip);
+        }
+        //初始化战斗音乐的AudioClip
+        for(int i=0;i<actionMusicFile.length;i++)
+        {
+            URL url=MusicPlayer.class.getResource("/musics/bgm/action/"+actionMusicFile[i]);
+            actionMusicAudioClips[i]=Applet.newAudioClip(url);
+        }
     }
+    //播放间断性攻击武器的声音
+    public static void playDiscontinueAttackMusic(String gunName)
+    {
+        currentWeaponAudioClip=weaponAudioClipMap.get(gunName);
+        currentWeaponAudioClip.play();
+    }
+    //播放连续性攻击的武器的音效
+    public static void playContinueAttackMusic(String gunName)
+    {
+        currentWeaponAudioClip=weaponAudioClipMap.get(gunName);
+        currentWeaponAudioClip.play();
+    }
+    //播放人物死亡的音效
     public static void playDieMusic(String name)
     {
         dieUrl=MusicPlayer.class.getResource("/musics/die/"+name+".wav");
         Applet.newAudioClip(dieUrl).play();
     }
-    public static void stopContinueousShotMusic()
+    //停止连续型攻击武器的声音
+    public static void stopContinueAttackMusic()
     {
-       //continueousShotPlayer.stop();
+       currentWeaponAudioClip.stop();
     }
     public static void playBgm()        //播放背景音乐
     {
@@ -78,11 +113,9 @@ public class MusicPlayer
         bgmPlayer.stop();
         bgmThread.stop();
     }
-    public static void playReloadMusic(String name)    //播放换子弹的声音
+    public static void playReloadMusic(String weaponName)    //播放换子弹的声音
     {
-        URL url=MusicPlayer.class.getResource("/musics/reload/"+name+".wav");
-
-        Applet.newAudioClip(url).play();
+        reloadAudioClipMap.get(weaponName).play();
     }
     public static void playBulletLandMuisc()        //播放子弹壳落地的声音
     {
@@ -98,8 +131,7 @@ public class MusicPlayer
     }
     public static void playChangeWeaponMusic(String weaponName)    //播放切换武器的声音
     {
-        URL url=MusicPlayer.class.getResource("/musics/changeWeapon/"+weaponName+".wav");
-        Applet.newAudioClip(url).play();
+        changeWeaponAudioClipMap.get(weaponName).play();
     }
     public static void playPeekRewardPropMusic()               //播放拾起道具的音效
     {
@@ -107,13 +139,13 @@ public class MusicPlayer
     }
     public static void playActionMusic()                //播放战斗音乐
     {
-        URL url=MusicPlayer.class.getResource("/musics/bgm/battle/"+actionMusicFile[random.nextInt(actionMusicFile.length)]);
-        actionPlayer=Applet.newAudioClip(url);
-        actionPlayer.loop();
+        int index=random.nextInt(actionMusicAudioClips.length);
+       currentActionMusicAudioClip= actionMusicAudioClips[index];
+       currentActionMusicAudioClip.loop();
     }
     public static void stopActionMusic()                //停止播放战斗音乐
     {
-        actionPlayer.stop();
+        currentActionMusicAudioClip.stop();
     }
     public static void playBoomMusic(String name)           //播放爆炸音乐
     {

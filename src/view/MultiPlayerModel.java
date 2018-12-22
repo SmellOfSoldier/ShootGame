@@ -274,6 +274,7 @@ public class MultiPlayerModel extends JFrame
                 }
             });
             //玩家射击
+            //玩家射击
             this.addMouseListener(new MouseAdapter()
             {
                 @Override
@@ -290,10 +291,10 @@ public class MultiPlayerModel extends JFrame
                 public void mousePressed(MouseEvent mouseEvent)         //枪类武器攻击
                 {
                     Weapon weapon=player.getUsingWeapon();
+                    Point startPoint = getCentralPoint(player.getLocation());
                     if(weapon instanceof Gun)
                     {
-                        Point startPoint = getCentralPoint(player.getLocation());
-                        int fireRate=((Gun)weapon).getFireRate();
+                        int fireRate = ((Gun) weapon).getFireRate();
                         attack(startPoint, endPoint, player);
                         shotThread = new Timer(fireRate, new ActionListener() {       //玩家开火
                             @Override
@@ -308,7 +309,12 @@ public class MultiPlayerModel extends JFrame
                 @Override
                 public void mouseReleased(MouseEvent e)
                 {
-                    MusicPlayer.stopContinueousShotMusic();
+                    Weapon weapon=player.getUsingWeapon();
+                    if(weapon instanceof Gun && ((Gun)weapon).ifContinuedShot())
+                    {
+                        MusicPlayer.stopContinueAttackMusic();
+                    }
+                    player.setAttacking(false);
                     if(shotThread!=null && shotThread.isRunning())
                         shotThread.stop();
                 }       //玩家停止开火
@@ -579,7 +585,7 @@ public class MultiPlayerModel extends JFrame
         {
             if(!person.ifEmptyMine())
             {
-                MusicPlayer.playShotMusic(weapon.getWeaponName());
+                MusicPlayer.playDiscontinueAttackMusic(weapon.getWeaponName());
                 stepMine(player.getLocation(), person);
             }
             else
@@ -599,7 +605,7 @@ public class MultiPlayerModel extends JFrame
                     gun.setPollBolt(true);      //狙击枪进入拉栓状态
                     createBullet(player,startPoint, endPoint, BulletType.k127, weapon.getDamageValue(), weapon.getType());
                     gun.reduceBulletNum(1);     //子弹里面的弹夹减1
-                    MusicPlayer.playShotMusic(weapon.getWeaponName());
+                    MusicPlayer.playDiscontinueAttackMusic(weapon.getWeaponName());
                 } else                    //没有子弹
                 {
                     MusicPlayer.playBulletUseOutMusic();        //播放没有子弹的声音
@@ -617,16 +623,23 @@ public class MultiPlayerModel extends JFrame
                 {
                     createBullet(player,startPoint, endPoint, ((Gun) weapon).getBulletType(), weapon.getDamageValue(), weapon.getType());
                     gun.reduceBulletNum(1);     //子弹里面的弹夹减1
-                    MusicPlayer.playShotMusic(weapon.getWeaponName());
+                    if(!person.isAttacking())
+                    {
+                        MusicPlayer.playContinueAttackMusic(gun.getWeaponName());
+                        person.setAttacking(true);
+                    }
                 } else                    //没有子弹
                 {
+                    if(person.isAttacking())
+                    {
+                        MusicPlayer.stopContinueAttackMusic();
+                    }
                     MusicPlayer.playBulletUseOutMusic();        //播放没有子弹的声音
                     shotThread.stop();
                 }
             }
         }
     }
-
     /**
      * 创建所有玩家
      */

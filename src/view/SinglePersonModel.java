@@ -1,5 +1,6 @@
 package view;
 
+import Arsenal.AKM;
 import Arsenal.AWM;
 import Arsenal.M4A1;
 import reward.MedicalPackage;
@@ -122,6 +123,7 @@ public class SinglePersonModel extends JFrame
             @Override
             public void actionPerformed(ActionEvent e)
             {
+                boolean gameOver=false;
                 java.util.List<Mine> list=new LinkedList<Mine>();   //存放爆炸的地雷
                 for (EliteSoldier eliteSoldier:eliteSoldierList)
                 {
@@ -154,6 +156,8 @@ public class SinglePersonModel extends JFrame
                                         if(choice==0)
                                         {
                                             restStart();
+                                            gameOver=true;
+                                            break;
                                         }
                                         else
                                         {
@@ -163,6 +167,8 @@ public class SinglePersonModel extends JFrame
                                 }
                             }
                         }
+                        if (gameOver)
+                            break;
                     }
                     for(Mine mine:list)
                     {
@@ -187,12 +193,15 @@ public class SinglePersonModel extends JFrame
                     {
                         eliteSoldier.setPath(eliteSoldier.getLocation(),player.getLocation());
                     }
+                    if (gameOver)
+                        break;
                 }
             }
         });
         hiderMoveThread=new Timer(Hider.speed, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                boolean gameOver=false;
                 java.util.List<Mine> list=new LinkedList<Mine>();   //存放爆炸的地雷
                 for (Hider hider:hiderList)
                 {
@@ -219,6 +228,8 @@ public class SinglePersonModel extends JFrame
                                     if(choice==0)
                                     {
                                         restStart();
+                                        gameOver=true;
+                                        break;
                                     }
                                     else
                                     {
@@ -227,6 +238,8 @@ public class SinglePersonModel extends JFrame
                                 }
                             }
                         }
+                        if (gameOver)
+                            break;
                     }
                     for(Mine mine:list)
                     {
@@ -251,8 +264,9 @@ public class SinglePersonModel extends JFrame
                     {
                         hider.setPath(hider.getLocation(),player.getLocation());
                     }
+                    if (gameOver)
+                        break;
                 }
-
             }
         });
         hiderMoveThread.start();
@@ -315,7 +329,6 @@ public class SinglePersonModel extends JFrame
          */
         private void initialItemBars()
         {
-            System.out.println(itemBars.length);
             itemBars[0].setSize(300,150);
             itemBars[1].setSize(300,150);
             itemBars[2].setSize(150,150);
@@ -484,10 +497,10 @@ public class SinglePersonModel extends JFrame
                 public void mousePressed(MouseEvent mouseEvent)         //枪类武器攻击
                 {
                     Weapon weapon=player.getUsingWeapon();
+                    Point startPoint = getCentralPoint(player.getLocation());
                     if(weapon instanceof Gun)
                     {
-                        Point startPoint = getCentralPoint(player.getLocation());
-                        int fireRate=((Gun)weapon).getFireRate();
+                        int fireRate = ((Gun) weapon).getFireRate();
                         attack(startPoint, endPoint, player);
                         shotThread = new Timer(fireRate, new ActionListener() {       //玩家开火
                             @Override
@@ -502,7 +515,12 @@ public class SinglePersonModel extends JFrame
                 @Override
                 public void mouseReleased(MouseEvent e)
                 {
-                    MusicPlayer.stopContinueousShotMusic();
+                    Weapon weapon=player.getUsingWeapon();
+                    if(weapon instanceof Gun && ((Gun)weapon).ifContinuedShot())
+                    {
+                        MusicPlayer.stopContinueAttackMusic();
+                    }
+                    player.setAttacking(false);
                     if(shotThread!=null && shotThread.isRunning())
                         shotThread.stop();
                 }       //玩家停止开火
@@ -606,6 +624,7 @@ public class SinglePersonModel extends JFrame
                                     int healthPoint =person.getHealthPoint();
                                     if(healthPoint-bullet.getDamageValue()<=0)
                                     {
+                                        person.setDie(true);            //设置人物死亡
                                         person.dieSpecialEffect(gameArea);
                                         if(person instanceof Player)
                                         {
@@ -620,7 +639,6 @@ public class SinglePersonModel extends JFrame
                                             }
                                         }
                                         person.setVisible(false);
-                                        person.setDie(true);            //设置AI死亡
                                         createRewardProp(person.getLocation());     //掉落物品
                                     }
                                     else
@@ -797,7 +815,7 @@ public class SinglePersonModel extends JFrame
         {
             if(!person.ifEmptyMine())
             {
-                MusicPlayer.playShotMusic(weapon.getWeaponName());
+                MusicPlayer.playDiscontinueAttackMusic(weapon.getWeaponName());
                 stepMine(player.getLocation(), person);
             }
             else
@@ -817,7 +835,7 @@ public class SinglePersonModel extends JFrame
                     gun.setPollBolt(true);      //狙击枪进入拉栓状态
                     createBullet(player,startPoint, endPoint, BulletType.k127, weapon.getDamageValue(), weapon.getType());
                     gun.reduceBulletNum(1);     //子弹里面的弹夹减1
-                    MusicPlayer.playShotMusic(weapon.getWeaponName());
+                    MusicPlayer.playDiscontinueAttackMusic(weapon.getWeaponName());
                 } else                    //没有子弹
                 {
                     MusicPlayer.playBulletUseOutMusic();        //播放没有子弹的声音
@@ -835,9 +853,17 @@ public class SinglePersonModel extends JFrame
                 {
                     createBullet(player,startPoint, endPoint, ((Gun) weapon).getBulletType(), weapon.getDamageValue(), weapon.getType());
                     gun.reduceBulletNum(1);     //子弹里面的弹夹减1
-                    MusicPlayer.playShotMusic(weapon.getWeaponName());
+                    if(!person.isAttacking())
+                    {
+                        MusicPlayer.playContinueAttackMusic(gun.getWeaponName());
+                        person.setAttacking(true);
+                    }
                 } else                    //没有子弹
                 {
+                    if(person.isAttacking())
+                    {
+                        MusicPlayer.stopContinueAttackMusic();
+                    }
                     MusicPlayer.playBulletUseOutMusic();        //播放没有子弹的声音
                     shotThread.stop();
                 }
@@ -909,6 +935,7 @@ public class SinglePersonModel extends JFrame
             player.peekWeapon(new Mine(),5);
             player.peekWeapon(new M4A1(), 10000);
             personList.add(player);
+            healthLevel.setValue(player.getHealthPoint());
 
         }
         catch (IOException ioe)

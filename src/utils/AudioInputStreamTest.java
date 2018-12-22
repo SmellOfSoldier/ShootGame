@@ -20,7 +20,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 public class AudioInputStreamTest {
     public static void main(String[] args) {
         // TODO Auto-generated method stub
-        AePlayWave aePlayWave=new AePlayWave("src/musics/shot/AKM.wav","src/musics/shot/P92.wav");
+        AePlayWave aePlayWave=new AePlayWave("src/musics/shot/AKM_one.wav","src/musics/shot/P92.wav");
         Thread t=new Thread(aePlayWave);
         t.start();
     }

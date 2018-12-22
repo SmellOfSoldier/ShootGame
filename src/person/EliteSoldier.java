@@ -28,7 +28,7 @@ public class EliteSoldier extends AI implements Serializable
     public final static int shotSpeed=2000;
     public final static int healthPoint=140;
     private AudioClip shotPlayer=null;
-    private URL shotUrl= MusicPlayer.class.getResource("/musics/shot/AKM.wav");
+    private URL shotUrl= MusicPlayer.class.getResource("/musics/shot/AKM_one.wav");
     private AKM akm=new AKM();
     public EliteSoldier(String id)
     {

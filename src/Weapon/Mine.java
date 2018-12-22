@@ -35,7 +35,7 @@ public class Mine extends Weapon
     {
         Point boomPoint =new Point(point.x-damageRadius,point.y-damageRadius);
         boomEffect.setLocation(boomPoint);
-        MusicPlayer.playBoomMusic("MineBoom");
+        MusicPlayer.playBoomMusic("mineBoom");
         new Thread(new Runnable() {
             @Override
             public void run()

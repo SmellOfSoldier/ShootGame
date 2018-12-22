@@ -4,6 +4,7 @@ package view;
 import person.Player;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 
 /**
@@ -37,7 +38,7 @@ public class GameRoom extends JFrame
         this.add(roomArea);
         this.setResizable(false);
         this.setSize(Width,Height);
-        this.setLocationRelativeTo(null);
+        this.setLocation(1458,115);
         this.setVisible(true);
     }
     //房间显示区域

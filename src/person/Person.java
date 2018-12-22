@@ -14,6 +14,7 @@ import view.SinglePersonModel;
  */
 public class Person extends JLabel implements Serializable
 {
+    private boolean isAttacking=false;              //人物是否正在攻击
     private boolean isReload=false;                 //人物是否正在装子弹
     private int speed;                      //人物的移动速度
     protected String id;                       //编号
@@ -43,6 +44,8 @@ public class Person extends JLabel implements Serializable
     public int getRadius(){return radius;}                  //获取人物半径
     public String getName(){return name;}                   //获取人物名称www
     public boolean ifDie(){return isDie;}                   //电脑是否死亡
+    public boolean isAttacking(){return isAttacking;}       //电脑是否正在攻击
+    public void setAttacking(boolean isAttacking){this.isAttacking=isAttacking;}        //设置人物攻击状态
     public void setDie(boolean isDie)                       //设置人物的死亡状态
     {
         this.isDie=isDie;
@@ -126,10 +129,6 @@ public class Person extends JLabel implements Serializable
     public void addHealthPoint(int hp)                      //给人物加血
     {
         healthPoint+=hp;
-        if(this instanceof Player)
-        {
-            SinglePersonModel.healthLevel.setValue(healthPoint);
-        }
     }
     public void reduceHealthPoint(int hp)               //给人物扣血
     {
@@ -169,6 +168,10 @@ public class Person extends JLabel implements Serializable
         {
             if (weapons[type] != null)    //如果这把武器存在
             {
+                if(isAttacking)
+                {
+                    MusicPlayer.stopContinueAttackMusic();
+                }
                 usingWeaponType = type;
                 MusicPlayer.playChangeWeaponMusic(weapons[type].getWeaponName());
             } else                       //不存在
