@@ -1,19 +1,19 @@
 package person;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.Serializable;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.net.URL;
 
 import Weapon.*;
 import utils.MusicPlayer;
+import view.SinglePersonModel;
 
 /**
  * 游戏人物
  */
 public class Person extends JLabel implements Serializable
 {
-    private Lock reLoadLock=new ReentrantLock();    //装子弹的锁
     private boolean isReload=false;                 //人物是否正在装子弹
     private int speed;                      //人物的移动速度
     protected int id;                       //编号
@@ -24,6 +24,7 @@ public class Person extends JLabel implements Serializable
     private int [] bulletNum=new int[WeaponType.typeNum+1];      //武器中子弹的数目
     private Weapon []weapons=new Weapon[WeaponType.typeNum+1];     //人物持有的武器
     private boolean isDie=false;        //是否死亡
+    private JLabel dieSpecialEffect=new JLabel();   //死亡特效
     protected Person(){}
     protected Person(int id,String name,int healthPoint,int radius,int speed)
     {
@@ -32,13 +33,42 @@ public class Person extends JLabel implements Serializable
         this.healthPoint=healthPoint;
         this.radius=radius;
         this.speed=speed;
+        URL url=Person.class.getResource("/images/specialEffect/blood.png");
+        ImageIcon icon=new ImageIcon(url);
+        icon.setImage(icon.getImage().getScaledInstance(30,30,Image.SCALE_DEFAULT));
+        dieSpecialEffect.setIcon(icon);
     }
     public int getHealthPoint(){return healthPoint;}       //获取人物当前血量
     public String getId(){return id;}                          //获取人物编号
     public int getRadius(){return radius;}                  //获取人物半径
     public String getName(){return name;}                   //获取人物名称www
     public boolean ifDie(){return isDie;}                   //电脑是否死亡
-    public void setDie(boolean isDie){this.isDie=isDie;}    //设置AI死亡或复活
+    public void setDie(boolean isDie)                       //设置人物的死亡状态
+    {
+        this.isDie=isDie;
+        this.setVisible(false);
+    }
+    public void dieSpecialEffect(JPanel gameArea)
+    {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    dieSpecialEffect.setSize(30,30);
+                    dieSpecialEffect.setLocation(Person.this.getLocation());
+                    gameArea.add(dieSpecialEffect);
+                    Thread.sleep(6000);
+                    gameArea.remove(dieSpecialEffect);
+                    gameArea.repaint();
+                }
+                catch(Exception ex)
+                {
+                    ex.printStackTrace();
+                }
+
+            }
+        }).start();
+    }
     public  void  reLoad()            //装填子弹
     {
         Gun gun = (Gun) weapons[usingWeaponType];
@@ -62,9 +92,6 @@ public class Person extends JLabel implements Serializable
                     break;
                 case WeaponType.sniperRifle:
                     maxBulletNum = SniperRifle.maxBulletNum;
-                    break;
-                case WeaponType.pistol:
-                    maxBulletNum = Pistol.maxBulletNum;
                     break;
             }
             addBullet = maxBulletNum - bulletLeft;
@@ -98,13 +125,10 @@ public class Person extends JLabel implements Serializable
     }
     public void addHealthPoint(int hp)                      //给人物加血
     {
-        if(hp+healthPoint>500)
+        healthPoint+=hp;
+        if(this instanceof Player)
         {
-            healthPoint=100;
-        }
-        else
-        {
-            healthPoint+=hp;
+            SinglePersonModel.healthLevel.setValue(healthPoint);
         }
     }
     public void reduceHealthPoint(int hp)               //给人物扣血
@@ -116,6 +140,10 @@ public class Person extends JLabel implements Serializable
         else
         {
             healthPoint-=hp;
+        }
+        if (this instanceof Player)
+        {
+            SinglePersonModel.healthLevel.setValue(healthPoint);
         }
     }
     public void dicardWeapon(int type)              //丢弃武器,type为要丢弃武器的种类

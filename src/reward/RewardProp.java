@@ -1,16 +1,20 @@
-package view;
+package reward;
 
 import Arsenal.*;
+import Weapon.Mine;
+import view.SinglePersonModel;
 
 import javax.swing.*;
 import java.awt.*;
 import java.net.URL;
 
-//击杀怪物掉落的奖励道具
+/**
+ * 击杀AI掉落道具
+ */
 public class RewardProp extends JLabel
 {
     private int type;
-    RewardProp(int type,Point point)
+    public RewardProp(int type,Point point)
     {
         this.type=type;
         this.setSize(80,45);
@@ -19,9 +23,6 @@ public class RewardProp extends JLabel
         {
             case RewardType.MedicalPackage:
                 rewardPropName="MedicalPackage";
-                break;
-            case RewardType.P92:
-                rewardPropName="P92";
                 break;
             case RewardType.AKM:
                 rewardPropName="AKM";
@@ -41,7 +42,7 @@ public class RewardProp extends JLabel
         }
         URL url =RewardProp.class.getResource("/images/rewardProp/"+rewardPropName+".png");
         ImageIcon icon=new ImageIcon(url);
-        icon.setImage(icon.getImage().getScaledInstance(2*GameFrame.CELL,2*GameFrame.CELL,Image.SCALE_DEFAULT));
+        icon.setImage(icon.getImage().getScaledInstance(2* SinglePersonModel.CELL,2* SinglePersonModel.CELL,Image.SCALE_DEFAULT));
         this.setIcon(icon);
         this.setLocation(point);
 
@@ -55,8 +56,6 @@ public class RewardProp extends JLabel
         {
             case RewardType.MedicalPackage:
                 return new MedicalPackage();
-            case RewardType.P92:
-                return new P92();
             case RewardType.AKM:
                 return new AKM();
             case RewardType.M4A1:
@@ -65,6 +64,8 @@ public class RewardProp extends JLabel
                 return new AWM();
             case RewardType.Barret:
                 return new Barret();
+            case RewardType.Mine:
+                return new Mine();
                 default:
                     return null;
         }

@@ -1,14 +1,10 @@
 package person;
 
 import com.google.gson.Gson;
-import view.TravelSpeed;
 
 
 import java.awt.*;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * 电脑移动的路径
@@ -67,8 +63,6 @@ public class AiPath implements Serializable {
                     process=process % processBetweenTwoPoint;
                 }
             } catch (Exception ex) {
-                System.out.println(currentPosition);
-                System.out.println(path.length);
                 ex.printStackTrace();
             }
 

@@ -1,8 +1,5 @@
 package person;
 
-import view.GameFrame;
-
-import javax.swing.*;
 import java.awt.*;
 import java.io.Serializable;
 
@@ -46,10 +43,10 @@ public class AI extends Person implements Serializable
         path.next(this);
         return true;
     }
-    public boolean isIfFindPlayer(Point palyerPoint)
+    public boolean isIfFindPlayer(Point playerPoint)
     {
         Point aiPoint=this.getLocation();
-        if (aiPoint.distance(palyerPoint) < vision)
+        if (aiPoint.distance(playerPoint) < vision)
         {
             return true;
         }
