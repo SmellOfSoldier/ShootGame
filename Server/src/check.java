@@ -1,4 +1,3 @@
-import java.io.BufferedReader;
 import java.io.IOException;
 
 /**
@@ -27,11 +26,11 @@ public class check {
      * @param secondline  第二次信息（接收到的玩家的登陆的账号密码信息）
      * @return 返回一个Playe实例对象
      */
-    public static Player creatPlayer(String secondline){
+    public static Client creatPlayer(String secondline){
         String realMessage=getRealMessage(secondline,Sign.Login);
         String playerid=realMessage.split(Sign.SplitSign)[0];
         String password=realMessage.split(Sign.SplitSign)[1];
-        return  new Player(playerid,password);
+        return  new Client(playerid,password);
     }
 
     /**

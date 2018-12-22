@@ -30,9 +30,6 @@ public class LoginFrame{
     private boolean isStartRegisterFrame=false;
     //private JList userlist;
     //private DefaultListModel listModel;
-    private Socket socket;
-    private  PrintStream sendStream;
-    private BufferedReader getStream;
     //TODO:多人联机使用未完成bylijie
     //private MessageThread messageThread;
     //private  volatile boolean  isConnected = false;
@@ -58,11 +55,12 @@ public class LoginFrame{
             /**
              * 多人游戏点击后直接连接服务器
              */
-            socket=new Socket("127.0.0.1",25565);
-            sendStream=new PrintStream(socket.getOutputStream());//获取写出流
-            getStream=new BufferedReader(new InputStreamReader(socket.getInputStream()));//获取写入流
+            ClientPort.socket=new Socket("127.0.0.1",25565);
+            ClientPort.sendStream=new PrintStream(ClientPort.socket.getOutputStream());//获取写出流
+            ClientPort.getStream=new BufferedReader(new InputStreamReader(ClientPort.socket.getInputStream()));//获取写入流
+
             String connectResult="failed";
-            connectResult=getStream.readLine();
+            connectResult=ClientPort.getStream.readLine();
             if(connectResult.equals(Sign.SuccessConnected)){
                 //TODO:与服务器成功建立连接
                 contentArea.append("请输入账号密码进行登陆。\r\n");
@@ -95,10 +93,10 @@ public class LoginFrame{
                 String result = null;//获得服务器发送过来的检验结果
                 String playerid=txt_account.getText().trim();
                 String password=String.valueOf(txt_password.getPassword());
-                sendStream.println(Sign.Login+playerid+Sign.SplitSign+password);
-                sendStream.flush();
+                ClientPort.sendStream.println(Sign.Login+playerid+Sign.SplitSign+password);
+                ClientPort.sendStream.flush();
                 try {
-                    result=getStream.readLine();//获取登陆结果
+                    result=ClientPort.getStream.readLine();//获取登陆结果
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
@@ -126,7 +124,7 @@ public class LoginFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 if(!isStartRegisterFrame){
-                registerFrame=new RegisterFrame(sendStream,getStream);
+                registerFrame=new RegisterFrame(ClientPort.sendStream,ClientPort.getStream);
                 }
                 else {
                     registerFrame.clearAllBlanks();
@@ -183,7 +181,4 @@ public class LoginFrame{
         }
     }
 
-    public static void main(String[] args) {
-        new LoginFrame();
-    }
 }

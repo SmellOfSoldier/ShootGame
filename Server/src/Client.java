@@ -1,18 +1,22 @@
+import view.GameRoom;
+
 import java.io.Serializable;
 
 /**
- * 游戏玩家类
+ * 游戏玩家(客户)类
  */
-public class Player implements Serializable {
+public class Client implements Serializable {
     private String id;
     private String password;
     private boolean isOnline=false;
+    private  boolean isPlaying=false;
+    private GameRoom room;
     /**
      * Player构造函数
      * @param id 玩家ID（唯一标识）
      * @param password 玩家账号密码
      */
-    public  Player(String id,String password) {
+    public Client(String id, String password) {
         this.id = id;
         this.password = password;
     }
@@ -36,6 +40,13 @@ public class Player implements Serializable {
     }
 
     /**
+     * 设置玩家所在房间
+     * @param gameRoom 房间对象
+     */
+    public void setGameRoom(GameRoom gameRoom){
+        this.room=gameRoom;
+    }
+    /**
      * 设置是否在线
      * @param flag true在线 反之
      */
@@ -44,10 +55,33 @@ public class Player implements Serializable {
     }
 
     /**
+     * 设置是否在游戏中（房间中）
+     * @param flag true游戏中 反之
+     */
+    public void setPlaying(boolean flag){
+        isPlaying=flag;
+    }
+    /**
      * 检查是否在线
      * @return true在线 反之
      */
     public boolean isOline(){
         return isOnline;
+    }
+
+    /**
+     * 检查是否在游戏中（房间中）
+     * @return
+     */
+    public boolean isPlaying(){
+        return isPlaying;
+    }
+
+    /**
+     * 返回房间实例对象
+     * @return 房间实例索引
+     */
+    public GameRoom getRoom(){
+        return room;
     }
 }

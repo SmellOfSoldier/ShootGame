@@ -1,6 +1,5 @@
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
 
@@ -8,7 +7,7 @@ import java.net.Socket;
  * 玩家服务线程
  */
 class clientThread extends Thread{
-    private Player player;
+    private Client player;
     private Socket socket;
     private PrintStream sendStream;
     private BufferedReader getStream;
@@ -19,7 +18,7 @@ class clientThread extends Thread{
      * 获取此线程实例对象的Gamer
      * @return
      */
-    public Player getPlayer(){
+    public Client getPlayer(){
         return player;
     }
     /**
@@ -87,7 +86,7 @@ class clientThread extends Thread{
                         String playerid = realMessage.split(Sign.SplitSign)[0];
                         String playerPassword = realMessage.split(Sign.SplitSign)[1];
                         if(!check.isRegistered(playerid)){
-                             saveorreadInfo.savePlayerInfo(new Player(playerid, playerPassword));//注册一个Player并保存到文件
+                             saveorreadInfo.savePlayerInfo(new Client(playerid, playerPassword));//注册一个Player并保存到文件
                              sendCommand(Sign.RegisterSuccess);//返回注册成功信息
                         }
                         else sendCommand(Sign.IsRegistered);//否则返回已经注册过的消息

@@ -8,7 +8,6 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.net.BindException;
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.ArrayList;
 
 /**
@@ -35,9 +34,9 @@ public class creatServer {
     private ServerThread serverThread;
     public static  int allPlayernum;//储存已注册玩家数目
     public static  ArrayList<clientThread> playerclientThreads;//List用于储存所有玩家服务线程
-    public static  ArrayList<Player> onlinePlayers;//储存所有在线玩家
-    public static ArrayList<Player> playingPlayers;//储存所有在线玩家
-    public static  ArrayList<Player> allPlayer;//服务器开启时从文件读取到此链表中保存
+    public static  ArrayList<Client> onlinePlayers;//储存所有在线玩家
+    public static ArrayList<Client> playingPlayers;//储存所有在线玩家
+    public static  ArrayList<Client> allPlayer;//服务器开启时从文件读取到此链表中保存
     public static  DefaultListModel listModel;//GUI玩家列表
     private boolean isStart=false;
     public static void main(String[] args) {
@@ -120,7 +119,7 @@ public class creatServer {
         try {
             playerclientThreads=new ArrayList<clientThread>();//创建玩家列表
             allPlayernum=0;//初始化注册玩家数目
-            allPlayer=new ArrayList<Player>();//创建注册玩家列表
+            allPlayer=new ArrayList<Client>();//创建注册玩家列表
             serverSocket=new ServerSocket(port);//创建服务Socket
             serverThread=new ServerThread(serverSocket,30);//创建服务器线程
             serverThread.start();//服务器线程开启

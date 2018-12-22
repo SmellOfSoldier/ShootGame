@@ -1,6 +1,5 @@
 import java.io.*;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 玩家注册信息保存类
@@ -51,7 +50,7 @@ class saveorreadInfo {
      * 保存注册信息到文件
      * @param player 存入文件玩家
      */
-    public static void  savePlayerInfo(Player player){
+    public static void  savePlayerInfo(Client player){
         try {
             File allPlayerFile=new File("","allPlayerInfo.txt");
             if(!allPlayerFile.exists()) allPlayerFile.createNewFile();
@@ -75,7 +74,7 @@ class saveorreadInfo {
      * 从文件读取注册玩家数据到 allPlayer
      * @param allPlayer 暂存已注册玩家数据
      */
-    public static void  readAllInfo(ArrayList<Player> allPlayer){
+    public static void  readAllInfo(ArrayList<Client> allPlayer){
             try {
                 //创建文件对象如不存在则自动创建一个
                 File allPlayerFile=new File("","allPlayerInfo.txt");
@@ -86,8 +85,8 @@ class saveorreadInfo {
                 try {
                     FileInputStream fils=new FileInputStream(allPlayerFile);
                     ObjectInputStream readInfo=new ObjectInputStream(fils);
-                    Player one;
-                    while((one=(Player)readInfo.readObject())!=null){
+                    Client one;
+                    while((one=(Client)readInfo.readObject())!=null){
                         allPlayer.add(one);
                         creatServer.allPlayernum++;//服务器注册玩家数目++
                         }
