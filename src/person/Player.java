@@ -1,6 +1,5 @@
 package person;
 
-import view.SinglePersonModel;
 
 import java.io.Serializable;
 
@@ -16,11 +15,9 @@ public class Player extends Person implements Serializable
     private int dSpeed=0;                           //人物每次下边方向移动的像素
     private int killNum=0;                          //击杀数
     private int dieNum=0;                           //死亡数
-    private boolean isPlaying=false;                //正在游戏中
     public Player(String id,String name)
     {
         super(id,name,maxHealthPoint,10,20);
-        SinglePersonModel.healthLevel.setValue(maxHealthPoint);
     }
     public Player(){}
     public void setlSpeed(int lSpeed){this.lSpeed=lSpeed;}
@@ -33,14 +30,6 @@ public class Player extends Person implements Serializable
     public int getdSpeed(){return dSpeed;}
     public int getKillNum(){return killNum;}
     public int getDieNum(){return dieNum;}
-    public void setPlaying(boolean isPlaying)           //设置玩家等待、游戏中的状态
-    {
-        this.isPlaying=isPlaying;
-    }
-    public boolean isPlaying()              //玩家是否正在游戏中
-    {
-        return isPlaying;
-    }
     //重写父类的设置死亡
     public void setDie(boolean die)
     {
