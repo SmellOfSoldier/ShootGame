@@ -33,8 +33,10 @@ public class creatServer {
     private  JList users;
     private ServerSocket serverSocket;//ServerSocket线程
     private ServerThread serverThread;
+    public static  int allPlayernum;//储存已注册玩家数目
     public static  ArrayList<clientThread> playerclientThreads;//List用于储存所有玩家服务线程
     public static  ArrayList<Player> onlinePlayers;//储存所有在线玩家
+    public static  ArrayList<Player> allPlayer;//服务器开启时从文件读取到此链表中保存
     public static  DefaultListModel listModel;//GUI玩家列表
     private boolean isStart=false;
     public static void main(String[] args) {
@@ -42,7 +44,7 @@ public class creatServer {
     }
 
 
-    
+
     /**
      * 服务端GUI界面构造区域
      */
@@ -95,6 +97,15 @@ public class creatServer {
 
             }
         });
+        //TODO:服务器关闭
+        btn_stop.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(isStart){
+                    closeServer();//关闭服务器
+                }
+            }
+        });
     }
 
 
@@ -107,9 +118,12 @@ public class creatServer {
     public void startServer(int maxPlayer,int port) throws BindException {
         try {
             playerclientThreads=new ArrayList<clientThread>();//创建玩家列表
+            allPlayernum=0;//初始化注册玩家数目
+            allPlayer=new ArrayList<Player>();//创建注册玩家列表
             serverSocket=new ServerSocket(port);//创建服务Socket
             serverThread=new ServerThread(serverSocket,30);//创建服务器线程
             serverThread.start();//服务器线程开启
+            saveorreadInfo.readAllInfo(allPlayer);//从文件读取所有已经注册玩家
             isStart=true;
         } catch (BindException e) {
             e.printStackTrace();
@@ -133,11 +147,13 @@ public class creatServer {
         System.out.println("服务端线程成功关闭。");//测试使用
         contentArea.append("服务器已经成功关闭"+"\r\n");
         for(int i=0;i<playerclientThreads.size();i++){
+            playerclientThreads.get(1).sendCommand(Sign.ServerExit);//返回服务器关闭消息
             //TODO:转发给所有玩家服务端被关闭
         }
         if(serverSocket!=null) serverSocket.close();//如果serverSocket存在则关闭它
             listModel.removeAllElements();//清空用户列表
             isStart=false;//服务器状态置为关闭
+
         }
         catch (IOException e){
             e.printStackTrace();

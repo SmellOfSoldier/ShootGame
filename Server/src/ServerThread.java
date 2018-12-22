@@ -40,6 +40,7 @@ class ServerThread extends Thread{
                 sendStream.println(Sign.SuccessConnected);//返回给尝试连接的客户端成功信息
                 sendStream.flush();
                 clientThread aplayerClient=new clientThread(socket,sendStream,getStream);//创建一个服务线程
+                aplayerClient.setisConnected(true);//设置此玩家服务线程连接状态为true
                 creatServer.playerclientThreads.add(aplayerClient);//将此服务线程压入playerclientThreads中保存
                 aplayerClient.start();//启动该服务线程
                 System.out.println("成功建立一个玩家连接。");

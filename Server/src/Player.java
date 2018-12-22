@@ -1,7 +1,9 @@
+import java.io.Serializable;
+
 /**
  * 游戏玩家类
  */
-public class Player {
+public class Player implements Serializable {
     private String id;
     private String password;
     private boolean isOnline=false;

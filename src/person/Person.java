@@ -34,7 +34,7 @@ public class Person extends JLabel implements Serializable
         this.speed=speed;
     }
     public int getHealthPoint(){return healthPoint;}       //获取人物当前血量
-    public int getId(){return id;}                          //获取人物编号
+    public String getId(){return id;}                          //获取人物编号
     public int getRadius(){return radius;}                  //获取人物半径
     public String getName(){return name;}                   //获取人物名称www
     public boolean ifDie(){return isDie;}                   //电脑是否死亡

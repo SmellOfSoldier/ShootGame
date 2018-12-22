@@ -5,8 +5,6 @@ import java.io.IOException;
  * check类用于集合所有检查信息的格式与内容的函数
  */
 public class check {
-    //private BufferedReader getStream;
-
     /**
      * 登陆信息检查函数
      * @param line 登陆信息
@@ -17,6 +15,7 @@ public class check {
         String realMessage=getRealMessage(line,Sign.Login);
         String playerid=realMessage.split(Sign.SplitSign)[0];
         String password=realMessage.split(Sign.SplitSign)[1];
+        System.out.println("开始检查id为"+playerid+" 密码为 "+password+" 的玩家的账号数据");
         //TODO：密码判定函数
         if(!isRegistered(playerid)) return -1;
         else if(checkPassword(playerid,password)) return 1;
@@ -52,9 +51,15 @@ public class check {
      * @param id 玩家发送过来的玩家ID
      * @return 注册过返回 true 否则返回false
      */
-    private static boolean isRegistered(String id){
+    public static boolean isRegistered(String id){
         //TODO:检查是否已经注册bylijie
-        return true;
+        System.out.println("开始进行是否注册检查。");
+        for(int i=0;i<creatServer.allPlayernum;i++){
+            System.out.println("对比第"+i+"个"+id+" "+creatServer.allPlayer.get(i).getId());
+            if(id.equals(creatServer.allPlayer.get(i).getId())) return true;
+            else continue;
+        }
+        return false;
     }
 
     /**
@@ -65,7 +70,32 @@ public class check {
      */
     private static boolean checkPassword(String id,String password){
         //TODO:密码检查函数bylijie
-        return true;
+        int position = -1;//设置查找到的位置 -1代表没有匹配到
+        System.out.println("开始检查密码");
+        /**
+         * 遍历数据查找到匹配ID位置
+         */
+        for(int i=0;i<creatServer.allPlayernum;i++){
+            if(id.equals(creatServer.allPlayer.get(i).getId())) {
+                position=i;
+                break;
+            }
+        }
+        /**
+         * 通过匹配ID位置比对密码
+         */
+        if(position!=-1){
+            System.out.println("对比第"+position+"个的密码"+id+" "+creatServer.allPlayer.get(position).getId());
+            if(creatServer.allPlayer.get(position).passwordEquals(password)) {
+                System.out.println("密码正确");
+                return true;
+            }
+            else {
+                System.out.println("密码错误");
+                return false;
+            }
+        }
+        else return false;
     }
 
 
