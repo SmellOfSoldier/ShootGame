@@ -36,6 +36,7 @@ public class creatServer {
     public static  int allPlayernum;//储存已注册玩家数目
     public static  ArrayList<clientThread> playerclientThreads;//List用于储存所有玩家服务线程
     public static  ArrayList<Player> onlinePlayers;//储存所有在线玩家
+    public static ArrayList<Player> playingPlayers;//储存所有在线玩家
     public static  ArrayList<Player> allPlayer;//服务器开启时从文件读取到此链表中保存
     public static  DefaultListModel listModel;//GUI玩家列表
     private boolean isStart=false;

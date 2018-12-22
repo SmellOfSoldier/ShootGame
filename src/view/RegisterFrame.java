@@ -2,10 +2,16 @@ package view;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintStream;
 
-public class RegisterFrame extends JFrame {
+public class RegisterFrame {
+    private JFrame registerJFrame;
     private JTextArea contentArea;
     private JLabel namelable;
     private JLabel accountlable;
@@ -18,28 +24,87 @@ public class RegisterFrame extends JFrame {
     private JPasswordField txt_password;
     private JPasswordField txt_conpassword;
     private Registerpanel registerpanel;
-    RegisterFrame(){
+    private PrintStream sendStream;
+    private BufferedReader getStream;
+    RegisterFrame(PrintStream sendStream,BufferedReader getStream){
         registerpanel=new Registerpanel();
-        this.setTitle("注册界面");
-        this.add(registerpanel);
-        this.setSize(520,300);
-        this.setResizable(false);
-        this.setLocationRelativeTo(null);
-        this.setLayout(null);
-        this.setVisible(true);
+        registerJFrame=new JFrame();
+        this.sendStream=sendStream;
+        this.getStream=getStream;
+        registerJFrame.setTitle("注册界面");
+        registerJFrame.add(registerpanel);
+        registerJFrame.setSize(520,300);
+        registerJFrame.setResizable(false);
+        registerJFrame.setLocationRelativeTo(null);
+        registerJFrame.setLayout(null);
+        registerJFrame.setVisible(true);
         //设置相对屏幕绝对位置
         int screen_width = Toolkit.getDefaultToolkit().getScreenSize().width;
         int screen_height = Toolkit.getDefaultToolkit().getScreenSize().height;
-        this.setLocation((screen_width - this.getWidth()) / 2,
-                (screen_height - this.getHeight()) / 2);
-        this.setVisible(true);
+        registerJFrame.setLocation((screen_width - registerJFrame.getWidth()) / 2,
+                (screen_height - registerJFrame.getHeight()) / 2);
+        registerJFrame.setVisible(true);
 
-        this.addWindowListener(new WindowAdapter() {
+        registerJFrame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
+                registerJFrame.setVisible(false);//关闭事件设为此窗口不可见
+            }
+        });
+        /**
+         * 注册监听
+         */
+        btn_register.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String account = txt_account.getText().trim();//获取注册ID
+                String password = String.valueOf(txt_password.getPassword());//获取注册密码
+                String confirmpassword = String.valueOf(txt_conpassword.getPassword());//获取确认密码
+                if (confirmpassword.equals(password)) {//检查输入密码是否相同
+                    sendStream.println(Sign.Register + account + Sign.SplitSign + password);//发送注册信息
+                    sendStream.flush();
+                    String registeResult = null;
+                    try {
+                        registeResult = getStream.readLine();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                    switch (registeResult) {
+                        case Sign.RegisterSuccess: {
+                            JOptionPane.showMessageDialog(registerJFrame, "注册成功", "提示", JOptionPane.INFORMATION_MESSAGE);//弹出提示框
+                            break;
+                        }
+                        case Sign.IsRegistered: {
+                            JOptionPane.showMessageDialog(registerJFrame, "账号已经被注册过了", "提示", JOptionPane.INFORMATION_MESSAGE);//弹出提示框
+                            break;
+                        }
+                    }
+                }
+                else {
+                        JOptionPane.showMessageDialog(registerJFrame, "密码输入不相同请重新输入", "提示", JOptionPane.INFORMATION_MESSAGE);//弹出密码输入不同提示框
 
+                }
             }
         });
     }
+
+    /**
+     * 输入框全部清空函数 再次开启时清空空格方便多次注册
+     */
+    public void clearAllBlanks(){
+        this.txt_account.setText("");
+        this.txt_conpassword.setText("");
+        this.txt_name.setText("");
+        this.txt_conpassword.setText("");
+    }
+    /**
+     * 设置是否可见
+     */
+    public void setVisible(boolean flag){
+        this.setVisible(flag);
+    }
+    /**
+     * 内部布局管理
+     */
     class Registerpanel extends JPanel{
         Registerpanel(){
             this.setSize(520,300);
@@ -49,7 +114,7 @@ public class RegisterFrame extends JFrame {
         }
         private void initial(){
             contentArea=new JTextArea();
-            namelable=new JLabel("昵称");
+            namelable=new JLabel("昵称");//暂时不考虑
             accountlable=new JLabel("账号");
             passwordlable=new JLabel("密码");
             confirmPasswordlable=new JLabel("确认密码");
@@ -106,10 +171,4 @@ public class RegisterFrame extends JFrame {
             btn_exit.setLocation(315,210);
         }
     }
-
-    //测试
-    public static void main(String[] args) {
-        new RegisterFrame();
-    }
-
 }

@@ -7,6 +7,7 @@ public interface Sign
     String OpenGame="OPEN_GAME";                           //玩家打开了点击了多人游戏
     String Disconnect="DISCONNEXTE";                             //关闭连接请求（玩家关闭多人游戏界面）
     String SuccessDisconnected="SUCCESS_DISCONNEXTED";            //用于返还给客户端成功断开连接的消息
+    String FailedDisconnected="FAILED_DISCONNEXTED";            //用于返还给客户端连接失败服务器目前不可用的消息
     String SuccessConnected="SUCCESS_CONNEXTED";            //用于返还给客户端成功连接的消息
     String WrongPassword="WRONG_PASSWORD";                 //错误的密码
     String IsNotRegistered="IS_NOT_REGISTERED";                   //还没有注册过

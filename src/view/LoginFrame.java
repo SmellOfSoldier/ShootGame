@@ -3,15 +3,20 @@ package view;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
-public class LoginFrame extends JFrame {
+/**
+ * 登陆界面覆写bylijie
+ */
+public class LoginFrame{
+    private JFrame loginJFrame;
     private boolean isConnected;//标记是否与服务器连接
     private JTextArea contentArea;
     private JLabel accountlable;
@@ -21,38 +26,112 @@ public class LoginFrame extends JFrame {
     private JTextField txt_account;
     private JPasswordField txt_password;
     private LoginPanel loginPanel;
+    private RegisterFrame registerFrame;
+    private boolean isStartRegisterFrame=false;
     //private JList userlist;
     //private DefaultListModel listModel;
     private Socket socket;
-    private ObjectOutputStream writer;
-    private ObjectInputStream reader;
+    private  PrintStream sendStream;
+    private BufferedReader getStream;
     //TODO:多人联机使用未完成bylijie
     //private MessageThread messageThread;
     //private  volatile boolean  isConnected = false;
     //private Map<String,User> onlineUsers=new HashMap<String, User>();
 
     LoginFrame(){
-        this.setTitle("登陆界面");
-        this.setSize(600,435);
+        loginJFrame=new JFrame();
+        loginJFrame.setTitle("登陆界面");
+        loginJFrame.setSize(600,435);
         loginPanel=new LoginPanel();
-        this.setResizable(false);
-        this.setLocationRelativeTo(null);
-        this.add(loginPanel);
-        this.setLayout(null);
-        this.setVisible(true);
+        loginJFrame.setResizable(false);
+        loginJFrame.setLocationRelativeTo(null);
+        loginJFrame.add(loginPanel);
+        loginJFrame.setLayout(null);
+        loginJFrame.setVisible(true);
         //设置相对屏幕绝对位置
         int screen_width = Toolkit.getDefaultToolkit().getScreenSize().width;
         int screen_height = Toolkit.getDefaultToolkit().getScreenSize().height;
-        this.setLocation((screen_width - this.getWidth()) / 2,
-                (screen_height - this.getHeight()) / 2);
-        this.setVisible(true);
-
-        this.addWindowListener(new WindowAdapter() {
+        loginJFrame.setLocation((screen_width - loginJFrame.getWidth()) / 2,
+                (screen_height - loginJFrame.getHeight()) / 2);
+        loginJFrame.setVisible(true);
+        try {
+            /**
+             * 多人游戏点击后直接连接服务器
+             */
+            socket=new Socket("127.0.0.1",25565);
+            sendStream=new PrintStream(socket.getOutputStream());//获取写出流
+            getStream=new BufferedReader(new InputStreamReader(socket.getInputStream()));//获取写入流
+            String connectResult="failed";
+            connectResult=getStream.readLine();
+            if(connectResult.equals(Sign.SuccessConnected)){
+                //TODO:与服务器成功建立连接
+                contentArea.append("请输入账号密码进行登陆。\r\n");
+            }
+            /*else{
+                contentArea.append("服务器出现问题未响应连接请求，多人游戏不可使用。\r\n");
+                JOptionPane.showMessageDialog(loginJFrame, "服务器出现问题未响应连接请求，多人游戏不可使用。", "提示", JOptionPane.INFORMATION_MESSAGE);//弹出提示框
+            }*/
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        /**
+         * 设置关闭连接的消息
+         */
+        loginJFrame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 if (isConnected) {
                     //closeConnection();// 关闭连接
+                    isConnected=false;//连接状态置为false
                 }
                 System.exit(0);// 退出程序
+            }
+        });
+        /**
+         * 登陆监听
+         */
+        btn_link.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String result = null;//获得服务器发送过来的检验结果
+                String playerid=txt_account.getText().trim();
+                String password=String.valueOf(txt_password.getPassword());
+                sendStream.println(Sign.Login+playerid+Sign.SplitSign+password);
+                sendStream.flush();
+                try {
+                    result=getStream.readLine();//获取登陆结果
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+                System.out.println("接收到的回复消息为 "+result);
+                switch (result){
+                    case Sign.LoginSuccess:{//登陆成功
+                        JOptionPane.showMessageDialog(loginJFrame, "登陆成功", "提示", JOptionPane.INFORMATION_MESSAGE);//弹出提示框
+                        break;
+                    }
+                    case Sign.WrongPassword:{//密码错误
+                        JOptionPane.showMessageDialog(loginJFrame,"密码错误请重新尝试","提示",JOptionPane.ERROR_MESSAGE);//弹出警告框
+                        break;
+                    }
+                    case  Sign.IsNotRegistered:{//还未注册
+                        JOptionPane.showMessageDialog(loginJFrame,"您的账号还未注册","提示",JOptionPane.ERROR_MESSAGE);//弹出警告框
+                        break;
+                    }
+                }
+            }
+        });
+        /**
+         * 注册监听
+         */
+        btn_register.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(!isStartRegisterFrame){
+                registerFrame=new RegisterFrame(sendStream,getStream);
+                }
+                else {
+                    registerFrame.clearAllBlanks();
+                    registerFrame.setVisible(true);//重新设置可见
+                }
             }
         });
     }
@@ -103,8 +182,8 @@ public class LoginFrame extends JFrame {
             this.setVisible(true);
         }
     }
+
     public static void main(String[] args) {
         new LoginFrame();
     }
-
 }
