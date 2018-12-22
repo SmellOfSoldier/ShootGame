@@ -11,7 +11,7 @@ public class Butcher extends AI implements Serializable
 {
     private static int vision=200;     //屠夫的视野
     public static final int speed=10;
-    public Butcher(int id)
+    public Butcher(String id)
     {
         super(id,"屠夫",200,10,speed,vision);
 

@@ -894,7 +894,7 @@ public class SinglePersonModel extends JFrame
     {
         try {
             Rotate rotate = new Rotate();
-            player = new Player(1, "DJF");
+            player = new Player("1", "DJF");
             int size = 2 * (player.getRadius());
             player.setSize(size, size);
             InputStream is = startGame.class.getResourceAsStream("/images/header_b.png");
@@ -938,7 +938,7 @@ public class SinglePersonModel extends JFrame
         //创建精英战士
         for(int i=0;i<5;i++)
         {
-            EliteSoldier eliteSoldier=new EliteSoldier(personList.size());
+            EliteSoldier eliteSoldier=new EliteSoldier(personList.size()+"");
             eliteSoldier.setLocation(entrance[random.nextInt(entrance.length)]);
             Point endPoint=player.getLocation();        //获取玩家坐标作为寻路终点
             Point startPoint=eliteSoldier.getLocation();    //AI当前坐标为寻路起点
@@ -949,7 +949,7 @@ public class SinglePersonModel extends JFrame
         }
         for(int i=0;i<2;i++)
         {
-            Hider hider=new Hider(personList.size());
+            Hider hider=new Hider(personList.size()+"");
             hider.setLocation(entrance[random.nextInt(entrance.length)]);
             Point endPoint=player.getLocation();        //获取玩家坐标作为寻路终点
             Point startPoint=hider.getLocation();    //AI当前坐标为寻路起点

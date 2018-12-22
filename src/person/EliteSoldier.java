@@ -30,7 +30,7 @@ public class EliteSoldier extends AI implements Serializable
     private AudioClip shotPlayer=null;
     private URL shotUrl= MusicPlayer.class.getResource("/musics/shot/AKM.wav");
     private AKM akm=new AKM();
-    public EliteSoldier(int id)
+    public EliteSoldier(String id)
     {
         super(id,"精英战士",healthPoint,10,speed,vision);
         this.peekWeapon(akm,240);
