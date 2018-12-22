@@ -16,7 +16,7 @@ public class Person extends JLabel implements Serializable
 {
     private boolean isReload=false;                 //人物是否正在装子弹
     private int speed;                      //人物的移动速度
-    protected int id;                       //编号
+    protected String id;                       //编号
     protected String name;                  //姓名
     private int usingWeaponType=3;              //目前使用的武器的种类
     private int healthPoint;                //生命值
@@ -26,7 +26,7 @@ public class Person extends JLabel implements Serializable
     private boolean isDie=false;        //是否死亡
     private JLabel dieSpecialEffect=new JLabel();   //死亡特效
     protected Person(){}
-    protected Person(int id,String name,int healthPoint,int radius,int speed)
+    protected Person(String id,String name,int healthPoint,int radius,int speed)
     {
         this.name=name;
         this.id=id;
