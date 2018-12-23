@@ -51,7 +51,7 @@ public class Person extends JLabel implements Serializable
     public void setAttacking(boolean isAttacking){this.isAttacking=isAttacking;}        //设置人物攻击状态
     public int getKillNum(){return killNum;}
     public int getDieNum(){return dieNum;}
-    public void setKillNum(int killNum)
+    public void addKillNum(int killNum)
     {
         this.killNum+=killNum;
     }
@@ -211,7 +211,9 @@ public class Person extends JLabel implements Serializable
     public Weapon getUsingWeapon(){return weapons[usingWeaponType];}     //获取当前使用的武器
     public int getSpeed(){return speed;}                                //获取人物的移动速度
     public void reduceMineNum(int num){bulletNum[WeaponType.mine]-=num;}        //减少人物携带的地雷数量
-    public boolean ifEmptyMine(){return bulletNum[WeaponType.mine]==0;}         //判断人类是否还有地雷
+    public void reduceGrenadeNum(int num){bulletNum[WeaponType.grenade]-=num;}  //减少人物携带的手雷数量
+    public boolean ifEmptyMine(){return bulletNum[WeaponType.mine]==0;}         //判断人物是否还有地雷
+    public boolean ifEmptyGrenade(){return bulletNum[WeaponType.grenade]==0;}   //判断人物是否还有手雷
     public int getBulletLeftOnPerson(){return bulletNum[usingWeaponType];}      //放回人物身上携带的子弹数量
 }
 

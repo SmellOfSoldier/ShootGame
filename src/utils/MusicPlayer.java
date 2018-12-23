@@ -13,27 +13,24 @@ public class MusicPlayer
 {
     private static Random random=new Random();
     private static String []actionMusicFile=new String[]{"action01.wav","action02.wav","action03.wav","action04.wav"};
-    private static String []weaponName=new String[]{"AKM","M4A1","AWM","Barret","Mine"};
+    private static String []weaponName=new String[]{"AKM","M4A1","AWM","Barret","Mine","Grenade"};
     private static int bgmTime=120000;
-    private static URL shotUrl=null;        //开火的声音路径
     private static URL bgmUrl=null;         //bgm的路径
-    private static URL dieUrl=null;         //人物死亡声音的路径
     private static URL systemPromotUrl=null;    //系统提示声音的路径
     private static URL bulletHitWallUrl=MusicPlayer.class.getResource("/musics/other/bulletHitWall.wav");   //子弹撞墙的音效文件路径
     private static URL bulletLandUrl=MusicPlayer.class.getResource("/musics/other/bulletLand.wav"); //子弹壳落地的音效文件路径
     private static URL bulletUseOutUrl=MusicPlayer.class.getResource("/musics/other/bulletUseOut.wav");    //子弹落用完的音效路径
     private static URL peekRewardPropUrl=MusicPlayer.class.getResource("/musics/other/peekRewardProp.wav"); //拾起道具音效文件路径
-    private static URL continueAttackURL=null;
     private static AudioClip bgmPlayer=null;                    //bgm播放器
     private static AudioClip peekRewardPropPlayer=null;         //拾起道具音效播放器
-    private static AudioClip actionPlayer=null;                 //播放战斗音乐
-    private static AudioClip akmPlayer=null;
     private static HashMap<String,AudioClip> weaponAudioClipMap=new HashMap<>();      //存放武器开火音效的AudioClip
     private static AudioClip currentWeaponAudioClip;            //目前正在播放的武器音效AudioClip
     private static HashMap<String,AudioClip> changeWeaponAudioClipMap=new HashMap<>();  //存放切换武器音效的AudioClip
     private static HashMap<String,AudioClip> reloadAudioClipMap=new HashMap<>();        //存放武器上膛的音效的AudioClip
     private static AudioClip[] actionMusicAudioClips =new AudioClip[actionMusicFile.length];   //存放战斗音乐的AudioClip
     private static AudioClip currentActionMusicAudioClip=null;     //当前正在使用的战斗音乐AudioClip
+    private static AudioClip beenHitMusicPlayer=null;            //人物被击中的声音播放器
+    private static AudioClip dieMusicPlayer=null;                   //人物死亡的音效
 
 
     private static Timer bgmThread=new Timer(bgmTime, new ActionListener() {
@@ -45,7 +42,6 @@ public class MusicPlayer
     });
     static
     {
-
         bgmUrl=MusicPlayer.class.getResource("/musics/bgm/bgm.wav");
         bgmPlayer=Applet.newAudioClip(bgmUrl);
         peekRewardPropPlayer=Applet.newAudioClip(peekRewardPropUrl);
@@ -69,7 +65,6 @@ public class MusicPlayer
         for(String name:weaponName)
         {
             URL url=MusicPlayer.class.getResource("/musics/reload/"+name+".wav");
-
             AudioClip audioClip=Applet.newAudioClip(url);
             reloadAudioClipMap.put(name,audioClip);
         }
@@ -78,6 +73,13 @@ public class MusicPlayer
         {
             URL url=MusicPlayer.class.getResource("/musics/bgm/action/"+actionMusicFile[i]);
             actionMusicAudioClips[i]=Applet.newAudioClip(url);
+        }
+        //初始化人物声音AudioClip
+        {
+            URL url = MusicPlayer.class.getResource("/musics/person/beenHit.wav");
+            beenHitMusicPlayer = Applet.newAudioClip(url);
+            url=MusicPlayer.class.getResource("/musics/person/die.wav");
+            dieMusicPlayer=Applet.newAudioClip(url);
         }
     }
     //播放间断性攻击武器的声音
@@ -93,10 +95,14 @@ public class MusicPlayer
         currentWeaponAudioClip.play();
     }
     //播放人物死亡的音效
-    public static void playDieMusic(String name)
+    public static void playDieMusic()
     {
-        dieUrl=MusicPlayer.class.getResource("/musics/die/"+name+".wav");
-        Applet.newAudioClip(dieUrl).play();
+        dieMusicPlayer.play();
+    }
+    //播放人物被子弹击中的音效
+    public static void playBeenHitMusic()
+    {
+        beenHitMusicPlayer.play();
     }
     //停止连续型攻击武器的声音
     public static void stopContinueAttackMusic()

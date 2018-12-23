@@ -4,6 +4,8 @@ import person.Person;
 import utils.MusicPlayer;
 
 import javax.swing.*;
+import java.applet.Applet;
+import java.applet.AudioClip;
 import java.awt.*;
 import java.net.URL;
 
@@ -15,6 +17,8 @@ public class Mine extends Weapon
     private static int radius=10;       //地雷半径
     private static JLabel boomEffect=new JLabel(); //爆炸特效
     private Person fromPerson;      //安装这个地雷的人
+    private static URL boomMusicURL=Grenade.class.getResource("/musics/boom/mineBoom.wav");      //手雷爆炸音效路径
+    private AudioClip boomMusicPlayer= Applet.newAudioClip(boomMusicURL);
     static
     {
         //为地雷设置爆炸特效
@@ -35,7 +39,7 @@ public class Mine extends Weapon
     {
         Point boomPoint =new Point(point.x-damageRadius,point.y-damageRadius);
         boomEffect.setLocation(boomPoint);
-        MusicPlayer.playBoomMusic("mineBoom");
+        boomMusicPlayer.play();
         new Thread(new Runnable() {
             @Override
             public void run()

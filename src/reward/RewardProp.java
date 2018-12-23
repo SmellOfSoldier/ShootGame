@@ -1,6 +1,7 @@
 package reward;
 
 import Arsenal.*;
+import Weapon.Grenade;
 import Weapon.Mine;
 import view.GameFrame;
 
@@ -39,7 +40,11 @@ public class RewardProp extends JLabel
             case RewardType.Mine:
                 rewardPropName="Mine";
                 break;
+            case RewardType.Grenade:
+                rewardPropName="Grenade";
+                break;
         }
+        //给奖励道具设置图标
         URL url =RewardProp.class.getResource("/images/rewardProp/"+rewardPropName+".png");
         ImageIcon icon=new ImageIcon(url);
         icon.setImage(icon.getImage().getScaledInstance(2* GameFrame.CELL,2* GameFrame.CELL,Image.SCALE_DEFAULT));
@@ -66,6 +71,8 @@ public class RewardProp extends JLabel
                 return new Barret();
             case RewardType.Mine:
                 return new Mine();
+            case RewardType.Grenade:
+                return new Grenade();
                 default:
                     return null;
         }

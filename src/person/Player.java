@@ -2,12 +2,12 @@ package person;
 
 
 import Weapon.*;
+import utils.MusicPlayer;
 import view.GameFrame;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.Serializable;
-import java.util.Random;
 
 /**
  * 游戏玩家
@@ -37,9 +37,9 @@ public class Player extends Person implements Serializable
      * 重写父类的方法,增添修改屏幕上显示击杀/死亡数目的功能
      * @param killNum
      */
-    public void setKillNum(int killNum)
+    public void addKillNum(int killNum)
     {
-        super.setKillNum(killNum);
+        super.addKillNum(killNum);
         GameFrame.killAndDieField.setText("击杀/死亡："+getKillNum()+"/"+getDieNum());
     }
     public void setDieNum(int dieNum)
@@ -54,6 +54,7 @@ public class Player extends Person implements Serializable
      */
     public void setDie(boolean die)
     {
+        MusicPlayer.playDieMusic();     //播放死亡音效
         if (die) {
             super.setDie(true);
             setDieNum(1);
@@ -81,7 +82,7 @@ public class Player extends Person implements Serializable
             int left=getBulletLeftOnPerson();
             GameFrame.bulletLeft.setText("子弹："+left);
         }
-        Point point=GameFrame.flagPoint[type-1];
+        Point point=GameFrame.flagPoint[getUsingWeaponType()-1];
         GameFrame.usingWeaponFlag.setLocation(point);
         gameArea.repaint();
     }
@@ -104,5 +105,10 @@ public class Player extends Person implements Serializable
             int left=getBulletLeftOnPerson();
             GameFrame.bulletLeft.setText("子弹："+left);
         }
+    }
+    public void reduceHealthPoint(int hp)
+    {
+        MusicPlayer.playBeenHitMusic();
+        super.reduceHealthPoint(hp);
     }
 }
