@@ -1,5 +1,8 @@
 package view;
 
+/**
+ * 信息传递的关键标识符
+ */
 public interface Sign
 {
     String Register="REGISTER_COMMEND";                       //注册

@@ -28,14 +28,29 @@ public class AI extends Person implements Serializable
         if(!(x1==x2 && y1==y2))
             path= FindPath.findPath(new MyPoint(x1,y1),new MyPoint(x2,y2));
     }
+
+    /**
+     * 给ai设置移动的命令
+     * @param commend
+     */
     public void setMoveCommend(boolean commend)
     {
         moveCommend=commend;
     }
+
+    /**
+     * 判断ai是否还有下一步（是否完成了路径）
+     * @return
+     */
     public boolean hasNext()            //判断Ai是否还有下一步
     {
         return path.hasNext();
     }
+
+    /**
+     * ai按照路径方向继续下一步移动
+     * @return
+     */
     public boolean nextStep()              //ai移动下一步，改变
     {
         if(!moveCommend)
@@ -43,6 +58,12 @@ public class AI extends Person implements Serializable
         path.next(this);
         return true;
     }
+
+    /**
+     * 判断ai的视野内有玩家出现
+     * @param playerPoint
+     * @return
+     */
     public boolean isIfFindPlayer(Point playerPoint)
     {
         Point aiPoint=this.getLocation();

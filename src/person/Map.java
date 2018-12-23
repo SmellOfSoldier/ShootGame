@@ -1,6 +1,12 @@
 package person;
 
-public class Wall
+/**
+ * 地图：以40*60的二维数组保存
+ * 0：表示子弹和人都可以穿过的路
+ * 1：表示子弹和人都不可以穿过的墙
+ * 2：表示人不可以穿过而子弹可以穿过的河
+ */
+public class Map
 {
     // 0代表路，1代表墙，2代表河
     public static int oringemap[][]=new int[20][30];

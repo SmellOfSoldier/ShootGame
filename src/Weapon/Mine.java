@@ -27,7 +27,7 @@ public class Mine extends Weapon
     {
         super(WeaponType.mine,"Mine",damageValue);
     }
-    public void setFromPerson(Person person)
+    public void setFromPerson(Person fromPerson)
     {
         this.fromPerson=fromPerson;
     }

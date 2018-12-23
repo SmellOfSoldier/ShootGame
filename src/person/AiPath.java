@@ -15,24 +15,27 @@ public class AiPath implements Serializable {
     private int currentPosition = 0;  //再path中的当前位置
     private MyPoint[] path;
 
-    //利用Gson将字符串反序列化
+    /**
+     * 构造函数，参数为json形式的字符串，便于网络传递AI路径
+     * @param sPath
+     */
     AiPath(String sPath) {
         Gson gson = new Gson();
         path = gson.fromJson(sPath, MyPoint[].class);
     }
 
+    /**
+     * 构造函数 参数为path
+     * @param path
+     */
     AiPath(MyPoint[] path) {
         this.path = path;
     }
 
-    public void printPath() {
-        {
-            for (int i = 0; i < path.length; i++) {
-                System.out.println(path[i]);
-            }
-        }
-    }
-
+    /**
+     * 判断ai是否完成了整个路径
+     * @return 完成返回true
+     */
     public boolean ifFinishedAll() {
         return currentPosition == path.length - 1;
     }    //判断是否走完了整个路
@@ -45,7 +48,11 @@ public class AiPath implements Serializable {
         }
         return false;
     }
-    //AI按照path走下一步，xSpeed、ySpeed表示Ai
+
+    /**
+     * AI按照path走下一步，xSpeed、ySpeed表示Ai下一步在横坐标和纵坐标分别移动的像素
+     * @param ai
+     */
     public void next(AI ai) {
             try {
                 int xSpeed;

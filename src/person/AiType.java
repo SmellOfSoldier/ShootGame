@@ -8,7 +8,6 @@ import java.util.ArrayList;
 public interface AiType
 {
     int Butcher=0;  //屠夫
-    int CowBoy=1;   //牛仔
-    int EliteSoldier=2; //精英战士
-    int Hider=3;        //狙击手
+    int EliteSoldier=1; //精英战士
+    int Hider=2;        //狙击手
 }

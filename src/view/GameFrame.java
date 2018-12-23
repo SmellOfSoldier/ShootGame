@@ -1,6 +1,5 @@
 package view;
 
-import Arsenal.AKM;
 import Arsenal.AWM;
 import Arsenal.M4A1;
 import reward.MedicalPackage;
@@ -32,7 +31,7 @@ import java.util.Random;
 /**
  * 该模式为单人模式
  */
-public class SinglePersonModel extends JFrame
+public class GameFrame extends JFrame
 {
     private Point[] entrance=new Point[]{new Point(800,20),new Point(1040,280),new Point(1160,600), new Point(320,760),new Point(20,520)};         //刷怪位置
     private Point endPoint=new Point();
@@ -42,8 +41,12 @@ public class SinglePersonModel extends JFrame
     public final static int gameAreaHeight=800;
     public final static int gameFrameWidth=1206;
     public final static int gameFrameHeight=974;
-    private JLabel healthLevelTip=new JLabel("生命值");
+    private JTextField healthLevelTip=new JTextField("生命值");
     public static JProgressBar healthLevel=new JProgressBar(0,Player.maxHealthPoint);        //显示玩家生命的进度条
+    public static JTextField bulletLeft=new JTextField();                           //显示武器子弹剩余量
+    public static JTextField killAndDieField =new  JTextField();                             //显示玩家击杀死亡数
+    public static JLabel usingWeaponFlag=new JLabel();                   //玩家当前使用武器的标记
+    public static Point []flagPoint=new Point[4];
     private static LinkedList<Player> otherPlayer=new LinkedList<Player>();    //存放其他玩家
     //存放自动步枪子弹的链表
     private static java.util.List<Bullet> automaticBulletList = Collections.synchronizedList(new LinkedList<Bullet>());
@@ -72,8 +75,7 @@ public class SinglePersonModel extends JFrame
     private Timer hiderMoveThread=null;         //隐匿者线程
     private Timer reLiveAiThread=null;          //复活AI线程
 
-
-    SinglePersonModel()
+    GameFrame()
     {
         gameArea=new GameArea();
         createPlayer();
@@ -98,6 +100,14 @@ public class SinglePersonModel extends JFrame
      * 初始化单人模式
      */
     private void initialSinglePersonModel()
+    {
+
+    }
+
+    /**
+     * 初始化多人模式
+     */
+    private void initialMultiPlayerModel()
     {
 
     }
@@ -136,6 +146,7 @@ public class SinglePersonModel extends JFrame
                         //如果精英战士踩到地雷,并且这个地雷不是自己埋下的
                         if(ifStepMine(mine,eliteSoldier))
                         {
+                            int killNum=0;      //这个地雷击杀人物的数量
                             list.add(mine);
                             mine.boom(gameArea,eliteSoldierPoint);
                             mine.setVisible(false);
@@ -147,6 +158,7 @@ public class SinglePersonModel extends JFrame
                                 //如果在爆炸范围内,并且精英战士不是死亡状态
                                 if(cp.distance(minePoint)<mine.getDamageRadius() && !person.ifDie())
                                 {
+                                    mine.getFromPerson().setKillNum(1);
                                     person.dieSpecialEffect(gameArea);
                                     person.setDie(true);
                                     //如果被炸到的是玩家
@@ -198,6 +210,10 @@ public class SinglePersonModel extends JFrame
                 }
             }
         });
+        /**
+         * 初始化隐匿者移动线程
+         * 隐匿者是狙击手，当然不可能踩地雷啦
+         */
         hiderMoveThread=new Timer(Hider.speed, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -205,46 +221,6 @@ public class SinglePersonModel extends JFrame
                 java.util.List<Mine> list=new LinkedList<Mine>();   //存放爆炸的地雷
                 for (Hider hider:hiderList)
                 {
-                    //判断隐匿者是否踩到地雷s
-                    for(Mine mine :mineList)
-                    {
-                        Point minePoint=getCentralPoint(mine.getLocation());
-                        Point hiderSoldierPoint=getCentralPoint(hider.getLocation());
-                        //如果隐匿者踩到雷,并且这个地雷不是自己埋下的
-                        if(ifStepMine(mine,hider))
-                        {
-                            list.add(mine);
-                            mine.boom(gameArea,hiderSoldierPoint);
-                            mine.setVisible(false);
-                            //寻找在爆炸半径内的所有人
-                            for(Person person:personList)
-                            {
-                                person.dieSpecialEffect(gameArea);
-                                person.setDie(true);
-                                //如果被炸到的是玩家
-                                if(person instanceof Player)
-                                {
-                                    int choice= JOptionPane.showConfirmDialog(null,"你扑街了！再来一把？","",JOptionPane.YES_NO_CANCEL_OPTION);
-                                    if(choice==0)
-                                    {
-                                        restStart();
-                                        gameOver=true;
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        System.exit(0);
-                                    }
-                                }
-                            }
-                        }
-                        if (gameOver)
-                            break;
-                    }
-                    for(Mine mine:list)
-                    {
-                        mineList.remove(mine);
-                    }
 
                     //判断精英战士是否发现玩家，如果发现则开火
                     if(hider.isIfFindPlayer(player.getLocation()) && !hider.ifDie())
@@ -312,15 +288,43 @@ public class SinglePersonModel extends JFrame
             initialThread();
             healthLevel.setStringPainted(true); //显示玩家生命值百分比
             healthLevel.setSize(120,30);
-            healthLevel.setLocation(50,10);
+            healthLevel.setLocation(100,10);
+            healthLevel.setForeground(new Color(0xFD2016));
+
             healthLevelTip.setLocation(10,10);
-            healthLevelTip.setSize(60,30);
+            healthLevelTip.setSize(70,30);
             healthLevelTip.setFont(new Font(null,Font.BOLD,20));
             healthLevelTip.setBackground(new Color(0xFD2016));
+            healthLevelTip.setEditable(false);
 
+            bulletLeft.setFont(new Font(null,Font.BOLD,20));
+            bulletLeft.setSize(180,30);
+            bulletLeft.setLocation(10,50);
+            bulletLeft.setEditable(false);
+            bulletLeft.setBackground(new Color(0x75BCE2));
+
+            killAndDieField.setText("击杀/死亡：(0/0)");
+            killAndDieField.setFont(new Font(null,Font.BOLD,20));
+            killAndDieField.setSize(180,30);
+            killAndDieField.setLocation(1000,10);
+            killAndDieField.setBackground(new Color(0xED4078));
+
+            URL url=GameFrame.class.getResource("/images/logo/usingWeaponFlag.png");
+            ImageIcon icon=new ImageIcon(url);
+            icon.setImage(icon.getImage().getScaledInstance(20,20,Image.SCALE_DEFAULT));
+            usingWeaponFlag.setSize(20, 20);
+            usingWeaponFlag.setIcon(icon);
+            flagPoint[0]=new Point(10,820);
+            flagPoint[1]=new Point(400,820);
+            flagPoint[2]=new Point(790,820);
+            flagPoint[3]=new Point(1020,820);
+
+            this.add(usingWeaponFlag);
             this.add(healthLevel);
             this.add(healthLevelTip);
-            this.setSize(SinglePersonModel.gameFrameWidth, SinglePersonModel.gameFrameHeight);
+            this.add(bulletLeft);
+            this.add(killAndDieField);
+            this.setSize(GameFrame.gameFrameWidth, GameFrame.gameFrameHeight);
             this.setLayout(null);           //设置为绝对布局
         }
 
@@ -342,7 +346,7 @@ public class SinglePersonModel extends JFrame
                int k=i+1;
                int width=itemBars[i].getWidth();
                int height=itemBars[i].getHeight();
-               URL url= SinglePersonModel.class.getResource("/images/itemBars/itemBar"+k+".png");
+               URL url= GameFrame.class.getResource("/images/itemBars/itemBar"+k+".png");
                ImageIcon icon=new ImageIcon(url);
                icon.setImage(icon.getImage().getScaledInstance(width,height,Image.SCALE_DEFAULT));
                itemBars[i].setIcon(icon);
@@ -406,6 +410,8 @@ public class SinglePersonModel extends JFrame
                                     else if(rewardProp.getType()== RewardType.Mine)
                                     {
                                         player.peekWeapon((Weapon) rewardProp.getReward(),1);
+                                        int left=player.getBulletLeftOnPerson();
+                                        bulletLeft.setText("子弹："+left);
                                     }
                                     //如果道具是枪
                                     else
@@ -424,22 +430,22 @@ public class SinglePersonModel extends JFrame
                             break;
                             //切换武器
                         case KeyEvent.VK_1:
-                            player.changeWeapon(WeaponType.automaticRifle);
+                            player.changeWeapon(WeaponType.automaticRifle,gameArea);
                             if (shotThread!=null &&shotThread.isRunning())
                                 shotThread.stop();
                             break;
                         case KeyEvent.VK_2:
-                            player.changeWeapon(WeaponType.sniperRifle);
+                            player.changeWeapon(WeaponType.sniperRifle,gameArea);
                             if (shotThread!=null &&shotThread.isRunning())
                                 shotThread.stop();
                             break;
                         case KeyEvent.VK_3:
-                            player.changeWeapon(WeaponType.grenade);
+                            player.changeWeapon(WeaponType.grenade,gameArea);
                             if (shotThread!=null &&shotThread.isRunning())
                                 shotThread.stop();
                             break;
                         case KeyEvent.VK_4:
-                            player.changeWeapon(WeaponType.mine);
+                            player.changeWeapon(WeaponType.mine,gameArea);
                             if(shotThread!=null && shotThread.isRunning())
                                 shotThread.stop();
                             break;
@@ -551,6 +557,7 @@ public class SinglePersonModel extends JFrame
                                     int healthPoint =person.getHealthPoint();
                                     if(healthPoint-bullet.getDamageValue()<=0)      //如果目标死亡
                                     {
+                                        bullet.getFromPerson().setKillNum(1);       //这颗子弹的所有者击杀数加1
                                         person.dieSpecialEffect(gameArea);
                                         person.setVisible(false);
                                         person.setDie(true);            //设置AI死亡
@@ -624,7 +631,8 @@ public class SinglePersonModel extends JFrame
                                     int healthPoint =person.getHealthPoint();
                                     if(healthPoint-bullet.getDamageValue()<=0)
                                     {
-                                        person.setDie(true);            //设置人物死亡
+                                        bullet.getFromPerson().setKillNum(1);       //这颗子弹的所有者击杀数加1
+                                        person.setDie(true);                        //设置人物死亡
                                         person.dieSpecialEffect(gameArea);
                                         if(person instanceof Player)
                                         {
@@ -673,9 +681,9 @@ public class SinglePersonModel extends JFrame
         }
         public void paintComponent(Graphics g)
         {
-            URL url=startGame.class.getResource("/images/backGround.png");
+            URL url=startGame.class.getResource("/images/bg.png");
             ImageIcon icon=new ImageIcon(url);
-            g.drawImage(icon.getImage(),0,0, SinglePersonModel.gameAreaWidth, SinglePersonModel.gameAreaHeight,null);
+            g.drawImage(icon.getImage(),0,0, GameFrame.gameFrameWidth, 950,null);
         }
     }
 
@@ -691,29 +699,29 @@ public class SinglePersonModel extends JFrame
         //
         try {
             //先判断物体是否超出地图边界
-            if (point.x < 0 || point.y < 0 || point.x + radius > SinglePersonModel.gameAreaWidth || point.y + radius > SinglePersonModel.gameAreaHeight)
+            if (point.x < 0 || point.y < 0 || point.x + radius > GameFrame.gameAreaWidth || point.y + radius > GameFrame.gameAreaHeight)
                 return true;
             //分别判断物体的左上、右上、左下、右下角是与墙重
             if(!isBullet)
             {
                 int y = point.x / 20;       //物体在map中的纵坐标
                 int x = point.y / 20;       //物体在map中的横坐标
-                if (Wall.map[x][y] !=0) {
+                if (Map.map[x][y] !=0) {
                     return true;
                 }
                 y = (point.x + 2 * radius) / 20;
                 x = point.y / 20;
-                if (Wall.map[x][y] != 0) {
+                if (Map.map[x][y] != 0) {
                     return true;
                 }
                 y = (point.x / 20);
                 x = (point.y + 2 * radius) / 20;
-                if (Wall.map[x][y] != 0) {
+                if (Map.map[x][y] != 0) {
                     return true;
                 }
                 y = (point.x + 2 * radius) / 20;
                 x = (point.y + 2 * radius) / 20;
-                if (Wall.map[x][y] != 0) {
+                if (Map.map[x][y] != 0) {
                     return true;
                 }
             }
@@ -721,22 +729,22 @@ public class SinglePersonModel extends JFrame
             {
                 int y = point.x / 20;       //物体在map中的纵坐标
                 int x = point.y / 20;       //物体在map中的横坐标
-                if (Wall.map[x][y] ==1) {
+                if (Map.map[x][y] ==1) {
                     return true;
                 }
                 y = (point.x + 2 * radius) / 20;
                 x = point.y / 20;
-                if (Wall.map[x][y] ==1) {
+                if (Map.map[x][y] ==1) {
                     return true;
                 }
                 y = (point.x / 20);
                 x = (point.y + 2 * radius) / 20;
-                if (Wall.map[x][y] ==1) {
+                if (Map.map[x][y] ==1) {
                     return true;
                 }
                 y = (point.x + 2 * radius) / 20;
                 x = (point.y + 2 * radius) / 20;
-                if (Wall.map[x][y] ==1) {
+                if (Map.map[x][y] ==1) {
                     return true;
                 }
             }
@@ -817,6 +825,8 @@ public class SinglePersonModel extends JFrame
             {
                 MusicPlayer.playDiscontinueAttackMusic(weapon.getWeaponName());
                 stepMine(player.getLocation(), person);
+                int bulletLeftOnPerson=player.getBulletLeftOnPerson();
+                bulletLeft.setText("子弹："+bulletLeftOnPerson);
             }
             else
             {
@@ -835,6 +845,11 @@ public class SinglePersonModel extends JFrame
                     gun.setPollBolt(true);      //狙击枪进入拉栓状态
                     createBullet(player,startPoint, endPoint, BulletType.k127, weapon.getDamageValue(), weapon.getType());
                     gun.reduceBulletNum(1);     //子弹里面的弹夹减1
+                    //修改子弹的数目，在屏幕左上角的显示
+                    int bulletLeftInGun=((Gun)weapon).getBulletLeft();
+                    int bulletLeftOnPerson=player.getBulletLeftOnPerson();
+                    bulletLeft.setText("子弹："+bulletLeftInGun+"/"+bulletLeftOnPerson);
+
                     MusicPlayer.playDiscontinueAttackMusic(weapon.getWeaponName());
                 } else                    //没有子弹
                 {
@@ -853,6 +868,9 @@ public class SinglePersonModel extends JFrame
                 {
                     createBullet(player,startPoint, endPoint, ((Gun) weapon).getBulletType(), weapon.getDamageValue(), weapon.getType());
                     gun.reduceBulletNum(1);     //子弹里面的弹夹减1
+                    int bulletLeftInGun=((Gun)weapon).getBulletLeft();
+                    int bulletLeftOnPerson=player.getBulletLeftOnPerson();
+                    bulletLeft.setText("子弹："+bulletLeftInGun+"/"+bulletLeftOnPerson);
                     if(!person.isAttacking())
                     {
                         MusicPlayer.playContinueAttackMusic(gun.getWeaponName());
@@ -873,6 +891,8 @@ public class SinglePersonModel extends JFrame
     //重新开始游戏
     public void restStart()
     {
+        int killNum=player.getKillNum();
+        int dieNum=player.getDieNum();
         MusicPlayer.stopActionMusic();
         for(Person person:personList)
         {
@@ -912,6 +932,8 @@ public class SinglePersonModel extends JFrame
         System.gc();
         createPlayer();
         createAI();
+        player.setDieNum(dieNum);
+        player.setKillNum(killNum);
         MusicPlayer.playActionMusic();
         gameArea.repaint();
     }
@@ -931,9 +953,10 @@ public class SinglePersonModel extends JFrame
             player.setIcon(icon);
             player.setLocation(400, 300);
             gameArea.add(player);
+            player.peekWeapon(new M4A1(), 10000);
             player.peekWeapon(new AWM(), 100);
             player.peekWeapon(new Mine(),5);
-            player.peekWeapon(new M4A1(), 10000);
+            player.changeWeapon(1,gameArea);
             personList.add(player);
             healthLevel.setValue(player.getHealthPoint());
 
@@ -950,7 +973,7 @@ public class SinglePersonModel extends JFrame
         Mine mine=new Mine();
         mine.setFromPerson(fromPerson);
         mine.setLocation(point);
-        URL url= SinglePersonModel.class.getResource("/images/Weapon/BoomWeapon/Mine.png");
+        URL url= GameFrame.class.getResource("/images/Weapon/BoomWeapon/Mine.png");
         ImageIcon icon=new ImageIcon(url);
         icon.setImage(icon.getImage().getScaledInstance(20,20,Image.SCALE_DEFAULT));
         mine.setSize(20,20);
@@ -1000,8 +1023,8 @@ public class SinglePersonModel extends JFrame
     //随机生成一个坐标
     private Point randomPoint()
     {
-        int x=random.nextInt(SinglePersonModel.gameAreaWidth /CELL)*CELL;
-        int y=random.nextInt(SinglePersonModel.gameAreaHeight/CELL)*CELL;
+        int x=random.nextInt(GameFrame.gameAreaWidth /CELL)*CELL;
+        int y=random.nextInt(GameFrame.gameAreaHeight/CELL)*CELL;
         return new Point(x,y);
     }
     //获取人物的中心坐标
@@ -1026,5 +1049,4 @@ public class SinglePersonModel extends JFrame
     {
         return sniperBulletList;
     }
-
 }

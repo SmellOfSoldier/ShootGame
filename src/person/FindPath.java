@@ -2,6 +2,10 @@ package person;
 
 import java.util.*;
 
+/**
+ * 广度优先遍历，寻找AI与玩家直接最短的路径
+ * 并且以Point数组的形式输出
+ */
 public class FindPath {
     static int dp[][];
 
@@ -21,7 +25,7 @@ public class FindPath {
         {
             for(int j=0;j<m;j++)
             {
-                if(Wall.map[i][j]==0)dp[i][j]=100000000;
+                if(Map.map[i][j]==0)dp[i][j]=100000000;
                 else dp[i][j]=-1;
             }
         }

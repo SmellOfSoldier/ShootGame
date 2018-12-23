@@ -1,13 +1,14 @@
 package person;
 
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
 import java.awt.*;
 import java.io.Serializable;
 import java.net.URL;
 
 import Weapon.*;
 import utils.MusicPlayer;
-import view.SinglePersonModel;
+import view.GameFrame;
 
 /**
  * 游戏人物
@@ -19,9 +20,11 @@ public class Person extends JLabel implements Serializable
     private int speed;                      //人物的移动速度
     protected String id;                       //编号
     protected String name;                  //姓名
-    private int usingWeaponType=3;              //目前使用的武器的种类
+    private int usingWeaponType;              //目前使用的武器的种类
     private int healthPoint;                //生命值
     private   int radius;                   //人物的半径
+    private int killNum=0;                          //击杀数
+    private int dieNum=0;                           //死亡数
     private int [] bulletNum=new int[WeaponType.typeNum+1];      //武器中子弹的数目
     private Weapon []weapons=new Weapon[WeaponType.typeNum+1];     //人物持有的武器
     private boolean isDie=false;        //是否死亡
@@ -46,11 +49,26 @@ public class Person extends JLabel implements Serializable
     public boolean ifDie(){return isDie;}                   //电脑是否死亡
     public boolean isAttacking(){return isAttacking;}       //电脑是否正在攻击
     public void setAttacking(boolean isAttacking){this.isAttacking=isAttacking;}        //设置人物攻击状态
+    public int getKillNum(){return killNum;}
+    public int getDieNum(){return dieNum;}
+    public void setKillNum(int killNum)
+    {
+        this.killNum+=killNum;
+    }
+    public void setDieNum(int dieNum)
+    {
+        this.dieNum+=dieNum;
+    }
     public void setDie(boolean isDie)                       //设置人物的死亡状态
     {
         this.isDie=isDie;
         this.setVisible(false);
     }
+
+    /**
+     * 播放人物死亡特效
+     * @param gameArea
+     */
     public void dieSpecialEffect(JPanel gameArea)
     {
         new Thread(new Runnable() {
@@ -72,6 +90,10 @@ public class Person extends JLabel implements Serializable
             }
         }).start();
     }
+
+    /**
+     * 人物状态子弹
+     */
     public  void  reLoad()            //装填子弹
     {
         Gun gun = (Gun) weapons[usingWeaponType];
@@ -120,8 +142,12 @@ public class Person extends JLabel implements Serializable
                     isReload=false;
                 }
             }).start();
-
     }
+
+    /**
+     * 人物是否在装弹中
+     * @return
+     */
     public boolean ifReloading()
     {
         return isReload;
@@ -142,7 +168,7 @@ public class Person extends JLabel implements Serializable
         }
         if (this instanceof Player)
         {
-            SinglePersonModel.healthLevel.setValue(healthPoint);
+            GameFrame.healthLevel.setValue(healthPoint);
         }
     }
     public void dicardWeapon(int type)              //丢弃武器,type为要丢弃武器的种类
@@ -162,8 +188,9 @@ public class Person extends JLabel implements Serializable
             return false;
         return true;
     }
-    public void changeWeapon(int type)                  //切换武器
+    public void changeWeapon(int type,JPanel gameArea)                  //切换武器
     {
+
         if(type!=usingWeaponType)
         {
             if (weapons[type] != null)    //如果这把武器存在
@@ -182,9 +209,9 @@ public class Person extends JLabel implements Serializable
     }
     public int getUsingWeaponType(){return usingWeaponType;}    //获取当前使用的武器类型
     public Weapon getUsingWeapon(){return weapons[usingWeaponType];}     //获取当前使用的武器
-    public int getSpeed(){return speed;}
+    public int getSpeed(){return speed;}                                //获取人物的移动速度
     public void reduceMineNum(int num){bulletNum[WeaponType.mine]-=num;}        //减少人物携带的地雷数量
     public boolean ifEmptyMine(){return bulletNum[WeaponType.mine]==0;}         //判断人类是否还有地雷
-
+    public int getBulletLeftOnPerson(){return bulletNum[usingWeaponType];}      //放回人物身上携带的子弹数量
 }
 
