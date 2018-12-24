@@ -1,8 +1,5 @@
 package view;
 
-/**
- * 信息传递的关键标识符
- */
 public interface Sign
 {
     String Register="REGISTER_COMMEND";                       //注册
@@ -11,6 +8,15 @@ public interface Sign
     String LoginSuccess="LOGIN_SUCCESS";                   //登陆成功
     String OpenGame="OPEN_GAME";                           //玩家打开了点击了多人游戏
     String Disconnect="DISCONNEXTE";                             //关闭连接请求（玩家关闭多人游戏界面）
+    String EnterRoom="ENTER_ROOM";                               //加入房间
+    String CreateRoom="CREATE_ROOM";                             //创建房间
+    String TickFromRoom="TICK_FROM_ROOM";                         //T出房间
+    String LeaveRoom="LEAVE_ROOM";                                //离开房间
+    String StartGame="START_GAME";                                //开始游戏
+    String NewClientEnter="NEW_CLIENT_ENTER";                    //新玩家加入房间
+    String NewRoomCreate="NEW_ROOM_CREATE";                     //新房间创建
+    String OneClientTicked="ONE_CLIENT_TICKED";                 //玩家被提出房间
+    String BeenTicked="BEEN_TICKED";                            //已经被T出的玩家
     String SuccessDisconnected="SUCCESS_DISCONNEXTED";            //用于返还给客户端成功断开连接的消息
     String FailedDisconnected="FAILED_DISCONNEXTED";            //用于返还给客户端连接失败服务器目前不可用的消息
     String SuccessConnected="SUCCESS_CONNEXTED";            //用于返还给客户端成功连接的消息

@@ -1,5 +1,7 @@
 import java.io.*;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * 玩家注册信息保存类
@@ -74,7 +76,7 @@ class saveorreadInfo {
      * 从文件读取注册玩家数据到 allPlayer
      * @param allPlayer 暂存已注册玩家数据
      */
-    public static void  readAllInfo(ArrayList<Client> allPlayer){
+    public static void  readAllInfo(List<Client> allPlayer){
             try {
                 //创建文件对象如不存在则自动创建一个
                 File allPlayerFile=new File(".","allPlayerInfo.txt");

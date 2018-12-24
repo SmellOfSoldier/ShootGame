@@ -10,7 +10,7 @@ public class Client implements Serializable {
     private String password;
     private boolean isOnline=false;
     private  boolean isPlaying=false;
-    private GameRoom room;
+    private ServerGameRoom room;
     /**
      * Player构造函数
      * @param id 玩家ID（唯一标识）
@@ -43,7 +43,7 @@ public class Client implements Serializable {
      * 设置玩家所在房间
      * @param gameRoom 房间对象
      */
-    public void setGameRoom(GameRoom gameRoom){
+    public void setGameRoom(ServerGameRoom gameRoom){
         this.room=gameRoom;
     }
     /**
@@ -81,7 +81,24 @@ public class Client implements Serializable {
      * 返回房间实例对象
      * @return 房间实例索引
      */
-    public GameRoom getRoom(){
+
+    public ServerGameRoom getRoom(){
         return room;
+    }
+
+    /**
+     * 设置所属房间为空
+     */
+    public void setRoomNull(){
+        room=null;
+    }
+    /**
+     *
+     * @param object
+     * @return
+     */
+    public boolean equals(Object object){
+        Client client=(Client)object;
+        return this.id==client.getId();
     }
 }

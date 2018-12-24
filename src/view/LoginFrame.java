@@ -1,5 +1,7 @@
 package view;
 
+import com.google.gson.Gson;
+
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
@@ -8,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
@@ -90,21 +93,37 @@ public class LoginFrame{
         btn_link.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                try
+                {
                 String result = null;//获得服务器发送过来的检验结果
+                String allInfo=null;//初始化开启大厅信息
                 String playerid=txt_account.getText().trim();
                 String password=String.valueOf(txt_password.getPassword());
                 ClientPort.sendStream.println(Sign.Login+playerid+Sign.SplitSign+password);
                 ClientPort.sendStream.flush();
-                try {
+
                     result=ClientPort.getStream.readLine();//获取登陆结果
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
+
                 System.out.println("接收到的回复消息为 "+result);
                 switch (result){
-                    case Sign.LoginSuccess:{//登陆成功
+                    case Sign.LoginSuccess:
+                        {//登陆成功
                         JOptionPane.showMessageDialog(loginJFrame, "登陆成功", "提示", JOptionPane.INFORMATION_MESSAGE);//弹出提示框
-                        new GameHall(new Client("1","13"));
+                            allInfo=ClientPort.getStream.readLine();
+                            String allclientsStr=allInfo.split(Sign.SplitSign)[0];
+                            String roomStr=allInfo.split(Sign.SplitSign)[1];
+                            String clientStr=allInfo.split(Sign.SplitSign)[2];
+                            Gson gson=new Gson();
+                            Client[] clients=gson.fromJson(clientStr,Client[].class);
+                            ServerGameRoom[] rooms=gson.fromJson(roomStr,ServerGameRoom[].class);
+                            Client me=gson.fromJson(clientStr,Client.class);
+                            for(Client c:clients){
+                                ClientPort.allOnlineClient.add(c);
+                            }
+                            for (ServerGameRoom r:rooms){
+                                ClientPort.allServerRoom.add(r);
+                            }
+                        new GameHall(me);//创建游戏大厅并传入登陆者的实例对象
                         break;
                     }
                     case Sign.WrongPassword:{//密码错误
@@ -116,18 +135,26 @@ public class LoginFrame{
                         break;
                     }
                 }
+             } catch (IOException e1) {
+                e1.printStackTrace();
+            }
             }
         });
         /**
          * 注册监听
          */
-        btn_register.addActionListener(new ActionListener() {
+        btn_register.addActionListener(new ActionListener()
+        {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                if(!isStartRegisterFrame){
+            public void actionPerformed(ActionEvent e)
+            {
+                if(!isStartRegisterFrame)
+                {
                 registerFrame=new RegisterFrame(ClientPort.sendStream,ClientPort.getStream);
+                isStartRegisterFrame=true;//设置为已经启动过
                 }
-                else {
+                else
+                    {
                     registerFrame.clearAllBlanks();
                     registerFrame.setVisible(true);//重新设置可见
                 }
@@ -136,7 +163,8 @@ public class LoginFrame{
     }
     //内部类区域
     //公告区域
-    class LoginPanel extends JPanel{
+    class LoginPanel extends JPanel
+    {
         LoginPanel(){
             initial();
             this.setSize(600,435);

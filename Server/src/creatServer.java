@@ -1,3 +1,5 @@
+
+
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
@@ -6,9 +8,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.BindException;
 import java.net.ServerSocket;
-import java.util.ArrayList;
+import java.util.*;
+import java.util.List;
 
 /**
  * 服务器类
@@ -32,11 +36,12 @@ public class creatServer {
     private  JList users;
     private ServerSocket serverSocket;//ServerSocket线程
     private ServerThread serverThread;
+    public static List<ServerGameRoom> allGameRoom;//所有房间
     public static  int allPlayernum;//储存已注册玩家数目
-    public static  ArrayList<clientThread> playerclientThreads;//List用于储存所有玩家服务线程
-    public static  ArrayList<Client> onlinePlayers;//储存所有在线玩家
-    public static ArrayList<Client> playingPlayers;//储存所有在线玩家
-    public static  ArrayList<Client> allPlayer;//服务器开启时从文件读取到此链表中保存
+    public static List<ServerClientThread> clientThreads;//List用于储存所有玩家服务线程
+    public static List<Client> onlineClients;//储存所有在线玩家
+    public static  List<Client> allPlayer;//服务器开启时从文件读取到此链表中保存
+    public static HashMap<Client, PrintStream> clientPrintStreamMap =new HashMap<>();//创建玩家
     public static  DefaultListModel listModel;//GUI玩家列表
     private boolean isStart=false;
     public static void main(String[] args) {
@@ -53,10 +58,7 @@ public class creatServer {
         frame.add(new ServerJPanel());
         frame.setSize(600,500);
         //设置服务器在屏幕正中央
-        int screen_width = Toolkit.getDefaultToolkit().getScreenSize().width;
-        int screen_height = Toolkit.getDefaultToolkit().getScreenSize().height;
-        frame.setLocation((screen_width - frame.getWidth()) / 2,
-                (screen_height - frame.getHeight()) / 2);
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
         //设置关闭事件
         frame.addWindowListener(new WindowAdapter() {
@@ -117,9 +119,14 @@ public class creatServer {
      */
     public void startServer(int maxPlayer,int port) throws BindException {
         try {
-            playerclientThreads=new ArrayList<clientThread>();//创建玩家列表
+            /**
+             * 线程安全静态变量
+             */
+            clientThreads= Collections.synchronizedList(new LinkedList<>());//创建玩家列表
             allPlayernum=0;//初始化注册玩家数目
-            allPlayer=new ArrayList<Client>();//创建注册玩家列表
+            allPlayer=Collections.synchronizedList(new LinkedList<>());//创建注册玩家列表
+            allGameRoom=Collections.synchronizedList(new LinkedList<>());//创建房间列表
+            onlineClients=Collections.synchronizedList(new LinkedList<>());//创建在线玩家列表
             serverSocket=new ServerSocket(port);//创建服务Socket
             serverThread=new ServerThread(serverSocket,30);//创建服务器线程
             serverThread.start();//服务器线程开启
@@ -146,8 +153,8 @@ public class creatServer {
         if(serverThread!=null) serverThread.interrupt();//服务端主线程如果存在则停止服务端主线程
         System.out.println("服务端线程成功关闭。");//测试使用
         contentArea.append("服务器已经成功关闭"+"\r\n");
-        for(int i=0;i<playerclientThreads.size();i++){
-            playerclientThreads.get(1).sendCommand(Sign.ServerExit);//返回服务器关闭消息
+        for(int i = 0; i< clientThreads.size(); i++){
+            clientThreads.get(1).sendCommand(Sign.ServerExit);//返回服务器关闭消息
             //TODO:转发给所有玩家服务端被关闭
         }
         if(serverSocket!=null) serverSocket.close();//如果serverSocket存在则关闭它
@@ -160,6 +167,17 @@ public class creatServer {
             isStart=true;
         }
     }
+
+    /*/**
+     * 加入房间函数
+     */
+    /*public boolean EnterGameRoom(ServerGameRoom room, Client client){
+        int flage=-1;
+        for(int i=0;i<allGameRoom.size();i++){
+            if(allGameRoom.get(i).equals(room)) flage=i;
+        }
+
+    }*/
     public void sendToOther(){
         //TODO:转发给其它玩家函数
 

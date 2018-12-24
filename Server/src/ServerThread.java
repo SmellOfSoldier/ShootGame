@@ -31,7 +31,7 @@ class ServerThread extends Thread{
                 /**
                  * 判断服务器是否已经满人
                  */
-                if(creatServer.playerclientThreads.size()==maxplayer){//当前人数已满
+                if(creatServer.clientThreads.size()==maxplayer){//当前人数已满
                     //TODO:服务器人数已满返回给现要连接的客户端信息
                     socket.close();
                     continue;//拒绝连接后跳出本次循环等待下次连接
@@ -39,9 +39,9 @@ class ServerThread extends Thread{
                 System.out.println("尝试连接成功消息");
                 sendStream.println(Sign.SuccessConnected);//返回给尝试连接的客户端成功信息
                 sendStream.flush();
-                clientThread aplayerClient=new clientThread(socket,sendStream,getStream);//创建一个服务线程
+                ServerClientThread aplayerClient=new ServerClientThread(socket,sendStream,getStream);//创建一个服务线程
                 aplayerClient.setisConnected(true);//设置此玩家服务线程连接状态为true
-                creatServer.playerclientThreads.add(aplayerClient);//将此服务线程压入playerclientThreads中保存
+                creatServer.clientThreads.add(aplayerClient);//将此服务线程压入clientThreads中保存
                 aplayerClient.start();//启动该服务线程
                 System.out.println("成功建立一个玩家连接。");
             } catch (IOException e) {
