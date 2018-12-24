@@ -9,6 +9,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.Socket;
 import java.util.ArrayList;
 
 /**
@@ -33,6 +37,7 @@ public class GameHall {
     private JList currentOnlinePlayer;//当前在线用户
     private JList currentRoom;//当前可用房间
     private boolean isCreatRoom=false;//是否创建房间
+    private GameRoom currentGameRoom=null;//当前房间
     GameHall(Client currentClient){
         this.currentClient=currentClient;
         gameHallJFrame=new JFrame("游戏大厅");
@@ -52,7 +57,7 @@ public class GameHall {
             public void actionPerformed(ActionEvent e) {
                 if(!isCreatRoom) {
                     ClientPort.sendStream.println(Sign.CreateRoom + currentClient.getId());//发送创建房间的命令
-                    creatGameRoom(currentClient);
+                    createGameRoom(currentClient);
                     
                 }else {
                     JOptionPane.showMessageDialog(gameHallJFrame, "您已经创建过房间请关闭已经创建的房间再尝试", "提示", JOptionPane.ERROR_MESSAGE);//弹出警告框
@@ -179,7 +184,7 @@ public class GameHall {
         private JTextArea receiveArea=new JTextArea();          //消息接收区
         private JTextArea sendArea=new JTextArea();             //消息发送区
         private JList<String> clientJList;                       //房间内的玩家的用户名,用于显示在房间中
-        //private Client.ClientThread
+        //private utils.Client.ClientThread
 
 
         public GameRoom(Client roomMaster,String roomname)
@@ -240,13 +245,52 @@ public class GameHall {
             }
         }
     }
+
+    /**
+     * 创建游戏房间时之后所有于服务器之间进行关于房间信息和游戏中的数据
+     * 传输都分配给该线程的实例对象完成
+     */
+    public class ClientThread extends  Thread {
+        private Socket socket;
+        private PrintStream sendstream;
+        private BufferedReader getstream;
+        ClientThread(Socket socket,PrintStream sendstream,BufferedReader getstream){
+            this.socket=socket;
+            this.sendstream=sendstream;
+            this.getstream=getstream;
+        }
+        public void run(){
+            String line=null;//接收到的初始字符串（信息）
+            String command = null;//当前获取的信息需要执行的命令
+            String realMessage = null;//去除头部命令的信息
+            while (!this.isInterrupted()){
+                try {
+                    line=getstream.readLine();
+                    System.out.println("客户端收到来自服务器的消息"+line);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        /**
+         *  停止该连接线程
+         * @return
+         */
+        public boolean stopThisThread(){
+            this.interrupt();
+            return true;
+        }
+    }
     /**
      * 创建房间
      * @param roomMaster
      */
-    public void  creatGameRoom(Client roomMaster){
+    public void createGameRoom(Client roomMaster){
         String roomname=null;
-        new GameRoom(roomMaster,roomname);
+
+        ClientPort.sendStream.println(Sign.CreateRoom+roomname);
+        currentGameRoom=new GameRoom(roomMaster,roomname);
     }
 
 }
