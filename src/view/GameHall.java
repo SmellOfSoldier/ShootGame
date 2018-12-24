@@ -15,7 +15,7 @@ import java.util.ArrayList;
  * 游戏大厅类bylijie
  */
 public class GameHall {
-    private static Client currentClient;//当前用户
+    private static Client currentClient=null;//当前用户
 
     private JFrame gameHallJFrame;//大厅frame
     private JButton killList;//击杀榜
@@ -34,7 +34,7 @@ public class GameHall {
     private JList currentRoom;//当前可用房间
     private boolean isCreatRoom=false;//是否创建房间
     GameHall(Client currentClient){
-        GameHall.currentClient=currentClient;
+        this.currentClient=currentClient;
         gameHallJFrame=new JFrame("游戏大厅");
         gameHallJFrame.setSize(1000,800);
         gameHallJFrame.setLocationRelativeTo(null);
@@ -52,7 +52,8 @@ public class GameHall {
             public void actionPerformed(ActionEvent e) {
                 if(!isCreatRoom) {
                     ClientPort.sendStream.println(Sign.CreateRoom + currentClient.getId());//发送创建房间的命令
-                    GameRoom gameRoom=new GameRoom();
+                    creatGameRoom(currentClient);
+                    
                 }else {
                     JOptionPane.showMessageDialog(gameHallJFrame, "您已经创建过房间请关闭已经创建的房间再尝试", "提示", JOptionPane.ERROR_MESSAGE);//弹出警告框
                 }
@@ -181,7 +182,7 @@ public class GameHall {
         //private Client.ClientThread
 
 
-        public GameRoom()
+        public GameRoom(Client roomMaster,String roomname)
         {
             roomArea=new RoomArea();
             this.add(roomArea);
@@ -189,7 +190,10 @@ public class GameHall {
             this.setSize(Width,Height);
             this.setLocation(1458,115);
             this.setVisible(true);
+            this.roomMaster=roomMaster;
+            this.name=roomname;
         }
+
         //房间显示区域
          class RoomArea extends JPanel
         {
@@ -235,6 +239,14 @@ public class GameHall {
 
             }
         }
+    }
+    /**
+     * 创建房间
+     * @param roomMaster
+     */
+    public void  creatGameRoom(Client roomMaster){
+        String roomname=null;
+        new GameRoom(roomMaster,roomname);
     }
 
 }
