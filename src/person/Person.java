@@ -1,14 +1,13 @@
 package person;
 
 import javax.swing.*;
-import javax.swing.border.BevelBorder;
 import java.awt.*;
 import java.io.Serializable;
 import java.net.URL;
 
 import Weapon.*;
 import utils.MusicPlayer;
-import view.GameFrame;
+import view.singlePersonModel;
 
 /**
  * 游戏人物
@@ -168,7 +167,7 @@ public class Person extends JLabel implements Serializable
         }
         if (this instanceof Player)
         {
-            GameFrame.healthLevel.setValue(healthPoint);
+            singlePersonModel.healthLevel.setValue(healthPoint);
         }
     }
     public void dicardWeapon(int type)              //丢弃武器,type为要丢弃武器的种类

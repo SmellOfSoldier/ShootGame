@@ -4,7 +4,7 @@ import Arsenal.AWM;
 import Weapon.WeaponType;
 import bullet.Bullet;
 import bullet.BulletSize;
-import view.GameFrame;
+import view.singlePersonModel;
 import view.startGame;
 
 import javax.swing.*;
@@ -34,8 +34,8 @@ public class Hider extends AI implements Serializable
         changeWeapon(WeaponType.automaticRifle,null);
         URL url=startGame.class.getResource("/images/orange.png");
         ImageIcon icon=new ImageIcon(url);
-        icon.setImage(icon.getImage().getScaledInstance(GameFrame.CELL, GameFrame.CELL,Image.SCALE_DEFAULT));
-        this.setSize(GameFrame.CELL, GameFrame.CELL);
+        icon.setImage(icon.getImage().getScaledInstance(singlePersonModel.CELL, singlePersonModel.CELL,Image.SCALE_DEFAULT));
+        this.setSize(singlePersonModel.CELL, singlePersonModel.CELL);
         this.setIcon(icon);
         this.peekWeapon(awm,100);
     }
@@ -50,8 +50,8 @@ public class Hider extends AI implements Serializable
                 public void actionPerformed(ActionEvent e)
                 {
                     int radius= BulletSize.getBulletRadius(awm.getBulletType());
-                    java.util.List bulletList= GameFrame.getSniperBulletList();
-                    Bullet bullet=new Bullet(Hider.this,awm.getBulletType(),radius,awm.getDamageValue(), TravelSpeed.bulletTravelSpeed,Hider.this.getLocation(), GameFrame.getPlayer().getLocation());
+                    java.util.List bulletList= singlePersonModel.getSniperBulletList();
+                    Bullet bullet=new Bullet(Hider.this,awm.getBulletType(),radius,awm.getDamageValue(), TravelSpeed.bulletTravelSpeed,Hider.this.getLocation(), singlePersonModel.getPlayer().getLocation());
                     int bulletRadius=bullet.getRadius();
                     bullet.setSize(bulletRadius,bulletRadius);
                     URL url= startGame.class.getResource("/images/bullet/Bullet.png");

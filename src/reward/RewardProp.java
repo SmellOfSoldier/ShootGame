@@ -3,7 +3,7 @@ package reward;
 import Arsenal.*;
 import Weapon.Grenade;
 import Weapon.Mine;
-import view.GameFrame;
+import view.singlePersonModel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -47,7 +47,7 @@ public class RewardProp extends JLabel
         //给奖励道具设置图标
         URL url =RewardProp.class.getResource("/images/rewardProp/"+rewardPropName+".png");
         ImageIcon icon=new ImageIcon(url);
-        icon.setImage(icon.getImage().getScaledInstance(2* GameFrame.CELL,2* GameFrame.CELL,Image.SCALE_DEFAULT));
+        icon.setImage(icon.getImage().getScaledInstance(2* singlePersonModel.CELL,2* singlePersonModel.CELL,Image.SCALE_DEFAULT));
         this.setIcon(icon);
         this.setLocation(point);
 

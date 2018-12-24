@@ -3,7 +3,7 @@ package Weapon;
 
 import person.Person;
 import person.TravelSpeed;
-import view.GameFrame;
+import view.singlePersonModel;
 
 import javax.swing.*;
 import java.applet.Applet;
@@ -45,9 +45,9 @@ public class Grenade extends Weapon implements Serializable
     public Grenade()
     {
         super(WeaponType.grenade,"Grenade",damageValue);
-        this.setSize(GameFrame.CELL,GameFrame.CELL);
+        this.setSize(singlePersonModel.CELL, singlePersonModel.CELL);
         ImageIcon icon=new ImageIcon(grenadeImageUrl);
-        icon.setImage(icon.getImage().getScaledInstance(GameFrame.CELL,GameFrame.CELL,Image.SCALE_DEFAULT));
+        icon.setImage(icon.getImage().getScaledInstance(singlePersonModel.CELL, singlePersonModel.CELL,Image.SCALE_DEFAULT));
         this.setIcon(icon);
     }
     public int getThrowDistance(){return throwDistance;}        //获取投掷距离
@@ -58,7 +58,7 @@ public class Grenade extends Weapon implements Serializable
      */
     public boolean ifArrive()
     {
-        Point nowPoint= GameFrame.getCentralPoint(this.getLocation());
+        Point nowPoint= singlePersonModel.getCentralPoint(this.getLocation());
         double nowDistance=nowPoint.distance(startPoint);
         return nowDistance>=throwDistance;
     }
