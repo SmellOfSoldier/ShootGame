@@ -9,7 +9,7 @@ public interface Sign
     String EnterRoom="ENTER_ROOM";                               //加入房间
     String CreateRoom="CREATE_ROOM";                             //创建房间
     String TickFromRoom="TICK_FROM_ROOM";                         //T出房间
-    String LeaveRoom="LEAVE_ROOM";                                //离开房间
+    String LeaveRoom="LEAVE_ROOM";                                //离开房间 （客户端收）
     String StartGame="START_GAME";                                //开始游戏
     String NewClientEnter="NEW_CLIENT_ENTER";                    //新玩家加入房间
     String NewRoomCreate="NEW_ROOM_CREATE";                     //新房间创建
@@ -37,4 +37,6 @@ public interface Sign
     String OneUserIsOnline="ONE_USER_IS_ONLINE";                        //用户上线
     String OneUserOffOnline="ONE_USER_OFF_ONLINE";                      //用户离线
     String YoursInformation="YOURS_INFORMATION";                        //用户的信息
+    String ClientLeaveRoom="CLIENT_LEAVE_ROOM";                         //一个用户用户离开房间（服务端收）
+
 }
