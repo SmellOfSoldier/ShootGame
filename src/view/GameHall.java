@@ -57,7 +57,7 @@ public class GameHall {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if(!isCreatRoom) {
-                    ClientPort.sendStream.println(Sign.CreateRoom + currentClient.getId());//发送创建房间的命令
+                    new creatRoomGui(currentClient);
                     createGameRoom(currentClient);
                     
                 }else {
@@ -151,14 +151,7 @@ public class GameHall {
             this.add(gamerIcon);
             this.add(rpane);
             this.add(lpanel);
-            //初始化玩家列表
-            for(Client c:ClientPort.allOnlineClient){
-                onlinePlayer.addElement(c.getId());
-            }
-            //初始化房间列表
-            for(ServerGameRoom r:ClientPort.allServerRoom){
-                rooms.addElement(r.getId());
-            }
+
         }
     }
     /**

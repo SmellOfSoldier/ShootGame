@@ -1,6 +1,10 @@
 package view;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.PrintStream;
 
@@ -18,13 +22,13 @@ public class creatRoomGui {
     private JTextField txt_maxclients;
     private PrintStream sendStream;
     private BufferedReader getStream;
-    creatRoomGui(){
-        this.sendStream=sendStream;
-        this.getStream=getStream;
+    private Client currentclient;
+    creatRoomGui(Client currrentclient){
+        this.currentclient=currrentclient;
         creatRoomjpanel=new creatRoomJPanel();
         creatRoomJFrame=new JFrame();
-        this.sendStream=sendStream;
-        this.getStream=getStream;
+        this.sendStream=ClientPort.sendStream;
+        this.getStream=ClientPort.getStream;
         creatRoomJFrame.setTitle("创建房间");
         creatRoomJFrame.add(creatRoomjpanel);
         creatRoomJFrame.setSize(300,200);
@@ -34,8 +38,26 @@ public class creatRoomGui {
         //设置相对屏幕绝对位置
         creatRoomJFrame.setLocationRelativeTo(null);
         creatRoomJFrame.setVisible(true);
+        btn_creat.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                sendStream.println(Sign.CreateRoom + currrentclient.getId());//发送创建房间的命令
+            }
+        });
+        btn_exit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                creatRoomJFrame.dispose();
+            }
+        });
+        creatRoomJFrame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                super.windowClosing(e);
+                creatRoomJFrame.dispose();
+            }
+        });
     }
-
     /**
      * 内部类定义房间创建GUI的布局
      */
@@ -83,7 +105,4 @@ public class creatRoomGui {
         }
     }
 
-    public static void main(String[] args) {
-        new creatRoomGui();
-    }
 }
