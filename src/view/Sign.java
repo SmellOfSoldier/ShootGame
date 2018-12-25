@@ -16,6 +16,7 @@ public interface Sign
     String NewClientEnter="NEW_CLIENT_ENTER";                    //新玩家加入房间
     String NewRoomCreate="NEW_ROOM_CREATE";                     //新房间创建
     String OneClientTicked="ONE_CLIENT_TICKED";                 //玩家被提出房间
+    String ClientLeaveRoom="CLIENT_LEAVE_ROOM";                  //玩家离开房间
     String BeenTicked="BEEN_TICKED";                            //已经被T出的玩家
     String SuccessDisconnected="SUCCESS_DISCONNEXTED";            //用于返还给客户端成功断开连接的消息
     String FailedDisconnected="FAILED_DISCONNEXTED";            //用于返还给客户端连接失败服务器目前不可用的消息
@@ -38,4 +39,9 @@ public interface Sign
     String OneUserIsOnline="ONE_USER_IS_ONLINE";                        //用户上线
     String OneUserOffOnline="ONE_USER_OFF_ONLINE";                      //用户离线
     String YoursInformation="YOURS_INFORMATION";                        //用户的信息
+    String RefreshInformation="REFRESH_INFORMATION";                   //刷新消息请求
+    String AddRoom="ADD_ROOM";                                         //增添游戏房间
+    String DelRoom="DELETE_ROOM";                                      //删除游戏房间
+    String AddClient="ADD_CLIENT";                                     //增添玩家
+    String DelClient="DELETE_CLIENT";                                  //减少玩家
 }

@@ -1,3 +1,4 @@
+import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -49,6 +50,38 @@ public class ServerGameRoom {
         targetclient.setRoomNull();//设置该玩家所属房间为空
         if(allClients.remove(targetclient)) return true;
         return false;
+    }
+    /**
+     * 清空房间所有的玩家(房主退出时)
+     */
+    public boolean removeAllClient(){
+        try{
+            //遍历全部在线玩家
+            PrintStream sendStream=null;
+        for(Client c:creatServer.onlineClients)
+        {
+            //如果玩家属于该房间
+            if(allClients.contains(c))
+            {
+                //告知房间里面其他人房间已经被删除
+                sendStream = creatServer.clientPrintStreamMap.get(c);
+                sendStream.println(Sign.RoomDismiss);
+                //删除该房间内该玩家
+                allClients.remove(c);
+            }
+            //如果不属于该房间
+            else
+                {
+                    //告知其他不在此房间中的其他在线用户房间删除的信息
+                    sendStream=creatServer.clientPrintStreamMap.get(c);
+                    sendStream.println(Sign.DelRoom+id);
+                }
+        }
+        return true;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return  true;
     }
 
     /**

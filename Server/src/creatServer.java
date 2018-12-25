@@ -48,8 +48,6 @@ public class creatServer {
         new creatServer();
     }
 
-
-
     /**
      * 服务端GUI界面构造区域
      */
@@ -178,10 +176,7 @@ public class creatServer {
         }
 
     }*/
-    public void sendToOther(){
-        //TODO:转发给其它玩家函数
 
-    }
     /**
      * ServerJPanel统一管理服务器界面布局
      */
