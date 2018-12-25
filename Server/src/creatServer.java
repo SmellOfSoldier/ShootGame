@@ -171,7 +171,7 @@ public class creatServer {
     /*/**
      * 加入房间函数
      */
-    /*public boolean EnterGameRoom(ServerGameRoom room, Client client){
+    /*public boolean EnterGameRoom(ServerGameRoom room, utils.Client client){
         int flage=-1;
         for(int i=0;i<allGameRoom.size();i++){
             if(allGameRoom.get(i).equals(room)) flage=i;

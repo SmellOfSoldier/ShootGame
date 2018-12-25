@@ -39,12 +39,11 @@ public class RegisterFrame {
         registerJFrame.setLayout(null);
         registerJFrame.setVisible(true);
         //设置相对屏幕绝对位置
-        int screen_width = Toolkit.getDefaultToolkit().getScreenSize().width;
-        int screen_height = Toolkit.getDefaultToolkit().getScreenSize().height;
-        registerJFrame.setLocation((screen_width - registerJFrame.getWidth()) / 2,
-                (screen_height - registerJFrame.getHeight()) / 2);
+        registerJFrame.setLocationRelativeTo(null);
         registerJFrame.setVisible(true);
-
+        /**
+         * 注册关闭监听
+         */
         registerJFrame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 registerJFrame.setVisible(false);//关闭事件设为此窗口不可见

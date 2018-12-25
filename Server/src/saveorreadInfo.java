@@ -57,7 +57,7 @@ class saveorreadInfo {
             File allPlayerFile=new File(".","allPlayerInfo.txt");
             if(!allPlayerFile.exists()) allPlayerFile.createNewFile();
             //创建文件写入流
-            FileOutputStream  writeInfo=new FileOutputStream(allPlayerFile,true);
+            FileOutputStream  writeInfo=new FileOutputStream(allPlayerFile,true);//设定为可以后接式的文件写入
             ObjectOutputStream writePlayerInfo=new ObjectOutputStream(writeInfo);
             writePlayerInfo.writeObject(player);
             /**

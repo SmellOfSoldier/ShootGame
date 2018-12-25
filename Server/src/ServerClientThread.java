@@ -76,8 +76,7 @@ class ServerClientThread extends Thread{
                                     String clientStr=gson.toJson(client);
                                     //打包发送
                                     sendStream.println(Sign.LoginSuccess);
-                                    sendStream.println(allclientsStr
-                                    +Sign.SplitSign+roomStr+Sign.SplitSign+clientStr);
+                                    sendStream.println(allclientsStr+Sign.SplitSign+roomStr+Sign.SplitSign+clientStr);
                                     break;
                                 }
                                 case -1:{
@@ -99,7 +98,6 @@ class ServerClientThread extends Thread{
                     else if (!isLogin && line.startsWith(Sign.Register)) {
                         System.out.println("收到注册请求开始注册流程。");
                         //分割命令与内容
-                        command = Sign.Register;
                         realMessage = check.getRealMessage(line, Sign.Register);
                         String playerid = realMessage.split(Sign.SplitSign)[0];
                         String playerPassword = realMessage.split(Sign.SplitSign)[1];
@@ -178,7 +176,22 @@ class ServerClientThread extends Thread{
                         serverGameRoom.removeClient(targetId);
 
                     }
+                    /**
+                     * 如果收到离开房间的消息
+                     */
+                    else if(isLogin&&line.startsWith(Sign.ClientLeaveRoom)){
+                        System.out.println("服务器收到"+client.getId()+"发来的离开房间的信息。");
+                        ServerGameRoom serverGameRoom=null;
+                        serverGameRoom=client.getRoom();//获取玩家当前所在房间
+                        serverGameRoom.removeClient(client.getId());//当前所在房间移除当前玩家
+                        List<Client> allClientsIn=serverGameRoom.getAllClients();
+                        //向房间所有玩家发该玩家退出信息
+                        for(Client c:allClientsIn){
+                            PrintStream printStream=creatServer.clientPrintStreamMap.get(c);
+                            printStream.println(Sign.ClientLeaveRoom+client.getId());//发送玩家退出房间指令加退出玩家id
+                        }
 
+                    }
                     /**
                      * 如果收到开始游戏的信息（房主可用）
                      */
@@ -192,12 +205,26 @@ class ServerClientThread extends Thread{
 
                     }
                     /**
+                     * 收到聊天信息命令
+                     */
+                    else if(isLogin&&line.startsWith(Sign.SendPublicMessage)){
+                        realMessage=check.getRealMessage(line,Sign.SendPublicMessage);
+                        ServerGameRoom serverGameRoom=null;
+                        serverGameRoom=client.getRoom();
+                        for(Client c:serverGameRoom.getAllClients()){
+                            PrintStream printStream=creatServer.clientPrintStreamMap.get(c);
+                            printStream.println(Sign.FromServerMessage+"(来自"+client.getId()+"的) "+realMessage);
+                        }
+                    }
+                    /**
                      * 如果收到断开连接请求（返回到单人与多人游戏选择界面)
                      */
                     else if(isLogin&&line.startsWith(Sign.Disconnect)){
                         stopThisClient(Sign.SuccessDisconnected,sendStream,getStream);//关闭此服务线程 tips:原因：玩家请求断开连接
                     }
+
                     //TODO:待完成的玩家服务线程
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -228,6 +255,22 @@ class ServerClientThread extends Thread{
      */
     public void LogoutPlayer(){
 
+    }
+
+    /**
+     *
+     * @return 返回发送流
+     */
+    public PrintStream getSendStream(){
+        return sendStream;
+    }
+
+    /**
+     *
+     * @return 收取流
+     */
+    public BufferedReader getGetStream(){
+        return getStream;
     }
     /**
      * 停止当前服务线程实例对象的运行并进行扫尾工作

@@ -14,6 +14,7 @@ public interface Sign
     String NewClientEnter="NEW_CLIENT_ENTER";                    //新玩家加入房间
     String NewRoomCreate="NEW_ROOM_CREATE";                     //新房间创建
     String OneClientTicked="ONE_CLIENT_TICKED";                 //玩家被提出房间
+    String ClientLeaveRoom="CLIENT_LEAVE_ROOM";                  //玩家离开房间
     String BeenTicked="BEEN_TICKED";                            //已经被T出的玩家
     String SuccessDisconnected="SUCCESS_DISCONNEXTED";            //用于返还给客户端成功断开连接的消息
     String FailedDisconnected="FAILED_DISCONNEXTED";            //用于返还给客户端连接失败服务器目前不可用的消息
