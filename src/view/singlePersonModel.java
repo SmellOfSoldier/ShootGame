@@ -832,7 +832,6 @@ public class singlePersonModel extends JFrame
         }
         gameArea.add(bullet);
     }
-
     /**
      * 创建掉落在地上的奖励道具
      * @param point：道具在地图上显示的位置
@@ -850,7 +849,6 @@ public class singlePersonModel extends JFrame
             gameArea.repaint();
         }
     }
-
     /**
      * person进行攻击
      * @param startPoint：子弹移动的初始位置
