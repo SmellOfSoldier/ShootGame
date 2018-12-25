@@ -1,5 +1,6 @@
 package view;
 
+import com.google.gson.Gson;
 import person.Player;
 
 import javax.swing.*;
@@ -150,6 +151,14 @@ public class GameHall {
             this.add(gamerIcon);
             this.add(rpane);
             this.add(lpanel);
+            //初始化在线玩家列表
+            for(Client c:ClientPort.allOnlineClient){
+                onlinePlayer.addElement(c.getId());
+            }
+            //初始化在线房间列表
+            for(ServerGameRoom r:ClientPort.allServerRoom){
+                rooms.addElement(r.getId());
+            }
         }
     }
     /**
@@ -272,7 +281,9 @@ public class GameHall {
                 {
                     line=getstream.readLine();
                     System.out.println("客户端收到来自服务器的消息"+line);
+                    {
 
+                    }
                 } catch (IOException e)
                 {
                     e.printStackTrace();
@@ -288,6 +299,17 @@ public class GameHall {
             this.interrupt();
             return true;
         }
+    }
+    /**
+     * 用于依据标志符号切割掉客户端发送来的字符串开始的命令
+     * @param line 每次客户端发送过来的字符串
+     * @param cmd 字符串中开头包含的命令
+     * @return 返回命令后的字符串
+     */
+    public static String getRealMessage(String line,String cmd)
+    {
+        String realMessage=line.substring(cmd.length(),line.length());
+        return realMessage;
     }
     /**
      * 创建房间

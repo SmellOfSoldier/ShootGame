@@ -11,8 +11,9 @@ public class ClientPort {
     public static Socket socket;
     public static PrintStream sendStream;
     public static BufferedReader getStream;
-    public static List<Client> allOnlineClient= Collections.synchronizedList(new LinkedList<>());
-    public static List<ServerGameRoom> allServerRoom=Collections.synchronizedList(new LinkedList<>());
+    public static List<Client> allOnlineClient= Collections.synchronizedList(new LinkedList<>());//所有在线的玩家
+    public static List<ServerGameRoom> allServerRoom=Collections.synchronizedList(new LinkedList<>());//所有存在的房间
+    public static List<GameHall.GameRoom> allGameRoom=Collections.synchronizedList(new LinkedList<>());
 
     public static void main(String[] args)
     {

@@ -114,7 +114,8 @@ public class LoginFrame{
                             String roomStr=allInfo.split(Sign.SplitSign)[1];
                             String clientStr=allInfo.split(Sign.SplitSign)[2];
                             Gson gson=new Gson();
-                            Client[] clients=gson.fromJson(clientStr,Client[].class);
+                            //解密读入数组
+                            Client[] clients=gson.fromJson(allclientsStr,Client[].class);
                             ServerGameRoom[] rooms=gson.fromJson(roomStr,ServerGameRoom[].class);
                             Client me=gson.fromJson(clientStr,Client.class);
                             for(Client c:clients){

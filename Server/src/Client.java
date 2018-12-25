@@ -99,4 +99,28 @@ public class Client implements Serializable {
         Client client=(Client)object;
         return this.id==client.getId();
     }
+
+    /**
+     * 当前玩家是否是当前所在房间的房主
+     * @return 是房主为true 反之
+     */
+    public boolean isRoomMaster(){
+        //判断所处房间是否为空
+        if(room!=null)
+        {
+            //判断所在房间房主id是否为自己
+             if(room.getMaster().getId().equals(id)) return true;
+             else return false;
+        }
+        return false;
+    }
+
+    /**
+     * 判断当前玩家是否在房间中
+     * @return 在则true 反之
+     */
+    public boolean isInRoom(){
+        if(room==null) return false;
+        return true;
+    }
 }
