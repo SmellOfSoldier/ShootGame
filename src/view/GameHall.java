@@ -1,5 +1,7 @@
 package view;
 
+import com.sun.security.ntlm.Server;
+import com.sun.xml.internal.bind.v2.model.core.ID;
 import person.Player;
 
 import javax.swing.*;
@@ -11,6 +13,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -183,6 +186,8 @@ public class GameHall {
         private JTextArea receiveArea=new JTextArea();          //消息接收区
         private JTextArea sendArea=new JTextArea();             //消息发送区
         private JList<String> clientJList;                       //房间内的玩家的用户名,用于显示在房间中
+        private DefaultListModel<String> defaultListModel=new DefaultListModel<String>();
+        private String roomTips=null;                           //房间提示语(在游戏大厅中显示的对应房间的简单信息)
         //private utils.Client.ClientThread
 
 
@@ -220,6 +225,24 @@ public class GameHall {
         {
             return name;
         }
+        //获取房间内用户id的列表
+        public JList<String> getClientJList()
+        {
+            return clientJList;
+        }
+        //获取用户id列表的defaultListModel
+        public DefaultListModel<String> getDefaultListModel()
+        {
+            return defaultListModel;
+        }
+        //获取房间的简单信息
+        public String getRoomTips(){return roomTips;}
+        //设置房间的简单信息
+        public void setRoomTips(String roomTips){this.roomTips=roomTips;}
+        //设置房主
+        public void setRoomMaster(Client roomMaster){this.roomMaster=roomMaster;}
+        //返回房主
+        public Client getRoomMaster(){return roomMaster;}
         //房间显示区域
          class RoomArea extends JPanel
         {
@@ -248,7 +271,6 @@ public class GameHall {
                 tickPerson.setLocation(20,160);
                 this.add(tickPerson);
                 //初始化用户显示列表
-                DefaultListModel<String> defaultListModel=new DefaultListModel<String>();
                 clientJList=new JList<String>(defaultListModel);
                 JScrollPane clientJListJsp=new JScrollPane(clientJList);
                 clientJListJsp.setSize(Width,200);
@@ -313,54 +335,142 @@ public class GameHall {
                 });
             }
         }
-        /**
-         * 创建游戏房间时之后所有于服务器之间进行关于房间信息和游戏中的数据
-         * 传输都分配给该线程的实例对象完成
-         */
-        public class ClientThread extends  Thread
-        {
-            private Socket socket;
-            private PrintStream sendstream;
-            private BufferedReader getstream;
-            ClientThread(Socket socket,PrintStream sendstream,BufferedReader getstream)
-            {
-                this.socket=socket;
-                this.sendstream=sendstream;
-                this.getstream=getstream;
-            }
-            public void run(){
-                String line=null;//接收到的初始字符串（信息）
-                String command = null;//当前获取的信息需要执行的命令
-                String realMessage = null;//去除头部命令的信息
-                while (!this.isInterrupted()){
-                    try {
-                        line=getstream.readLine();
-                        System.out.println("客户端收到来自服务器的消息"+line);
 
-                    } catch (IOException e) {
-                        e.printStackTrace();
+    }
+    /**
+     * 创建游戏房间时之后所有于服务器之间进行关于房间信息和游戏中的数据
+     * 传输都分配给该线程的实例对象完成
+     */
+    public class ClientThread extends  Thread
+    {
+        private Socket socket;
+        private PrintStream sendstream;
+        private BufferedReader getstream;
+        ClientThread(Socket socket,PrintStream sendstream,BufferedReader getstream)
+        {
+            this.socket=socket;
+            this.sendstream=sendstream;
+            this.getstream=getstream;
+        }
+        public void run(){
+            String line=null;//接收到的初始字符串（信息）
+            String command = null;//当前获取的信息需要执行的命令
+            String realMessage = null;//去除头部命令的信息
+            while (!this.isInterrupted())
+            {
+                try {
+                    line=getstream.readLine();
+                    System.out.println("客户端收到来自服务器的消息"+line);
+
+                    //如果有用户加入当前房间
+                    if(line.startsWith(Sign.NewClientEnter))
+                    {
+                        realMessage=getRealMessage(line,Sign.NewClientEnter);
+                        //进入房间的用户ID
+                        String clientId=realMessage;
+                        //获取大厅房间中用户id的列表;   （客户端大厅显示的房间类）
+                        DefaultListModel<String> clientIdInRoom=currentGameRoom.getDefaultListModel();
+                        clientIdInRoom.addElement(clientId);
+                        String roomName=currentGameRoom.getName();
+                        //目前该房间中的人
+                        int clientNum=clientIdInRoom.size();
+                        //该房间最大的人数
+                        int maxNum=GameRoom.maxPlayerNum;
+                        //修改大厅房间的简单信息
+                        String roomTips=currentGameRoom.getRoomTips();
+                        rooms.removeElement(roomTips);
+                        roomTips=roomName+"("+clientNum+"/"+maxNum+")"+"\t等待中";
+                        rooms.addElement(roomTips);
+                        currentGameRoom.setRoomTips(roomTips);
                     }
+                    //如果有用户加入非当前房间
+                    else if(line.startsWith(Sign.OtherClientEnterRoom))
+                    {
+                       //String roomId=
+                    }
+                    //如果有用户离开当前房间或被踢出房间 （非房主）
+                    else if(line.startsWith(Sign.ClientLeaveRoom))
+                    {
+                        realMessage=getRealMessage(line,Sign.NewClientEnter);
+                        //进入房间的用户ID
+                        String clientId=realMessage.split(Sign.SplitSign)[0];
+                        //进入的房间ID
+                        String roomId=realMessage.split(Sign.SplitSign)[1];
+                        //获取大厅房间中用户id的列表;   （客户端大厅显示的房间类）
+                        DefaultListModel<String> clientIdInRoom=currentGameRoom.getDefaultListModel();
+                        //将用户从当前房间用户id列表中删除
+                        clientIdInRoom.removeElement(clientId);
+                        //房间名
+                        String roomName=currentGameRoom.getName();
+                        //目前该房间中的人
+                        int clientNum=clientIdInRoom.size();
+                        //该房间最大的人数
+                        int maxNum=GameRoom.maxPlayerNum;
+                        //修改大厅房间的简单信息
+                        String roomTips=currentGameRoom.getRoomTips();
+                        rooms.removeElement(roomTips);
+                        roomTips=roomName+"("+clientNum+"/"+maxNum+")"+"\t等待中";
+                        rooms.addElement(roomTips);
+                        currentGameRoom.setRoomTips(roomTips);
+                    }
+                    //如果房间被解散（房主离开房间）
+                    else if(line.startsWith(Sign.RoomDismiss))
+                    {
+                        //该用户目前所处房间的id
+                        String roomId=currentGameRoom.getId();
+                        //将该房间从房间链表中删除
+                        ClientPort.allServerRoom.remove(new ServerGameRoom(roomId,new Client(null,null),null));
+                        //获取将要被删除的房间的信息
+                        String roomTips=currentGameRoom.getRoomTips();
+                        rooms.removeElement(roomTips);
+                        currentClient.setRoomNull();
+                        currentGameRoom.dispose();
+                    }
+                    //如果被房主踢出房间
+                    else if(line.startsWith(Sign.BeenTicked))
+                    {
+                        DefaultListModel<String> clientIdInRoom=currentGameRoom.getDefaultListModel();
+                        //将用户从当前房间用户id列表中删除
+                        clientIdInRoom.removeElement(currentClient.getId());
+                        //房间名
+                        String roomName=currentGameRoom.getName();
+                        //目前该房间中的人
+                        int clientNum=clientIdInRoom.size();
+                        //该房间最大的人数
+                        int maxNum=GameRoom.maxPlayerNum;
+                        //修改大厅房间的简单信息
+                        String roomTips=currentGameRoom.getRoomTips();
+                        rooms.removeElement(roomTips);
+                        roomTips=roomName+"("+clientNum+"/"+maxNum+")"+"\t等待中";
+                        rooms.addElement(roomTips);
+                        currentGameRoom.setRoomTips(roomTips);
+                        currentGameRoom.dispose();
+                        JOptionPane.showConfirmDialog(null,"你被房主踢出了房间","提示",JOptionPane.OK_OPTION);
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
-            /**
-             *  停止该连接线程
-             * @return
-             */
-            public boolean stopThisThread(){
-                this.interrupt();
-                return true;
-            }
+        }
+        /**
+         *  停止该连接线程
+         * @return
+         */
+        public boolean stopThisThread(){
+            this.interrupt();
+            return true;
         }
     }
-
     /**
      * 玩家离开房间
      */
     private void leaveRoom()
     {
         PrintStream ps=ClientPort.sendStream;
-        //将人物将要离开的房间的id发送给服务端
-        ps.println(Sign.LeaveRoom +currentGameRoom.getId());
+        //将人物的id与将要离开的房间的id发送给服务端
+        ps.println(Sign.LeaveRoom);
+        currentClient.setRoomNull();
         currentGameRoom.dispose();
     }
 
@@ -372,6 +482,18 @@ public class GameHall {
         String roomname=null;
         ClientPort.sendStream.println(Sign.CreateRoom+roomname);
         currentGameRoom=new GameRoom(roomMaster,roomname);
+    }
+
+    /**
+     * 用于依据标志符号切割掉客户端发送来的字符串开始的命令
+     * @param line 每次客户端发送过来的字符串
+     * @param cmd 字符串中开头包含的命令
+     * @return 返回命令后的字符串
+     */
+    public static String getRealMessage(String line,String cmd)
+    {
+        String realMessage=line.substring(cmd.length(),line.length());
+        return realMessage;
     }
 
     public static void main(String[] args) {

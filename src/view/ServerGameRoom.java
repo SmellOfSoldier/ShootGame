@@ -61,8 +61,10 @@ public class ServerGameRoom {
         return allClients;
     }
 
-    /*public boolean equals(ServerGameRoom serverGameRoom) {
-        if (this.getId().equals(serverGameRoom.getId())) return true;
-        else return false;
-    }*/
+    //当两个房间的id相同时，两个房间等价
+    public boolean equals(Object object)
+    {
+        ServerGameRoom serverGameRoom=(ServerGameRoom)object;
+        return this.id.equals(serverGameRoom);
+    }
 }

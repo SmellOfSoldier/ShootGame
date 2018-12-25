@@ -38,4 +38,8 @@ public interface Sign
     String OneUserIsOnline="ONE_USER_IS_ONLINE";                        //用户上线
     String OneUserOffOnline="ONE_USER_OFF_ONLINE";                      //用户离线
     String YoursInformation="YOURS_INFORMATION";                        //用户的信息
+    String RoomDismiss="ROOM_DISMISS";                                 //房间被删除（房主退出）
+    String ClientLeaveRoom="CLIENT_LEAVE_ROOM";                         //有玩家离开房间（发送给改房间的其他玩家）
+    String OtherClientLeaveRoom="OTHER_CLIENT_LEAVE_ROOM";              //非当前房间玩家离开房间
+    String OtherClientEnterRoom="OTHER_CLIENT_ENTER_ROOM";              //非当前房间玩家进入房间
 }

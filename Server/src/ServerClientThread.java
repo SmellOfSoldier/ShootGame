@@ -133,9 +133,8 @@ class ServerClientThread extends Thread{
                         ServerGameRoom serverGameRoom=null;
                         System.out.println("收到来自"+clientid+"加入"+roomid+"房间的请求");
                         //找到房间
-                        int flag=-1;
                         for(int i=0;i<creatServer.allGameRoom.size();i++){
-                            if(creatServer.allGameRoom.get(i).getId().equals(roomid)) flag=i;
+                            if(creatServer.allGameRoom.get(i).getId().equals(roomid)) ;
                             serverGameRoom=creatServer.allGameRoom.get(i);
                             break;
                         }
@@ -186,9 +185,10 @@ class ServerClientThread extends Thread{
                         serverGameRoom.removeClient(client.getId());//当前所在房间移除当前玩家
                         List<Client> allClientsIn=serverGameRoom.getAllClients();
                         //向房间所有玩家发该玩家退出信息
-                        for(Client c:allClientsIn){
+                        for(Client c:allClientsIn)
+                        {
                             PrintStream printStream=creatServer.clientPrintStreamMap.get(c);
-                            printStream.println(Sign.ClientLeaveRoom+client.getId());//发送玩家退出房间指令加退出玩家id
+                            printStream.println(Sign.ClientLeaveRoom+client.getId()+Sign.SplitSign+client.getRoom().getId());//发送玩家退出房间指令加退出玩家id
                         }
 
                     }
