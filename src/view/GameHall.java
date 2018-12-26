@@ -1,5 +1,6 @@
 package view;
 
+import com.google.gson.Gson;
 import com.sun.security.ntlm.Server;
 import com.sun.xml.internal.bind.v2.model.core.ID;
 import person.Player;
@@ -244,6 +245,11 @@ public class GameHall {
         public void setRoomMaster(Client roomMaster){this.roomMaster=roomMaster;}
         //返回房主
         public Client getRoomMaster(){return roomMaster;}
+        //添加消息接收框的消息
+        public void putMessage(String message)
+        {
+            receiveArea.append(message);
+        }
         //房间显示区域
          class RoomArea extends JPanel
         {
@@ -384,11 +390,6 @@ public class GameHall {
                         rooms.addElement(roomTips);
                         currentGameRoom.setRoomTips(roomTips);
                     }
-                    //如果有用户加入非当前房间
-                    else if(line.startsWith(Sign.OtherClientEnterRoom))
-                    {
-                       //String roomId=
-                    }
                     //如果有用户离开当前房间或被踢出房间 （非房主）
                     else if(line.startsWith(Sign.ClientLeaveRoom))
                     {
@@ -401,18 +402,6 @@ public class GameHall {
                         DefaultListModel<String> clientIdInRoom=currentGameRoom.getDefaultListModel();
                         //将用户从当前房间用户id列表中删除
                         clientIdInRoom.removeElement(clientId);
-                        //房间名
-                        String roomName=currentGameRoom.getName();
-                        //目前该房间中的人
-                        int clientNum=clientIdInRoom.size();
-                        //该房间最大的人数
-                        int maxNum=GameRoom.maxPlayerNum;
-                        //修改大厅房间的简单信息
-                        String roomTips=currentGameRoom.getRoomTips();
-                        rooms.removeElement(roomTips);
-                        roomTips=roomName+"("+clientNum+"/"+maxNum+")"+"\t等待中";
-                        rooms.addElement(roomTips);
-                        currentGameRoom.setRoomTips(roomTips);
                     }
                     //如果房间被解散（房主离开房间）
                     else if(line.startsWith(Sign.RoomDismiss))
@@ -421,9 +410,8 @@ public class GameHall {
                         String roomId=currentGameRoom.getId();
                         //将该房间从房间链表中删除
                         ClientPort.allServerRoom.remove(new ServerGameRoom(roomId,new Client(null,null),null));
-                        //获取将要被删除的房间的信息
-                        String roomTips=currentGameRoom.getRoomTips();
-                        rooms.removeElement(roomTips);
+                        //将该房间从大厅房间列表中删除
+                        rooms.removeElement(roomId);
                         currentClient.setRoomNull();
                         currentGameRoom.dispose();
                     }
@@ -433,24 +421,58 @@ public class GameHall {
                         DefaultListModel<String> clientIdInRoom=currentGameRoom.getDefaultListModel();
                         //将用户从当前房间用户id列表中删除
                         clientIdInRoom.removeElement(currentClient.getId());
-                        //房间名
-                        String roomName=currentGameRoom.getName();
-                        //目前该房间中的人
-                        int clientNum=clientIdInRoom.size();
-                        //该房间最大的人数
-                        int maxNum=GameRoom.maxPlayerNum;
-                        //修改大厅房间的简单信息
-                        String roomTips=currentGameRoom.getRoomTips();
-                        rooms.removeElement(roomTips);
-                        roomTips=roomName+"("+clientNum+"/"+maxNum+")"+"\t等待中";
-                        rooms.addElement(roomTips);
-                        currentGameRoom.setRoomTips(roomTips);
                         currentGameRoom.dispose();
                         JOptionPane.showConfirmDialog(null,"你被房主踢出了房间","提示",JOptionPane.OK_OPTION);
                     }
+                    //如果有房间新建
+                    else if(line.startsWith(Sign.NewRoomCreate))
+                    {
+                        realMessage=getRealMessage(line,Sign.NewRoomCreate);
+                        Gson gson=new Gson();
+                        ServerGameRoom serverGameRoom=gson.fromJson(realMessage,ServerGameRoom.class);
+                        String roomId=serverGameRoom.getId();
+                        //更新大厅房间信息列表
+                        rooms.addElement(roomId);
+                        ClientPort.allServerRoom.add(serverGameRoom);
+                    }
+                    //如果有房间被解散
+                    else if(line.startsWith(Sign.DeleteRoom))
+                    {
+                        String roomId=getRealMessage(line,Sign.DeleteRoom);
+                        for(int i=0;i<ClientPort.allServerRoom.size();i++)
+                        {
+                            if(ClientPort.allServerRoom.get(i).getId().equals(roomId))
+                            {
+                                ClientPort.allServerRoom.remove(i);
+                                break;
+                            }
+                        }
+                        rooms.removeElement(roomId);
+                    }
+                    //如果收到房间里面其他玩家发来的消息
+                    else if(line.startsWith(Sign.FromServerMessage) && currentClient.getRoom()!=null)
+                    {
+                        realMessage=getRealMessage(line,Sign.FromServerMessage);
+                        currentGameRoom.putMessage(realMessage);
+                    }
+                    //如果收到服务器退出的消息
+                    else if(line.startsWith(Sign.ServerExit))
+                    {
+                        getstream.close();
+                        sendstream.close();
+                        socket.close();
+                        JOptionPane.showMessageDialog(null,"服务器已经关闭，客户端即将退出","警告",JOptionPane.OK_OPTION);
+                        System.exit(0);
+                    }
 
-                } catch (IOException e) {
+                }
+                catch (IOException e)
+                {
                     e.printStackTrace();
+                }
+                catch (Exception ex)
+                {
+                    ex.printStackTrace();
                 }
             }
         }

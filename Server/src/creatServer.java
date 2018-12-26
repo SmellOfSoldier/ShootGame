@@ -80,7 +80,8 @@ public class creatServer {
                 int port=Integer.parseInt(txt_port.getText());//获取输入的服务器开启监听端口
                 try{
                     startServer(maxplayer,port);//尝试开启服务器
-                }catch (BindException e1){
+                }catch (BindException e1)
+                {
                     e1.printStackTrace();
                 }
                 //开启成功进行开启扫尾工作
