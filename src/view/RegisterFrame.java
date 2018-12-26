@@ -47,6 +47,7 @@ public class RegisterFrame {
         registerJFrame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 registerJFrame.setVisible(false);//关闭事件设为此窗口不可见
+                registerJFrame.dispose();
             }
         });
         /**
@@ -70,7 +71,8 @@ public class RegisterFrame {
                     switch (registeResult) {
                         case Sign.RegisterSuccess: {
                             JOptionPane.showMessageDialog(registerJFrame, "注册成功", "提示", JOptionPane.INFORMATION_MESSAGE);//弹出提示框
-                            registerJFrame.setVisible(false);//注册成功自动消失并开始清空所有输入格
+                            //注册成功并开始清空所有输入格
+                            clearAllBlanks();
                             break;
                         }
                         case Sign.IsRegistered: {
@@ -85,6 +87,13 @@ public class RegisterFrame {
                 }
             }
         });
+        btn_exit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //关闭注册界面
+                registerJFrame.dispose();
+            }
+        });
     }
 
     /**
@@ -92,7 +101,7 @@ public class RegisterFrame {
      */
     public void clearAllBlanks(){
         this.txt_account.setText("");
-        this.txt_conpassword.setText("");
+        this.txt_password.setText("");
         this.txt_name.setText("");
         this.txt_conpassword.setText("");
     }

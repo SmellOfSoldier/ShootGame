@@ -40,9 +40,9 @@ public interface Sign
     String YoursInformation="YOURS_INFORMATION";                       //用户的信息
     String RefreshInformation="REFRESH_INFORMATION";                   //刷新消息请求
     String AddRoom="ADD_ROOM";                                         //增添游戏房间
-    String DelRoom="DELETE_ROOM";                                      //删除游戏房间
+    String DeleteRoom ="DELETE_ROOM";                                      //删除游戏房间
     String AddClient="ADD_CLIENT";                                     //增添玩家
-    String DelClient="DELETE_CLIENT";                                  //减少玩家
+    String DeleteClient ="DELETE_CLIENT";                                  //减少玩家
     String OtherClientLeaveRoom="OTHER_CLIENT_LEAVE_ROOM";             //非当前房间的玩家离开房间
     String OtherClientEnterRoom="OTHER_CLIENT_ENTER_ROOM";             //非当前房间的玩家加入房间
 }
