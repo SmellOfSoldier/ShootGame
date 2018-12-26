@@ -75,13 +75,9 @@ class ServerClientThread extends Thread {
                                     }
                                     creatServer.onlineClients.add(client);//在在线玩家列表中加入玩家
                                     creatServer.clientPrintStreamMap.put(client, sendStream);//加入玩家写流
-                                    Client[] allOnlineClients = null;
-                                    creatServer.onlineClients.toArray(allOnlineClients);//打包所有在线玩家
-                                    ServerGameRoom[] allServerGameRoom = null;
-                                    creatServer.allGameRoom.toArray(allServerGameRoom);//打包所有房间消息
                                     //打包发送初始化消息
-                                    String allclientsStr = gson.toJson(allOnlineClients);
-                                    String roomStr = gson.toJson(allServerGameRoom);
+                                    String allclientsStr = gson.toJson(creatServer.onlineClients);
+                                    String roomStr = gson.toJson(creatServer.allGameRoom);
                                     //打包发送
                                     sendStream.println(Sign.LoginSuccess);
                                     sendStream.println(allclientsStr + Sign.SplitSign + roomStr + Sign.SplitSign + clientStr);
@@ -146,20 +142,13 @@ class ServerClientThread extends Thread {
                             break;
                         }
                         System.out.println("找到需要加入的房间名字为" + serverGameRoom.getId());
-                        //转发给这房间内所有其他玩家和其他在线玩家
+                        //转发给这房间内所有其他玩家
                         List<Client> list = serverGameRoom.getAllClients();
-                        for (Client c : creatServer.onlineClients) {
+                        for (Client c : list) {
                             PrintStream sendstream;
                             //在房间内
-                            if (list.contains(c)) {
                                 sendstream = creatServer.clientPrintStreamMap.get(c);
                                 sendstream.println(Sign.NewClientEnter + clientid);//转发给房间其他在线玩家xxx进入
-                            }
-                            //不在房间内
-                            else {
-                                sendstream=creatServer.clientPrintStreamMap.get(c);
-                                sendstream.println(Sign.OtherClientEnterRoom+serverGameRoom.getId()+Sign.SplitSign+clientid);
-                            }
                         }
                         System.out.println("开始转发给该房间其他玩家" + client.getId() + "加入了房间");
                         //将当前玩家加入到指定的房间内
@@ -210,7 +199,7 @@ class ServerClientThread extends Thread {
                     /**
                      * 如果收到下线请求(玩家退出游戏大厅回到多人与单人游戏的选择界面)
                      */
-                    else if (isLogin && line.startsWith(Sign.Disconnect)) {
+                    /*else if (isLogin && line.startsWith(Sign.Disconnect)) {
                         System.out.println("服务器收到来自" + client.getId() + "的下线请求");
                         //首先判断当前玩家是否正在房间中  是否是房间房主
                         //如果又在房间又是房主
@@ -221,7 +210,7 @@ class ServerClientThread extends Thread {
                         for (PrintStream sendstream : creatServer.clientPrintStreamMap.values()) {
                             sendstream.println(Sign.Disconnect + client.getId());
                         }
-                    }
+                    }*/
                     /**
                      * 如果收到注销请求(玩家返回到登陆界面)
                      */
@@ -237,14 +226,16 @@ class ServerClientThread extends Thread {
                         //转发消息
                         for (Client c : serverGameRoom.getAllClients()) {
                             PrintStream printStream = creatServer.clientPrintStreamMap.get(c);
-                            printStream.println(Sign.FromServerMessage + "(来自" + client.getId() + "的) " + realMessage);
+                            printStream.println(Sign.FromServerMessage  + client.getId() + ": " + realMessage);
                         }
                     }
                     /**
                      * 如果收到断开连接请求（返回到单人与多人游戏选择界面)
                      */
-                    else if (isLogin && line.startsWith(Sign.Disconnect)) {
-                        stopThisClient(Sign.SuccessDisconnected, sendStream, getStream);//关闭此服务线程 tips:原因：玩家请求断开连接
+                    else if (line.startsWith(Sign.Disconnect)) {
+                        creatServer.clientPrintStreamMap.remove(client);
+                        stopThisClient( sendStream, getStream);
+                        //关闭此服务线程 tips:原因：玩家请求断开连接退回到单人多人游戏选择界面
                     }
 
                     //TODO:待完成的玩家服务线程
@@ -269,20 +260,13 @@ class ServerClientThread extends Thread {
             serverGameRoom.removeClient(client.getId());//当前所在房间移除当前玩家
             List<Client> allClientsIn = serverGameRoom.getAllClients();
             //向房间所有玩家发该玩家退出信息
-            for (Client c : creatServer.onlineClients) {
-                //房间中发送
+            for (Client c : allClientsIn) {
                 if (c.getRoom().equals(serverGameRoom)) {
                     PrintStream printStream = creatServer.clientPrintStreamMap.get(c);
                     printStream.println(Sign.ClientLeaveRoom + client.getId() + Sign.SplitSign + client.getRoom().getId());//发送玩家退出房间指令加退出玩家的id
                 }
 
-                //房间外发送
-                else {
-                    PrintStream printStream = creatServer.clientPrintStreamMap.get(c);
-                    printStream.println(Sign.OtherClientLeaveRoom +client.getId()+Sign.SplitSign+serverGameRoom.getId());
-                }
             }
-
         }
         //如果是房主
         else {
@@ -334,17 +318,15 @@ class ServerClientThread extends Thread {
     }
     /**
      * 停止当前服务线程实例对象的运行并进行扫尾工作
-     * @param reson 停止（拒绝连接或被T除的原因)
+     *
      * @param sendStream 获取输出流以回复客户端消息和扫尾停止
      * @param getStream 获取输入流进行扫尾停止
      */
-    private void stopThisClient(String reson,PrintStream sendStream,BufferedReader getStream) throws IOException {
-                //发送拒绝登陆消息和停止线程
-                sendStream.println(reson);
+    private void stopThisClient(PrintStream sendStream,BufferedReader getStream) throws IOException {
                 //扫尾工作
-                sendStream.flush();
                 sendStream.close();
                 getStream.close();
+                socket.close();
                 this.interrupt();//停止玩家服务线程
     }
 }

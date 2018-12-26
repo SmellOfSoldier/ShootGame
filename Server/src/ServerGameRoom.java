@@ -74,7 +74,7 @@ public class ServerGameRoom {
                 {
                     //告知其他不在此房间中的其他在线用户房间删除的信息
                     sendStream=creatServer.clientPrintStreamMap.get(c);
-                    sendStream.println(Sign.DelRoom+id);
+                    sendStream.println(Sign.DeleteRoom +id);
                 }
         }
         return true;

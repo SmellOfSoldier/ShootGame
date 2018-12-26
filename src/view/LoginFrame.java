@@ -48,11 +48,9 @@ public class LoginFrame{
         loginJFrame.add(loginPanel);
         loginJFrame.setLayout(null);
         loginJFrame.setVisible(true);
-        //设置相对屏幕绝对位置
-        int screen_width = Toolkit.getDefaultToolkit().getScreenSize().width;
-        int screen_height = Toolkit.getDefaultToolkit().getScreenSize().height;
-        loginJFrame.setLocation((screen_width - loginJFrame.getWidth()) / 2,
-                (screen_height - loginJFrame.getHeight()) / 2);
+        //设置相对屏幕绝对位置l
+        loginJFrame.setLocationRelativeTo(null);
+        isConnected=true;
         loginJFrame.setVisible(true);
         try {
             /**
@@ -81,10 +79,21 @@ public class LoginFrame{
         loginJFrame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 if (isConnected) {
-                    //closeConnection();// 关闭连接
+                    //先使登陆界面消失
+                    loginJFrame.setVisible(false);
+                    //发送Disconnect
+                    ClientPort.sendStream.println(Sign.Disconnect);
+
                     isConnected=false;//连接状态置为false
                 }
-                System.exit(0);// 退出程序
+                try {
+                    //睡眠500毫秒以将断开连接消息发送给服务端
+                    Thread.sleep(500);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+
+               // System.exit(0);// 退出程序
             }
         });
         /**
@@ -125,6 +134,8 @@ public class LoginFrame{
                                 ClientPort.allServerRoom.add(r);
                             }
                         new GameHall(me);//创建游戏大厅并传入登陆者的实例对象
+                            //登陆界面关闭
+                            loginJFrame.dispose();
                         break;
                     }
                     case Sign.WrongPassword:{//密码错误

@@ -38,7 +38,6 @@ public class creatServer {
     private ServerThread serverThread;
     public static List<ServerGameRoom> allGameRoom;//所有房间
     public static  int allPlayernum;//储存已注册玩家数目
-    public static List<ServerClientThread> clientThreads;//List用于储存所有玩家服务线程
     public static List<Client> onlineClients;//储存所有在线玩家
     public static  List<Client> allPlayer;//服务器开启时从文件读取到此链表中保存
     public static HashMap<Client, PrintStream> clientPrintStreamMap =new HashMap<>();//创建玩家
@@ -121,7 +120,6 @@ public class creatServer {
             /**
              * 线程安全静态变量
              */
-            clientThreads= Collections.synchronizedList(new LinkedList<>());//创建玩家列表
             allPlayernum=0;//初始化注册玩家数目
             allPlayer=Collections.synchronizedList(new LinkedList<>());//创建注册玩家列表
             allGameRoom=Collections.synchronizedList(new LinkedList<>());//创建房间列表
@@ -149,18 +147,19 @@ public class creatServer {
      */
     public void closeServer(){
         try{
-        if(serverThread!=null) serverThread.interrupt();//服务端主线程如果存在则停止服务端主线程
+
         System.out.println("服务端线程成功关闭。");//测试使用
         contentArea.append("服务器已经成功关闭"+"\r\n");
-        for(int i = 0; i< clientThreads.size(); i++){
-            clientThreads.get(1).sendCommand(Sign.ServerExit);//返回服务器关闭消息
+        for(int i = 0; i< clientPrintStreamMap.size(); i++){
+            clientPrintStreamMap.get(i).println(Sign.ServerExit);//返回服务器关闭消息
             //TODO:转发给所有玩家服务端被关闭
         }
         if(serverSocket!=null) serverSocket.close();//如果serverSocket存在则关闭它
             listModel.removeAllElements();//清空用户列表
             isStart=false;//服务器状态置为关闭
-
+            if(serverThread!=null) serverThread.interrupt();//服务端主线程如果存在则停止服务端主线程
         }
+
         catch (IOException e){
             e.printStackTrace();
             isStart=true;

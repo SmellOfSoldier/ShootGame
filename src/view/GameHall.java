@@ -74,6 +74,9 @@ public class GameHall {
             public void actionPerformed(ActionEvent e) {
                 ClientPort.sendStream.println(Sign.Logout);
                 ClientPort.sendStream.flush();
+                //关闭大厅界面
+                gameHallJFrame.dispose();
+                new LoginFrame();
             }
         });
 
@@ -91,9 +94,36 @@ public class GameHall {
             @Override
             public void windowClosing(WindowEvent e) {
                 super.windowClosing(e);
+                //先使大厅不可见
+                gameHallJFrame.setVisible(false);
+                //离开大厅（注销账号）
+                //发送注销命令
                 ClientPort.sendStream.println(Sign.Logout);
-                ClientPort.sendStream.flush();
-                System.exit(0);
+                //如果在房间则发送离开房间命令
+                if(currentClient.getRoom()!=null) leaveRoom();
+                //睡眠一会将最后的命令发送到服务器
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+               gameHallJFrame.dispose();
+            }
+        });
+        //加入房间事件
+        currentRoom.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                if(e.getClickCount()==2){
+                    JList currentRooms=(JList)e.getSource();
+                    int index=currentRooms.getSelectedIndex();
+                    Object obj=currentRooms.getModel().getElementAt(index);
+                    System.out.println("点击加入 "+obj.toString()+" 房间");
+                    //发送加入房间请求
+                    ClientPort.sendStream.println(Sign.EnterRoom+currentClient.getId()+Sign.SplitSign+obj.toString());
+
+                }
             }
         });
     }
@@ -205,12 +235,12 @@ public class GameHall {
             this.setVisible(true);
             this.roomMaster=roomMaster;
             this.name=roomname;
+
             this.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
                     super.windowClosing(e);
-                    //离开房间
-
+                    //如果当前玩家处在房间中则退出当前房间
                     leaveRoom();
                     GameRoom.this.dispose();
                 }
