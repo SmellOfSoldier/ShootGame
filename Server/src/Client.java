@@ -8,7 +8,7 @@ public class Client implements Serializable {
     private String password;
     private boolean isOnline=false;
     private  boolean isPlaying=false;
-    private ServerGameRoom room;
+    private String roomID =null;
     /**
      * Player构造函数
      * @param id 玩家ID（唯一标识）
@@ -39,10 +39,10 @@ public class Client implements Serializable {
 
     /**
      * 设置玩家所在房间
-     * @param gameRoom 房间对象
+     * @param gameRoomID 房间对象
      */
-    public void setGameRoom(ServerGameRoom gameRoom){
-        this.room=gameRoom;
+    public void  setGameRoomID(String gameRoomID){
+        this.roomID=gameRoomID;
     }
     /**
      * 设置是否在线
@@ -80,15 +80,15 @@ public class Client implements Serializable {
      * @return 房间实例索引
      */
 
-    public ServerGameRoom getRoom(){
-        return room;
+    public String getRoomID(){
+        return roomID;
     }
 
     /**
      * 设置所属房间为空
      */
     public void setRoomNull(){
-        room=null;
+        roomID=null;
     }
     /**
      *
@@ -99,20 +99,9 @@ public class Client implements Serializable {
         Client client=(Client)object;
         return this.id==client.getId();
     }
-
-    /**
-     * 当前玩家是否是当前所在房间的房主
-     * @return 是房主为true 反之
-     */
-    public boolean isRoomMaster(){
-        //判断所处房间是否为空
-        if(room!=null)
-        {
-            //判断所在房间房主id是否为自己
-             if(room.getMaster().getId().equals(id)) return true;
-             else return false;
-        }
-        return false;
+    public int hashCode()
+    {
+        return Integer.valueOf(id);
     }
 
     /**
@@ -120,7 +109,14 @@ public class Client implements Serializable {
      * @return 在则true 反之
      */
     public boolean isInRoom(){
-        if(room==null) return false;
+        if(roomID==null) return false;
         return true;
+    }
+    /**
+     * 获取用户的密码
+     */
+    public String getPassword()
+    {
+        return password;
     }
 }

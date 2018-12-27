@@ -1,19 +1,24 @@
 import java.io.PrintStream;
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
  * 分配管理房间数量的玩家
  */
-public class ServerGameRoom {
+public class ServerGameRoom implements Serializable
+{
     private String id;
     private Client master;
     private String name;
-    private List<Client> allClients=new LinkedList<>();
-    public ServerGameRoom(String id, Client master, String name){
+    private List<Client> allClients;
+    public ServerGameRoom(String id, Client master, String name)
+    {
         this.id=id;
         this.master=master;
         this.name=name;
+        allClients=new LinkedList<Client>();
+        allClients.add(master);
     }
 
     public String getId(){
@@ -52,39 +57,6 @@ public class ServerGameRoom {
         return false;
     }
     /**
-     * 清空房间所有的玩家(房主退出时)
-     */
-    public boolean removeAllClient(){
-        try{
-            //遍历全部在线玩家
-            PrintStream sendStream=null;
-        for(Client c:creatServer.onlineClients)
-        {
-            //如果玩家属于该房间
-            if(allClients.contains(c))
-            {
-                //告知房间里面其他人房间已经被删除
-                sendStream = creatServer.clientPrintStreamMap.get(c);
-                sendStream.println(Sign.RoomDismiss);
-                //删除该房间内该玩家
-                allClients.remove(c);
-            }
-            //如果不属于该房间
-            else
-                {
-                    //告知其他不在此房间中的其他在线用户房间删除的信息
-                    sendStream=creatServer.clientPrintStreamMap.get(c);
-                    sendStream.println(Sign.DeleteRoom +id);
-                }
-        }
-        return true;
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        return  true;
-    }
-
-    /**
      * 获得该房间所有玩家列表
      * @return 所有玩家列表（该房间）
      */
@@ -95,7 +67,11 @@ public class ServerGameRoom {
     //当两个房间的id相同时，两个房间等价
     public boolean equals(Object object)
     {
-        view.ServerGameRoom serverGameRoom=(view.ServerGameRoom)object;
-        return this.id.equals(serverGameRoom);
+        ServerGameRoom serverGameRoom=(ServerGameRoom)object;
+        return this.id.equals(serverGameRoom.getId());
     }
+    public int hashCode()
+    {
+        return Integer.valueOf(id);
     }
+}

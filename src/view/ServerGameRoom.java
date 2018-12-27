@@ -1,20 +1,24 @@
 package view;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
  * 分配管理房间数量的玩家
  */
-public class ServerGameRoom {
+public class ServerGameRoom implements Serializable
+{
     private String id;
     private Client master;
     private String name;
-    private List<Client> allClients=new LinkedList<>();
+    private List<Client> allClients;
     public ServerGameRoom(String id, Client master, String name){
         this.id=id;
         this.master=master;
         this.name=name;
+        allClients=new LinkedList<Client>();
+        allClients.add(master);
     }
 
     public String getId(){
@@ -52,7 +56,6 @@ public class ServerGameRoom {
         if(allClients.remove(targetclient)) return true;
         return false;
     }
-
     /**
      * 获得该房间所有玩家列表
      * @return 所有玩家列表（该房间）
@@ -65,6 +68,6 @@ public class ServerGameRoom {
     public boolean equals(Object object)
     {
         ServerGameRoom serverGameRoom=(ServerGameRoom)object;
-        return this.id.equals(serverGameRoom);
+        return this.id.equals(serverGameRoom.getId());
     }
 }
