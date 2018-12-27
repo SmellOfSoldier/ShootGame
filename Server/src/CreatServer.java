@@ -87,6 +87,7 @@ public class CreatServer {
                 //开启成功进行开启扫尾工作
                 contentArea.append("服务器开启成功");
             }
+            //
         });
         //TODO:命令行输入确认监听
         btn_send.addActionListener(new ActionListener() {
