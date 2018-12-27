@@ -160,16 +160,7 @@ public class LoginFrame{
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                if(!isStartRegisterFrame)
-                {
-                registerFrame=new RegisterFrame(ClientPort.sendStream,ClientPort.getStream);
-                isStartRegisterFrame=true;//设置为已经启动过
-                }
-                else
-                    {
-                    registerFrame.clearAllBlanks();
-                    registerFrame.setVisible(true);//重新设置可见
-                }
+              new RegisterFrame(ClientPort.sendStream,ClientPort.getStream);
             }
         });
     }

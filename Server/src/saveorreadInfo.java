@@ -1,6 +1,4 @@
 import java.io.*;
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -48,13 +46,14 @@ class saveorreadInfo {
             e.printStackTrace();
         }
     }*/
+
     /**
      * 保存注册信息到文件
      * @param player 存入文件玩家
      */
     public static void  savePlayerInfo(Client player){
         try {
-            File allPlayerFile=new File(".","allPlayerInfo.dat");
+            File allPlayerFile=new File(".","allPlayerInfo.txt");
             if(!allPlayerFile.exists()) allPlayerFile.createNewFile();
             //创建文件写入流
             FileOutputStream  writeInfo=new FileOutputStream(allPlayerFile,true);//设定为可以后接式的文件写入
@@ -63,8 +62,8 @@ class saveorreadInfo {
             /**
              * 写入文件后将对象保存到内存中以应对下次访问检查
              */
-            creatServer.allPlayer.add(player);
-            creatServer.allPlayernum++;
+            CreatServer.allPlayer.add(player);
+            CreatServer.allPlayernum++;
             System.out.println("文件中写入一个玩家数据其ID为"+player.getId());
         }
         catch (IOException e){
@@ -90,7 +89,7 @@ class saveorreadInfo {
                     Client one;
                     while((one=(Client)readInfo.readObject())!=null){
                         allPlayer.add(one);
-                        creatServer.allPlayernum++;//服务器注册玩家数目++
+                        CreatServer.allPlayernum++;//服务器注册玩家数目++
                         }
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();

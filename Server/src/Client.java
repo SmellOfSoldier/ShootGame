@@ -99,7 +99,10 @@ public class Client implements Serializable {
         Client client=(Client)object;
         return this.id==client.getId();
     }
-
+    public int hashCode()
+    {
+        return Integer.valueOf(id);
+    }
     /**
      * 当前玩家是否是当前所在房间的房主
      * @return 是房主为true 反之
@@ -122,5 +125,12 @@ public class Client implements Serializable {
     public boolean isInRoom(){
         if(room==null) return false;
         return true;
+    }
+    /**
+     * 获取用户的密码
+     */
+    public String getPassword()
+    {
+        return password;
     }
 }

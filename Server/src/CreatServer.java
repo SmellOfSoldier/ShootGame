@@ -19,7 +19,7 @@ import java.util.List;
  * 用于生成服务器为客户端提供联机服务
  * BY:Lijie
  */
-public class creatServer {
+public class CreatServer {
     private JFrame frame;
     private JTextArea contentArea;
     private  JTextField txt_mes;
@@ -44,13 +44,14 @@ public class creatServer {
     public static  DefaultListModel listModel;//GUI玩家列表
     private boolean isStart=false;
     public static void main(String[] args) {
-        new creatServer();
+        new CreatServer();
     }
 
     /**
      * 服务端GUI界面构造区域
      */
-    creatServer(){
+    CreatServer()
+    {
         frame=new JFrame("游戏服务器");
         frame.add(new ServerJPanel());
         frame.setSize(600,500);
@@ -103,13 +104,11 @@ public class creatServer {
             public void actionPerformed(ActionEvent e) {
                 if(isStart){
                     closeServer();//关闭服务器
+                    System.exit(0);
                 }
             }
         });
     }
-
-
-
     /**
      * @param maxPlayer 最大可连接的玩家数目
      * @param port 服务器开启的监听端口
@@ -150,9 +149,15 @@ public class creatServer {
 
         System.out.println("服务端线程成功关闭。");//测试使用
         contentArea.append("服务器已经成功关闭"+"\r\n");
-        for(int i = 0; i< clientPrintStreamMap.size(); i++){
-            clientPrintStreamMap.get(i).println(Sign.ServerExit);//返回服务器关闭消息
+        for(PrintStream sendStream:CreatServer.clientPrintStreamMap.values())
+        {
+            sendStream.println(Sign.ServerExit);//返回服务器关闭消息
             //TODO:转发给所有玩家服务端被关闭
+        }
+        for(Client client:CreatServer.allPlayer)
+        {
+            client.setOline(false);
+            client.setPlaying(false);
         }
         if(serverSocket!=null) serverSocket.close();//如果serverSocket存在则关闭它
             listModel.removeAllElements();//清空用户列表

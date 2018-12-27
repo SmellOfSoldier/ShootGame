@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.Socket;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -47,17 +46,18 @@ class ServerClientThread extends Thread {
         String command = null;//当前获取的信息需要执行的命令
         String realMessage = null;//去除头部命令的信息
         //线程不被interrupted则持续接收玩家发来的信息
-        while (!this.isInterrupted()) {
+        try {
+        while (!this.isInterrupted() &&(line=getStream.readLine())!=null) {
             if (isConnected) {
-                try {
+
                     //TODO:服务线程run待完成
                     System.out.println("线程阻塞中等待命令。");
-                    line = getStream.readLine();//线程堵塞  读取发来的消息
                     System.out.println("收到一个命令信息" + line);
                     /**
                      * 如果是登陆则采取如下操作
                      */
-                    if (!isLogin && line.startsWith(Sign.Login)) {
+                    if (!isLogin && line.startsWith(Sign.Login))
+                    {
                         try {
                             System.out.println("进度登陆函数");
                             int loginResult = check.checkLoginInfo(line);
@@ -65,19 +65,28 @@ class ServerClientThread extends Thread {
                             switch (loginResult) {
                                 case 1: {
                                     Gson gson = new Gson();
+                                    realMessage=check.getRealMessage(line,Sign.Login);
+                                    String id=realMessage.split(Sign.SplitSign)[0];
                                     isLogin = true;//密码成功则将当前玩家的服务线程登陆状态置为true
-                                    client = check.creatPlayer(line);//创建依据line的player对象
+                                    for(Client c:CreatServer.allPlayer)
+                                    {
+                                        if(c.getId().equals(id))
+                                        {
+                                            client=c;
+                                        }
+                                    }
+                                    //client = check.creatPlayer(line);//创建依据line的player对象
                                     client.setOline(true);//将玩家置为在线状态
                                     String clientStr = gson.toJson(client);
                                     // 通知其他所有在线玩家该玩家上线
-                                    for (PrintStream allsendstream : creatServer.clientPrintStreamMap.values()) {
-                                        allsendstream.println(Sign.AddClient + clientStr);
+                                    for (PrintStream allsendstream : CreatServer.clientPrintStreamMap.values()) {
+                                        allsendstream.println(Sign.OneClientOnline + client.getId());
                                     }
-                                    creatServer.onlineClients.add(client);//在在线玩家列表中加入玩家
-                                    creatServer.clientPrintStreamMap.put(client, sendStream);//加入玩家写流
+                                    CreatServer.onlineClients.add(client);//在在线玩家列表中加入玩家
+                                    CreatServer.clientPrintStreamMap.put(client, sendStream);//加入玩家写流
                                     //打包发送初始化消息
-                                    String allclientsStr = gson.toJson(creatServer.onlineClients);
-                                    String roomStr = gson.toJson(creatServer.allGameRoom);
+                                    String allclientsStr = gson.toJson(CreatServer.onlineClients);
+                                    String roomStr = gson.toJson(CreatServer.allGameRoom);
                                     //打包发送
                                     sendStream.println(Sign.LoginSuccess);
                                     sendStream.println(allclientsStr + Sign.SplitSign + roomStr + Sign.SplitSign + clientStr);
@@ -114,40 +123,60 @@ class ServerClientThread extends Thread {
                      * 如果收到创建房间信息
                      */
                     else if (isLogin && line.startsWith(Sign.CreateRoom)) {
+                        Gson gson=new Gson();
                         System.out.println("收到创建房间请求。");
                         realMessage = check.getRealMessage(line, Sign.CreateRoom);
-                        String roomname = realMessage.split(Sign.SplitSign)[0];
-                        ServerGameRoom serverGameRoom = new ServerGameRoom(client.getId(), client, roomname);//以玩家的id和对象还有发来的房间名字创建房间
-                        System.out.println("成功创建名字为" + roomname + "的房间。");
-                        Gson gson = new Gson();
-                        String s = gson.toJson(serverGameRoom);
-                        for (PrintStream sendstream : creatServer.clientPrintStreamMap.values()) {
-                            sendstream.println(Sign.NewRoomCreate + s);
+                        String id=client.getId();
+                        String password=client.getPassword();
+                        Client c=new Client(id,password);
+                        System.out.println(c.equals(client));
+                        System.out.println(CreatServer.clientPrintStreamMap.get(c)==null);
+                        System.out.println(CreatServer.clientPrintStreamMap.get(client)==null);
+                        ServerGameRoom serverGameRoom = new ServerGameRoom(client.getId(), c, realMessage);//以玩家的id和对象还有发来的房间名字创建房间
+                        System.out.println(client.getId());
+                        System.out.println(realMessage);
+                        CreatServer.allGameRoom.add(serverGameRoom);
+                        //设置当前玩家房间为自己创建的房间
+                        client.setGameRoom(serverGameRoom);
+                        String roomStr=gson.toJson(serverGameRoom);
+                        System.out.println("成功创建名字为" + realMessage + "的房间。");
+                        System.out.println("ok");
+                        sendStream.println(Sign.PermissionCreateRoom +roomStr);
+                        for (PrintStream sendstream : CreatServer.clientPrintStreamMap.values()) {
+                            sendstream.println(Sign.NewRoomCreate + roomStr);
                         }//发送给所有玩家房间创建信息
                         System.out.println("向所有玩家发送玩家房间信息创建标识。");
                     }
                     /**
                      * 如果收到加入房间信息
                      */
-                    else if (isLogin && line.startsWith(Sign.EnterRoom)) {
+                    else if (isLogin && line.startsWith(Sign.EnterRoom))
+                    {
                         realMessage = check.getRealMessage(line, Sign.EnterRoom);
                         String clientid = realMessage.split(Sign.SplitSign)[0];//获取创建者的名字与房间名字
                         String roomid = realMessage.split(Sign.SplitSign)[1]; //获取需要加入的房间名
                         ServerGameRoom serverGameRoom = null;
                         System.out.println("收到来自" + clientid + "加入" + roomid + "房间的请求");
+                        System.out.println(CreatServer.allGameRoom.size());
                         //找到房间
-                        for (int i = 0; i < creatServer.allGameRoom.size(); i++) {
-                            if (creatServer.allGameRoom.get(i).getId().equals(roomid));
-                            serverGameRoom = creatServer.allGameRoom.get(i);
+                        for (int i = 0; i < CreatServer.allGameRoom.size(); i++)
+                        {
+                            if (CreatServer.allGameRoom.get(i).getId().equals(roomid));
+                            serverGameRoom = CreatServer.allGameRoom.get(i);
                             break;
                         }
                         System.out.println("找到需要加入的房间名字为" + serverGameRoom.getId());
+                        //如果房价没有满
+                        if(serverGameRoom.getAllClients().size()<=4)
+                        {
                         //转发给这房间内所有其他玩家
                         List<Client> list = serverGameRoom.getAllClients();
-                        for (Client c : list) {
+                            System.out.println("房间中的人数："+list.size());
+                        for (Client c : list)
+                        {
                             PrintStream sendstream;
                             //在房间内
-                                sendstream = creatServer.clientPrintStreamMap.get(c);
+                                sendstream = CreatServer.clientPrintStreamMap.get(c);
                                 sendstream.println(Sign.NewClientEnter + clientid);//转发给房间其他在线玩家xxx进入
                         }
                         System.out.println("开始转发给该房间其他玩家" + client.getId() + "加入了房间");
@@ -155,6 +184,15 @@ class ServerClientThread extends Thread {
                         serverGameRoom.addClient(client);
                         //将当前玩家所属房间指定为此房间
                         client.setGameRoom(serverGameRoom);
+                        //
+                        sendStream.println(Sign.PermissionEnterRoom+serverGameRoom.getId());
+                        }
+                        //否则
+                        else
+                        {
+                            System.out.println("返回房间已满");
+                            sendStream.println(Sign.RoomFull);
+                        }
                     }
                     /**
                      * 如果收到T人的消息（房主可用）
@@ -165,14 +203,14 @@ class ServerClientThread extends Thread {
                         String roomid = realMessage.split(Sign.SplitSign)[1];//获取房间ID
                         ServerGameRoom serverGameRoom = null;
                         System.out.println("收到来自" + client.getId() + "的T人请求。");
-                        for (ServerGameRoom room : creatServer.allGameRoom) {
+                        for (ServerGameRoom room : CreatServer.allGameRoom) {
                             if (roomid.equals(room.getId())) serverGameRoom = room;
                             break;
                         }
                         if (client.isRoomMaster()) {//如果为房主
                             List<Client> list = serverGameRoom.getAllClients();
                             for (Client c : list) {
-                                PrintStream printStream = creatServer.clientPrintStreamMap.get(c);
+                                PrintStream printStream = CreatServer.clientPrintStreamMap.get(c);
                                 printStream.println(Sign.ClientLeaveRoom + targetId + Sign.SplitSign + roomid);
                                 //发送给被T玩家被T信息
                                 if (c.getId().equals(targetId)) printStream.println(Sign.BeenTicked);
@@ -207,14 +245,21 @@ class ServerClientThread extends Thread {
                             leaveRoom();
                         }
                         //如果不在房中
-                        for (PrintStream sendstream : creatServer.clientPrintStreamMap.values()) {
+                        for (PrintStream sendstream : CreatServer.clientPrintStreamMap.values()) {
                             sendstream.println(Sign.Disconnect + client.getId());
                         }
                     }*/
                     /**
                      * 如果收到注销请求(玩家返回到登陆界面)
                      */
-                    else if (isLogin && line.startsWith(Sign.Logout)) {
+                    else if (isLogin && line.startsWith(Sign.Logout))
+                    {
+                        CreatServer.clientPrintStreamMap.remove(client);
+                        for(PrintStream sendStream:CreatServer.clientPrintStreamMap.values())
+                        {
+                            sendStream.println(Sign.OneClientOffline+client.getId());
+                        }
+                        client=null;
                     }
                     /**
                      * 收到聊天信息命令
@@ -225,7 +270,7 @@ class ServerClientThread extends Thread {
                         serverGameRoom = client.getRoom();
                         //转发消息
                         for (Client c : serverGameRoom.getAllClients()) {
-                            PrintStream printStream = creatServer.clientPrintStreamMap.get(c);
+                            PrintStream printStream = CreatServer.clientPrintStreamMap.get(c);
                             printStream.println(Sign.FromServerMessage  + client.getId() + ": " + realMessage);
                         }
                     }
@@ -233,17 +278,18 @@ class ServerClientThread extends Thread {
                      * 如果收到断开连接请求（返回到单人与多人游戏选择界面)
                      */
                     else if (line.startsWith(Sign.Disconnect)) {
-                        creatServer.clientPrintStreamMap.remove(client);
+                        CreatServer.clientPrintStreamMap.remove(client);
                         stopThisClient( sendStream, getStream);
                         //关闭此服务线程 tips:原因：玩家请求断开连接退回到单人多人游戏选择界面
                     }
 
                     //TODO:待完成的玩家服务线程
 
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
             }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -255,14 +301,16 @@ class ServerClientThread extends Thread {
     {
         ServerGameRoom serverGameRoom = null;
         serverGameRoom = client.getRoom();//获取玩家当前所在房间
+        List<Client> roomClientList=serverGameRoom.getAllClients();
         //如果退出的玩家不是房主
-        if (!client.isRoomMaster()) {
+        if (!client.isRoomMaster())
+        {
             serverGameRoom.removeClient(client.getId());//当前所在房间移除当前玩家
             List<Client> allClientsIn = serverGameRoom.getAllClients();
             //向房间所有玩家发该玩家退出信息
             for (Client c : allClientsIn) {
                 if (c.getRoom().equals(serverGameRoom)) {
-                    PrintStream printStream = creatServer.clientPrintStreamMap.get(c);
+                    PrintStream printStream = CreatServer.clientPrintStreamMap.get(c);
                     printStream.println(Sign.ClientLeaveRoom + client.getId() + Sign.SplitSign + client.getRoom().getId());//发送玩家退出房间指令加退出玩家的id
                 }
 
@@ -271,9 +319,33 @@ class ServerClientThread extends Thread {
         //如果是房主
         else {
             //清除所有房间内玩家并且T出房间
-            serverGameRoom.removeAllClient();
+            try{
+                //遍历全部在线玩家
+                PrintStream sendStream=null;
+                for(Client c: CreatServer.onlineClients)
+                {
+                    //如果玩家属于该房间
+                    if(roomClientList.contains(c))
+                    {
+                        //告知房间里面其他人房间已经被删除
+                        sendStream = CreatServer.clientPrintStreamMap.get(c);
+                        sendStream.println(Sign.RoomDismiss);
+                        //删除该房间内该玩家
+                        roomClientList.remove(c);
+                    }
+                    //如果不属于该房间
+                    else
+                    {
+                        //告知其他不在此房间中的其他在线用户房间删除的信息
+                        sendStream= CreatServer.clientPrintStreamMap.get(c);
+                        sendStream.println(Sign.DeleteRoom +serverGameRoom.getId());
+                    }
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
             //清除此房间
-            creatServer.allGameRoom.remove(serverGameRoom);
+            CreatServer.allGameRoom.remove(serverGameRoom);
         }
     }
     /**

@@ -1,8 +1,6 @@
 package view;
 
 import com.google.gson.Gson;
-import com.sun.security.ntlm.Server;
-import com.sun.xml.internal.bind.v2.model.core.ID;
 import person.Player;
 
 import javax.swing.*;
@@ -14,13 +12,13 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
  * 游戏大厅类bylijie
  */
-public class GameHall {
+public class GameHall
+{
     private static Client currentClient=null;//当前用户
 
     private JFrame gameHallJFrame;//大厅frame
@@ -36,11 +34,14 @@ public class GameHall {
     private DefaultListModel rooms;//所有房间列表
     private  JScrollPane rpane;//左
     private  JScrollPane lpanel;//右
-    private JList currentOnlinePlayer;//当前在线用户
-    private JList currentRoom;//当前可用房间
+    private JList currentOnlinePlayerJList;//当前在线用户
+    private JList currentRoomJList;//当前可用房间
     private boolean isCreatRoom=false;//是否创建房间
-    private GameRoom currentGameRoom=null;//当前房间
-    GameHall(Client currentClient){
+    private boolean isEnterRoom=false;//是否加入房间
+    private  GameRoom currentGameRoom=null;//当前房间
+    private  ClientThread clientThread=null;
+    GameHall(Client currentClient)
+    {
         this.currentClient=currentClient;
         gameHallJFrame=new JFrame("游戏大厅");
         gameHallJFrame.setSize(1000,800);
@@ -57,10 +58,8 @@ public class GameHall {
         createRoom.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(!isCreatRoom) {
-                    new creatRoomGui(currentClient);
-                    createGameRoom(currentClient);
-                    
+                if(currentGameRoom==null) {
+                    new creatRoomGui(currentClient);//创建创建房间gui
                 }else {
                     JOptionPane.showMessageDialog(gameHallJFrame, "您已经创建过房间请关闭已经创建的房间再尝试", "提示", JOptionPane.ERROR_MESSAGE);//弹出警告框
                 }
@@ -77,6 +76,32 @@ public class GameHall {
                 //关闭大厅界面
                 gameHallJFrame.dispose();
                 new LoginFrame();
+            }
+        });
+        //加入房间事件
+        currentRoomJList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e)
+            {
+                super.mouseClicked(e);
+                if(e.getClickCount()==2)
+                {
+                    if(currentClient.getRoom()==null)
+                    {
+                        System.out.println("加入房间中。");
+                        JList currentRooms=(JList)e.getSource();
+                        int index=currentRooms.getSelectedIndex();
+                        Object obj=currentRooms.getModel().getElementAt(index);
+                        System.out.println("点击加入 "+obj.toString()+" 房间");
+                        System.out.println("房间名："+obj.toString());
+                        //发送加入房间请求
+                        ClientPort.sendStream.println(Sign.EnterRoom+currentClient.getId()+Sign.SplitSign+obj.toString());
+                    }
+                    else{
+                        JOptionPane.showMessageDialog(gameHallJFrame,"你已加入了房间","警告",JOptionPane.OK_OPTION);
+                    }
+
+                }
             }
         });
 
@@ -110,22 +135,7 @@ public class GameHall {
                gameHallJFrame.dispose();
             }
         });
-        //加入房间事件
-        currentRoom.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                if(e.getClickCount()==2){
-                    JList currentRooms=(JList)e.getSource();
-                    int index=currentRooms.getSelectedIndex();
-                    Object obj=currentRooms.getModel().getElementAt(index);
-                    System.out.println("点击加入 "+obj.toString()+" 房间");
-                    //发送加入房间请求
-                    ClientPort.sendStream.println(Sign.EnterRoom+currentClient.getId()+Sign.SplitSign+obj.toString());
 
-                }
-            }
-        });
     }
     class hallJPanel extends JPanel{
         hallJPanel(){
@@ -141,12 +151,12 @@ public class GameHall {
             gamerIcon=new JTextPane();
             onlinePlayer=new DefaultListModel();
             rooms=new DefaultListModel();
-            currentOnlinePlayer=new JList(onlinePlayer);
-            currentOnlinePlayer.setBorder(new TitledBorder("当前在线玩家"));
-            currentRoom=new JList(rooms);
-            currentRoom.setBorder(new TitledBorder("当前房间"));
-            rpane=new JScrollPane(currentOnlinePlayer);
-            lpanel=new JScrollPane(currentRoom);
+            currentOnlinePlayerJList =new JList(onlinePlayer);
+            currentOnlinePlayerJList.setBorder(new TitledBorder("当前在线玩家"));
+            currentRoomJList =new JList(rooms);
+            currentRoomJList.setBorder(new TitledBorder("当前房间"));
+            rpane=new JScrollPane(currentOnlinePlayerJList);
+            lpanel=new JScrollPane(currentRoomJList);
             //设置两个列表的位置
             rpane.setSize(495,600);
             rpane.setLocation(0,200);
@@ -173,6 +183,14 @@ public class GameHall {
             offlineGame.setSize(180,60);
             offlineGame.setLocation(725,115);
             offlineGame.setBackground(new Color(0xFFEFDB));
+            for(Client client:ClientPort.allOnlineClient)
+            {
+                onlinePlayer.addElement(client.getId());
+            }
+            for(ServerGameRoom room:ClientPort.allServerRoom)
+            {
+                rooms.addElement(room.getId());
+            }
             this.add(logout);
             this.add(gameTutorial);
             this.add(offlineGame);
@@ -182,6 +200,9 @@ public class GameHall {
             this.add(gamerIcon);
             this.add(rpane);
             this.add(lpanel);
+            clientThread=new ClientThread(ClientPort.socket,ClientPort.sendStream,ClientPort.getStream);
+            clientThread.start();
+
 
         }
     }
@@ -208,8 +229,8 @@ public class GameHall {
         private int playerNum;                              //房间目前玩家数目
         private ArrayList<Player> playerList =new ArrayList<Player>();         //存放该房间中的玩家
         private ArrayList<Client> clientList =new ArrayList<>();            //存放该房间的用户，玩家和用户是数组下标一一对应
-        private Client roomMaster;                          //房间的创建者
-        private JLabel masterName=new JLabel();                                  //房主用户名
+        private Client roomMaster=null;                          //房间的创建者
+        private JTextField masterName=new JTextField();                                  //房主用户名
         private JButton startGame=new JButton("开始");  //开始游戏
         private JButton leaveRoom=new JButton("退出");  //退出房间
         private JButton sendMessage =new JButton("发送");     //发送消息
@@ -217,14 +238,19 @@ public class GameHall {
         private RoomArea roomArea;                              //游戏显示区域
         private JTextArea receiveArea=new JTextArea();          //消息接收区
         private JTextArea sendArea=new JTextArea();             //消息发送区
-        private JList<String> clientJList;                       //房间内的玩家的用户名,用于显示在房间中
-        private DefaultListModel<String> defaultListModel=new DefaultListModel<String>();
+        private JList<String> clientIdJList;                       //房间内的玩家的用户名,用于显示在房间中
+        private DefaultListModel<String> clientIdModel =new DefaultListModel<String>();
         private String roomTips=null;                           //房间提示语(在游戏大厅中显示的对应房间的简单信息)
         //private utils.Client.ClientThread
 
 
-        public GameRoom(Client roomMaster,String roomname)
+        public GameRoom(Client roomMaster,String roomname,List<Client> clients)
         {
+            this.roomMaster=roomMaster;
+            for(Client client:clients)
+            {
+                clientList.add(client);
+            }
             roomArea=new RoomArea();
             this.id=roomMaster.getId();
             this.name=roomname;
@@ -233,7 +259,6 @@ public class GameHall {
             this.setSize(Width,Height);
             this.setLocation(1458,115);
             this.setVisible(true);
-            this.roomMaster=roomMaster;
             this.name=roomname;
 
             this.addWindowListener(new WindowAdapter() {
@@ -258,14 +283,14 @@ public class GameHall {
             return name;
         }
         //获取房间内用户id的列表
-        public JList<String> getClientJList()
+        public JList<String> getClientIdJList()
         {
-            return clientJList;
+            return clientIdJList;
         }
         //获取用户id列表的defaultListModel
-        public DefaultListModel<String> getDefaultListModel()
+        public DefaultListModel<String> getClientIdModel()
         {
-            return defaultListModel;
+            return clientIdModel;
         }
         //获取房间的简单信息
         public String getRoomTips(){return roomTips;}
@@ -287,7 +312,10 @@ public class GameHall {
             {
                 this.setSize(Width,Height);
                 this.setLayout(null);           //绝对布局
-                masterName.setText("房主：");
+                masterName.setText("房主："+roomMaster.getId());
+                masterName.setEditable(false);
+                masterName.setFont(new Font(null,Font.BOLD,16));
+                masterName.setBorder(null);
                 masterName.setSize(100,50);
                 masterName.setLocation(20,20);
                 this.add(masterName);
@@ -308,8 +336,8 @@ public class GameHall {
                 tickPerson.setLocation(20,160);
                 this.add(tickPerson);
                 //初始化用户显示列表
-                clientJList=new JList<String>(defaultListModel);
-                JScrollPane clientJListJsp=new JScrollPane(clientJList);
+                clientIdJList =new JList<String>(clientIdModel);
+                JScrollPane clientJListJsp=new JScrollPane(clientIdJList);
                 clientJListJsp.setSize(Width,200);
                 clientJListJsp.setLocation(0,200);
                 this.add(clientJListJsp);
@@ -328,6 +356,10 @@ public class GameHall {
                 sendAreaJsp.setLocation(0,600);
                 this.add(sendAreaJsp);
 
+                for(Client client:clientList)
+                {
+                    clientIdModel.addElement(client.getId());
+                }
                 initialListenThread();
             }
 
@@ -342,7 +374,7 @@ public class GameHall {
                     @Override
                     public void mouseClicked(MouseEvent e) {
                         super.mouseClicked(e);
-                        List<String> selectList=clientJList.getSelectedValuesList();
+                        List<String> selectList= clientIdJList.getSelectedValuesList();
                         String selectPersonId=selectList.get(0);
                         PrintStream ps=ClientPort.sendStream;
                         ps.println(Sign.TickFromRoom+selectPersonId+Sign.SplitSign+id);
@@ -375,6 +407,113 @@ public class GameHall {
 
     }
     /**
+     * 创建房间的GUI界面类
+     */
+    public class creatRoomGui {
+        private JFrame creatRoomJFrame;
+        private creatRoomJPanel creatRoomjpanel;
+        private JLabel roomnamelable;
+        private JLabel maxclientnumlable;
+        private JButton btn_creat;
+        private JButton btn_exit;
+        private JTextField txt_room_name;
+        private JTextField txt_maxclients;
+        private PrintStream sendStream;
+        private BufferedReader getStream;
+        private Client currentclient;
+        creatRoomGui(Client currentclient){
+            this.currentclient=currentclient;
+            creatRoomjpanel=new creatRoomJPanel();
+            creatRoomJFrame=new JFrame();
+            this.sendStream=ClientPort.sendStream;
+            this.getStream=ClientPort.getStream;
+            creatRoomJFrame.setTitle("创建房间");
+            creatRoomJFrame.add(creatRoomjpanel);
+            creatRoomJFrame.setSize(300,200);
+            creatRoomJFrame.setResizable(false);
+            creatRoomJFrame.setLayout(null);
+            creatRoomJFrame.setVisible(true);
+            //设置相对屏幕绝对位置
+            creatRoomJFrame.setLocationRelativeTo(null);
+            creatRoomJFrame.setVisible(true);
+            btn_creat.addActionListener(new ActionListener()
+            {
+                @Override
+                public void actionPerformed(ActionEvent e)
+                {
+                        sendStream.println(Sign.CreateRoom + currentclient.getId());//发送创建房间的命令
+                        creatRoomJFrame.dispose();
+                        //置为已经开启房间状态和已经加入房间状态
+                        isCreatRoom=true;
+
+                }
+            });
+            btn_exit.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    creatRoomJFrame.dispose();
+                }
+            });
+            creatRoomJFrame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    super.windowClosing(e);
+                    creatRoomJFrame.dispose();
+                }
+            });
+        }
+        /**
+         * 内部类定义房间创建GUI的布局
+         */
+        class creatRoomJPanel extends  JPanel{
+            creatRoomJPanel(){
+                this.setSize(300,200);
+                this.setLayout(null);
+                this.setLocation(0,0);
+                initial();
+            }
+            private void initial(){
+                roomnamelable=new JLabel("房间名字");//暂时不考虑
+                maxclientnumlable =new JLabel("最大人数");//暂时只能为4
+                btn_creat=new JButton("开启");
+                btn_exit=new JButton("取消");
+                txt_room_name =new JTextField();
+                txt_room_name.setText(currentclient.getId());
+                txt_room_name.setEditable(false);
+                txt_maxclients=new JTextField();
+                txt_maxclients.setText("4");
+                txt_maxclients.setEditable(false);
+                this.add(roomnamelable);
+                this.add(maxclientnumlable);
+                this.add(btn_creat);
+                this.add(btn_exit);
+                this.add(txt_room_name);
+                this.add(txt_maxclients);
+                //TODO:注册帮助
+                //设置位置
+                //公告栏位置大小
+                //昵称位置大小
+                roomnamelable.setSize(70,30);
+                roomnamelable.setLocation(30,35);
+                maxclientnumlable.setSize(70,30);
+                maxclientnumlable.setLocation(30,70);
+                //账号位置大小
+                txt_room_name.setSize(120,30);
+                txt_room_name.setLocation(110,35);
+                txt_maxclients.setSize(120,30);
+                txt_maxclients.setLocation(110,70);
+                //注册
+                btn_creat.setSize(60,30);
+                btn_creat.setLocation(80,110);
+                //取消
+                btn_exit.setSize(60,30);
+                btn_exit.setLocation(170,110);
+            }
+        }
+
+    }
+
+    /**
      * 创建游戏房间时之后所有于服务器之间进行关于房间信息和游戏中的数据
      * 传输都分配给该线程的实例对象完成
      */
@@ -399,26 +538,27 @@ public class GameHall {
                     line=getstream.readLine();
                     System.out.println("客户端收到来自服务器的消息"+line);
 
+                    //如果有用户上线
+                    if(line.startsWith(Sign.OneClientOnline))
+                    {
+                        realMessage=getRealMessage(line,Sign.OneClientOnline);
+                        onlinePlayer.addElement(realMessage);
+                    }
+                    //如果有用户下线
+                    else if(line.startsWith(Sign.OneClientOffline))
+                    {
+                        realMessage=getRealMessage(line,Sign.OneUserOffOnline);
+                        onlinePlayer.removeElement(realMessage);
+                    }
                     //如果有用户加入当前房间
-                    if(line.startsWith(Sign.NewClientEnter))
+                    else if(line.startsWith(Sign.NewClientEnter))
                     {
                         realMessage=getRealMessage(line,Sign.NewClientEnter);
                         //进入房间的用户ID
                         String clientId=realMessage;
                         //获取大厅房间中用户id的列表;   （客户端大厅显示的房间类）
-                        DefaultListModel<String> clientIdInRoom=currentGameRoom.getDefaultListModel();
+                        DefaultListModel<String> clientIdInRoom=currentGameRoom.getClientIdModel();
                         clientIdInRoom.addElement(clientId);
-                        String roomName=currentGameRoom.getName();
-                        //目前该房间中的人
-                        int clientNum=clientIdInRoom.size();
-                        //该房间最大的人数
-                        int maxNum=GameRoom.maxPlayerNum;
-                        //修改大厅房间的简单信息
-                        String roomTips=currentGameRoom.getRoomTips();
-                        rooms.removeElement(roomTips);
-                        roomTips=roomName+"("+clientNum+"/"+maxNum+")"+"\t等待中";
-                        rooms.addElement(roomTips);
-                        currentGameRoom.setRoomTips(roomTips);
                     }
                     //如果有用户离开当前房间或被踢出房间 （非房主）
                     else if(line.startsWith(Sign.ClientLeaveRoom))
@@ -429,7 +569,7 @@ public class GameHall {
                         //进入的房间ID
                         String roomId=realMessage.split(Sign.SplitSign)[1];
                         //获取大厅房间中用户id的列表;   （客户端大厅显示的房间类）
-                        DefaultListModel<String> clientIdInRoom=currentGameRoom.getDefaultListModel();
+                        DefaultListModel<String> clientIdInRoom=currentGameRoom.getClientIdModel();
                         //将用户从当前房间用户id列表中删除
                         clientIdInRoom.removeElement(clientId);
                     }
@@ -444,14 +584,17 @@ public class GameHall {
                         rooms.removeElement(roomId);
                         currentClient.setRoomNull();
                         currentGameRoom.dispose();
+                        currentGameRoom=null;
                     }
                     //如果被房主踢出房间
                     else if(line.startsWith(Sign.BeenTicked))
                     {
-                        DefaultListModel<String> clientIdInRoom=currentGameRoom.getDefaultListModel();
+                        DefaultListModel<String> clientIdInRoom=currentGameRoom.getClientIdModel();
                         //将用户从当前房间用户id列表中删除
                         clientIdInRoom.removeElement(currentClient.getId());
                         currentGameRoom.dispose();
+                        currentClient.setRoomNull();
+                        currentGameRoom=null;
                         JOptionPane.showConfirmDialog(null,"你被房主踢出了房间","提示",JOptionPane.OK_OPTION);
                     }
                     //如果有房间新建
@@ -494,7 +637,30 @@ public class GameHall {
                         JOptionPane.showMessageDialog(null,"服务器已经关闭，客户端即将退出","警告",JOptionPane.OK_OPTION);
                         System.exit(0);
                     }
+                    //如果创建房间成功
+                    else if(line.startsWith(Sign.PermissionCreateRoom))
+                    {
+                        realMessage=getRealMessage(line,Sign.PermissionCreateRoom);
+                        Gson gson=new Gson();
+                        ServerGameRoom serverGameRoom=gson.fromJson(realMessage,ServerGameRoom.class);
+                        //当前玩家的房间设置为自己创建的房间
+                        currentClient.setGameRoom(serverGameRoom);
+                        currentGameRoom = new GameRoom(currentClient, currentClient.getId(),serverGameRoom.getAllClients());
 
+                    }
+                    //如果允许进入房间
+                    else if(line.startsWith(Sign.PermissionEnterRoom)){
+                        realMessage=getRealMessage(line,Sign.PermissionEnterRoom);
+                        //将玩家所在房间设为加入的房间
+                       for(ServerGameRoom s:ClientPort.allServerRoom){
+                           if (s.getId().equals(realMessage)) currentClient.setGameRoom(s);
+                       }
+                    }
+                    //如果房间已满
+                    else if(line.startsWith(Sign.RoomFull)){
+                        JOptionPane.showMessageDialog(null,"房间已满","提示",JOptionPane.OK_OPTION);
+                    }
+                    //TODO:客户端线程
                 }
                 catch (IOException e)
                 {
@@ -522,20 +688,13 @@ public class GameHall {
     {
         PrintStream ps=ClientPort.sendStream;
         //将人物的id与将要离开的房间的id发送给服务端
-        ps.println(Sign.LeaveRoom);
+        ps.println(Sign.ClientLeaveRoom);
         currentClient.setRoomNull();
         currentGameRoom.dispose();
+        currentGameRoom=null;
     }
 
-    /**
-     * 创建房间
-     * @param roomMaster
-     */
-    public void createGameRoom(Client roomMaster){
-        String roomname=null;
-        ClientPort.sendStream.println(Sign.CreateRoom+roomname);
-        currentGameRoom=new GameRoom(roomMaster,roomname);
-    }
+
 
     /**
      * 用于依据标志符号切割掉客户端发送来的字符串开始的命令
@@ -549,9 +708,5 @@ public class GameHall {
         return realMessage;
     }
 
-    public static void main(String[] args) {
-        Client client=new Client("1","13");
-        new GameHall(client).new GameRoom(client,"123");
-    }
 
 }
