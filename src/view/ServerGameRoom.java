@@ -12,11 +12,12 @@ public class ServerGameRoom implements Serializable
     private String id;
     private Client master;
     private String name;
-    private List<Client> allClients=new LinkedList<>();
+    private List<Client> allClients;
     public ServerGameRoom(String id, Client master, String name){
         this.id=id;
         this.master=master;
         this.name=name;
+        allClients=new LinkedList<Client>();
         allClients.add(master);
     }
 

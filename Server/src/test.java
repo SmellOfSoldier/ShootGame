@@ -19,13 +19,18 @@ public class test extends Thread {
 
     public static void main(String[] args)
     {
-        ServerGameRoom serverGameRoom=new ServerGameRoom("123",new Client("1","2"),"123");
+        /*Client client=new Client("1","2");
+        ServerGameRoom room=new ServerGameRoom("1",client,"djf");
+        room.addClient(client);
+        client.setGameRoom(room);
+        System.out.println(room.getMaster().getRoom());
+        System.out.println(client.getRoom());
         Gson gson=new Gson();
-        String s=gson.toJson(serverGameRoom);
+        String s=gson.toJson(room);
         System.out.println("ok");
         ServerGameRoom serverGameRoom1=gson.fromJson(s,ServerGameRoom.class);
         System.out.println(serverGameRoom1.getId());
-        System.out.println(serverGameRoom1.getMaster().getId());
+        System.out.println(serverGameRoom1.getMaster().getId());*/
     }
 
 
