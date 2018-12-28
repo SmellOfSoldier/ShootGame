@@ -566,7 +566,7 @@ public class GameHall
                     //如果有用户下线
                     else if(line.startsWith(Sign.OneClientOffline))
                     {
-                        realMessage=getRealMessage(line,Sign.OneUserOffOnline);
+                        realMessage=getRealMessage(line,Sign.OneClientOffline);
                         onlinePlayer.removeElement(realMessage);
                     }
                     //如果有用户加入当前房间
