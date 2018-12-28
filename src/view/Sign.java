@@ -14,6 +14,7 @@ public interface Sign
     String LeaveRoom="LEAVE_ROOM";                                     //离开房间
     String RoomDismiss="ROOM_DISMISS";                                 //房间被删除（房主退出）
     String StartGame="START_GAME";                                     //开始游戏
+    String GameStart="GAME_START";                                     //游戏已开始
     String NewClientEnter="NEW_CLIENT_ENTER";                          //新玩家加入房间
     String NewRoomCreate="NEW_ROOM_CREATE";                            //新房间创建
     String OneClientTicked="ONE_CLIENT_TICKED";                        //玩家被提出房间

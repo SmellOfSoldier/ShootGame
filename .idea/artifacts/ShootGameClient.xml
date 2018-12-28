@@ -1,6 +1,6 @@
 <component name="ArtifactManager">
   <artifact type="jar" name="ShootGameClient">
-    <output-path>$PROJECT_DIR$/..</output-path>
+    <output-path>$USER_HOME$/Desktop</output-path>
     <root id="archive" name="ShootGameClient.jar">
       <element id="module-output" name="ShootGame" />
       <element id="module-output" name="Server" />

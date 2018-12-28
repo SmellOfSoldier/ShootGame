@@ -177,7 +177,9 @@ class ServerClientThread extends Thread {
                         }
                         System.out.println("开始转发给该房间其他玩家" + client.getId() + "加入了房间");
                         //将当前玩家加入到指定的房间内
+                            System.out.println("添加新的玩家到房间"+serverGameRoom.getId()+"的id"+client.getId()+"大小为"+serverGameRoom.getAllClients().size());
                         serverGameRoom.addClient(client);
+                            System.out.println("添加新的玩家到房间"+serverGameRoom.getId()+"的id"+client.getId()+"大小为"+serverGameRoom.getAllClients().size());
                         //将当前玩家所属房间指定为此房间
                         client.setGameRoomID(serverGameRoom.getId());
                             System.out.println(serverGameRoom.getAllClients().size());
@@ -212,9 +214,14 @@ class ServerClientThread extends Thread {
                             for (Client c : list)
                             {
                                 PrintStream printStream = CreatServer.clientPrintStreamMap.get(c);
+                                if (c.getId().equals(targetId))
+                                {
+                                    //发送给被T玩家被T信息
+                                    printStream.println(Sign.BeenTicked);
+                                    continue;
+                                }
                                 printStream.println(Sign.ClientLeaveRoom + targetId + Sign.SplitSign + roomid);
-                                //发送给被T玩家被T信息
-                                if (c.getId().equals(targetId)) printStream.println(Sign.BeenTicked);
+
                             }
                             //发送给房间内所有玩家xxx被T除
                         }
@@ -228,12 +235,6 @@ class ServerClientThread extends Thread {
                     else if (isLogin && line.startsWith(Sign.ClientLeaveRoom)) {
                         System.out.println("服务器收到" + client.getId() + "发来的离开房间的信息。");
                         leaveRoom();//离开房间
-                    }
-                    /**
-                     * 如果收到开始游戏的信息（房主可用）
-                     */
-                    else if (isLogin && line.startsWith(Sign.StartGame)) {
-
                     }
                     /**
                      * 如果收到下线请求(玩家退出游戏大厅回到多人与单人游戏的选择界面)
@@ -285,6 +286,27 @@ class ServerClientThread extends Thread {
                         }
                     }
                     /**
+                     * 如果收到开始游戏的命令
+                     */
+                    else if(line.startsWith(Sign.StartGame))
+                    {
+                        System.out.println("进入");
+                        for(ServerGameRoom room:CreatServer.allGameRoom)
+                        {
+                            System.out.println("遍历所有房间");
+                            if(room.getMaster().equals(client))
+                            {
+                                System.out.println("找到房间");
+                                for (Client c : room.getAllClients())
+                                {
+                                    System.out.println("发送给房间内所有玩家");
+                                    CreatServer.clientPrintStreamMap.get(c).println(Sign.GameStart);
+                                }
+                            }
+                        }
+
+                    }
+                    /**
                      * 如果收到断开连接请求（返回到单人与多人游戏选择界面)
                      */
                     else if (line.startsWith(Sign.Disconnect)) {
@@ -318,7 +340,9 @@ class ServerClientThread extends Thread {
                 serverGameRoom=room;
             }
         }
+        System.out.println(serverGameRoom==null);
         List<Client> roomClientList=serverGameRoom.getAllClients();
+        System.out.println("循环房间玩家链表大小为"+roomClientList.size());
         //如果退出的玩家不是房主
         if (!serverGameRoom.getMaster().equals(client))
         {
@@ -346,6 +370,7 @@ class ServerClientThread extends Thread {
                     //如果玩家属于该房间
                     if(roomClientList.contains(c))
                     {
+                        System.out.println("给房间内"+c.getId()+"发送房间关闭消息");
                         //告知房间里面其他人房间已经被删除
                         sendStream = CreatServer.clientPrintStreamMap.get(c);
                         sendStream.println(Sign.RoomDismiss);
@@ -355,6 +380,7 @@ class ServerClientThread extends Thread {
                     //如果不属于该房间
                     else
                     {
+                        System.out.println("给不是房间内的玩家"+c.getId()+"发送房间删除消息");
                         //告知其他不在此房间中的其他在线用户房间删除的信息
                         sendStream= CreatServer.clientPrintStreamMap.get(c);
                         sendStream.println(Sign.DeleteRoom +serverGameRoom.getId());

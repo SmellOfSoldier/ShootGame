@@ -81,9 +81,9 @@ public class GameHall
         //加入房间事件
         currentRoomJList.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e)
+            public void mousePressed(MouseEvent e)
             {
-                super.mouseClicked(e);
+                super.mousePressed(e);
                 if(e.getClickCount()==2)
                 {
                     if(currentClient.getRoomID()==null)
@@ -377,40 +377,48 @@ public class GameHall
                 //初始化踢出人物按钮
                 tickPerson.addMouseListener(new MouseAdapter() {
                     @Override
-                    public void mouseClicked(MouseEvent e) {
-                        super.mouseClicked(e);
-                        if(currentClient.equals(currentGameRoom.getRoomMaster()))
-                        {
-                            JOptionPane.showMessageDialog(null,"你自己就是房主，怎么踢自己？","秀啊",JOptionPane.OK_OPTION);
-                            return;
-                        }
+                    public void mousePressed(MouseEvent e) {
+                        super.mousePressed(e);
                         List<String> selectList= clientIdJList.getSelectedValuesList();
                         String selectPersonId=selectList.get(0);
+                        if(currentClient.getId().equals(selectPersonId))
+                        {
+                            JOptionPane.showMessageDialog(null, "你自己就是房主，怎么踢自己？", "秀啊", JOptionPane.OK_OPTION);
+                            return;
+                        }
                         PrintStream ps=ClientPort.sendStream;
                         ps.println(Sign.TickFromRoom+selectPersonId+Sign.SplitSign+id);
-                        clientIdModel.removeElement(selectPersonId);
+
                     }
                 });
                 //初始化离开房间按钮
                 leaveRoom.addMouseListener(new MouseAdapter() {
                     @Override
-                    public void mouseClicked(MouseEvent e)
+                    public void mousePressed(MouseEvent e)
                     {
-                        super.mouseClicked(e);
+                        super.mousePressed(e);
                         leaveRoom();
                     }
                 });
                 //初始化发送消息按钮
                 sendMessage.addMouseListener(new MouseAdapter() {
                     @Override
-                    public void mouseClicked(MouseEvent e)
+                    public void mousePressed(MouseEvent e)
                     {
-                        super.mouseClicked(e);
+                        super.mousePressed(e);
                         String message=sendArea.getText();
                         sendArea.setText(null);
                         PrintStream ps=ClientPort.sendStream;
                         //将消息发送给服务端
                         ps.println(Sign.SendPublicMessage+message);
+                    }
+                });
+                startGame.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mousePressed(MouseEvent e) {
+                        super.mousePressed(e);
+                        PrintStream ps=ClientPort.sendStream;
+                        ps.println(Sign.StartGame);
                     }
                 });
             }
@@ -582,7 +590,9 @@ public class GameHall
                         //获取大厅房间中用户id的列表;   （客户端大厅显示的房间类）
                         DefaultListModel<String> clientIdInRoom=currentGameRoom.getClientIdModel();
                         //将用户从当前房间用户id列表中删除
+                        System.out.println(clientIdInRoom.size());
                         clientIdInRoom.removeElement(clientId);
+                        System.out.println(clientIdInRoom.size());
                     }
                     //如果房间被解散（房主离开房间）
                     else if(line.startsWith(Sign.RoomDismiss))
@@ -600,7 +610,8 @@ public class GameHall
                         System.out.println("set null");
                         currentGameRoom.setVisible(false);
                         System.out.println("dispose");
-                        currentGameRoom=null;
+                        if(currentGameRoom!=null)
+                            currentGameRoom=null;
                         System.out.println("roomdis run out");
                     }
                     //如果被房主踢出房间
@@ -679,6 +690,14 @@ public class GameHall
                     //如果房间已满
                     else if(line.startsWith(Sign.RoomFull)){
                         JOptionPane.showMessageDialog(null,"房间已满","提示",JOptionPane.OK_OPTION);
+                    }
+                    //如果收到游戏已经开始的命令
+                    else if(line.startsWith(Sign.GameStart)){
+
+                        for(int i=0;i<currentGameRoom.getClientIdModel().size();i++)
+                        {
+                            currentGameRoom.putMessage(currentGameRoom.getClientIdModel().get(i)+"\n");
+                        }
                     }
                     //TODO:客户端线程
                 }
