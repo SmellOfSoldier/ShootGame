@@ -3,7 +3,7 @@ package person;
 
 import Weapon.*;
 import utils.MusicPlayer;
-import view.singlePersonModel;
+import view.SinglePersonModel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -40,12 +40,12 @@ public class Player extends Person implements Serializable
     public void addKillNum(int killNum)
     {
         super.addKillNum(killNum);
-        singlePersonModel.killAndDieField.setText("击杀/死亡："+getKillNum()+"/"+getDieNum());
+        SinglePersonModel.killAndDieField.setText("击杀/死亡："+getKillNum()+"/"+getDieNum());
     }
     public void setDieNum(int dieNum)
     {
         super.setDieNum(dieNum);
-        singlePersonModel.killAndDieField.setText("击杀/死亡："+getKillNum()+"/"+getDieNum());
+        SinglePersonModel.killAndDieField.setText("击杀/死亡："+getKillNum()+"/"+getDieNum());
     }
 
     /**
@@ -58,7 +58,7 @@ public class Player extends Person implements Serializable
         if (die) {
             super.setDie(true);
             setDieNum(1);
-            singlePersonModel.healthLevel.setValue(0);
+            SinglePersonModel.healthLevel.setValue(0);
         }
     }
 
@@ -75,15 +75,15 @@ public class Player extends Person implements Serializable
         {
             int bulletLeftInGun=((Gun)weapon).getBulletLeft();
             int bulletLeftOnPerson=getBulletLeftOnPerson();
-            singlePersonModel.bulletLeft.setText("子弹："+bulletLeftInGun+"/"+bulletLeftOnPerson);
+            SinglePersonModel.bulletLeft.setText("子弹："+bulletLeftInGun+"/"+bulletLeftOnPerson);
         }
         else
         {
             int left=getBulletLeftOnPerson();
-            singlePersonModel.bulletLeft.setText("子弹："+left);
+            SinglePersonModel.bulletLeft.setText("子弹："+left);
         }
-        Point point= singlePersonModel.flagPoint[getUsingWeaponType()-1];
-        singlePersonModel.usingWeaponFlag.setLocation(point);
+        Point point= SinglePersonModel.flagPoint[getUsingWeaponType()-1];
+        SinglePersonModel.usingWeaponFlag.setLocation(point);
         gameArea.repaint();
     }
     /**
@@ -98,12 +98,12 @@ public class Player extends Person implements Serializable
         {
             int bulletLeftInGun=((Gun)weapon).getBulletLeft();
             int bulletLeftOnPerson=getBulletLeftOnPerson();
-            singlePersonModel.bulletLeft.setText("子弹："+bulletLeftInGun+"/"+bulletLeftOnPerson);
+            SinglePersonModel.bulletLeft.setText("子弹："+bulletLeftInGun+"/"+bulletLeftOnPerson);
         }
         else
         {
             int left=getBulletLeftOnPerson();
-            singlePersonModel.bulletLeft.setText("子弹："+left);
+            SinglePersonModel.bulletLeft.setText("子弹："+left);
         }
     }
     public void reduceHealthPoint(int hp)

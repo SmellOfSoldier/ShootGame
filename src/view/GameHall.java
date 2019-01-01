@@ -111,7 +111,7 @@ public class GameHall
         offlineGame.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new singlePersonModel();
+                new SinglePersonModel();
             }
         });
         //关闭事件

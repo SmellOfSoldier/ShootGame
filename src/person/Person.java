@@ -7,7 +7,7 @@ import java.net.URL;
 
 import Weapon.*;
 import utils.MusicPlayer;
-import view.singlePersonModel;
+import view.SinglePersonModel;
 
 /**
  * 游戏人物
@@ -167,7 +167,7 @@ public class Person extends JLabel implements Serializable
         }
         if (this instanceof Player)
         {
-            singlePersonModel.healthLevel.setValue(healthPoint);
+            SinglePersonModel.healthLevel.setValue(healthPoint);
         }
     }
     public void dicardWeapon(int type)              //丢弃武器,type为要丢弃武器的种类

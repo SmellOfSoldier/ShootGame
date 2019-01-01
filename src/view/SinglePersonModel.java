@@ -31,7 +31,7 @@ import java.util.Random;
 /**
  * 该模式为单人模式
  */
-public class singlePersonModel extends JFrame
+public class SinglePersonModel extends JFrame
 {
     private Point[] entrance=new Point[]{new Point(800,20),new Point(1040,280),new Point(1160,600), new Point(320,760),new Point(20,520)};         //刷怪位置
     private Point mousePoint =new Point();      //鼠标当前制作位置
@@ -75,7 +75,7 @@ public class singlePersonModel extends JFrame
     private Timer hiderMoveThread=null;         //隐匿者线程
     private Timer reLiveAiThread=null;          //复活AI线程
     private Timer grenadeMoveThread=null;       //控制手雷移动的线程
-    singlePersonModel()
+    SinglePersonModel()
     {
         gameArea=new GameArea();
         createPlayer();
@@ -292,7 +292,7 @@ public class singlePersonModel extends JFrame
             killAndDieField.setLocation(1000,10);
             killAndDieField.setBackground(new Color(0xED4078));
 
-            URL url= singlePersonModel.class.getResource("/images/logo/usingWeaponFlag.png");
+            URL url= SinglePersonModel.class.getResource("/images/logo/usingWeaponFlag.png");
             ImageIcon icon=new ImageIcon(url);
             icon.setImage(icon.getImage().getScaledInstance(20,20,Image.SCALE_DEFAULT));
             usingWeaponFlag.setSize(20, 20);
@@ -330,7 +330,7 @@ public class singlePersonModel extends JFrame
                int k=i+1;
                int width=itemBars[i].getWidth();
                int height=itemBars[i].getHeight();
-               URL url= singlePersonModel.class.getResource("/images/itemBars/itemBar"+k+".png");
+               URL url= SinglePersonModel.class.getResource("/images/itemBars/itemBar"+k+".png");
                ImageIcon icon=new ImageIcon(url);
                icon.setImage(icon.getImage().getScaledInstance(width,height,Image.SCALE_DEFAULT));
                itemBars[i].setIcon(icon);
@@ -671,7 +671,7 @@ public class singlePersonModel extends JFrame
                         //如果手榴弹到达指定地点，或者超出地图范围
                         int x=grenade.getLocation().x;
                         int y=grenade.getLocation().y;
-                        if(grenade.ifArrive() || x  > singlePersonModel.gameAreaWidth ||x<=0 || y> singlePersonModel.gameAreaHeight || y<=0)
+                        if(grenade.ifArrive() || x  > SinglePersonModel.gameAreaWidth ||x<=0 || y> SinglePersonModel.gameAreaHeight || y<=0)
                         {
                             grenade.setVisible(false);
                             gList.add(grenade);
@@ -746,7 +746,7 @@ public class singlePersonModel extends JFrame
         //
         try {
             //先判断物体是否超出地图边界
-            if (point.x < 0 || point.y < 0 || point.x + radius > singlePersonModel.gameAreaWidth || point.y + radius > singlePersonModel.gameAreaHeight)
+            if (point.x < 0 || point.y < 0 || point.x + radius > SinglePersonModel.gameAreaWidth || point.y + radius > SinglePersonModel.gameAreaHeight)
                 return true;
             //分别判断物体的左上、右上、左下、右下角是与墙重
             if(!isBullet)
@@ -1039,7 +1039,7 @@ public class singlePersonModel extends JFrame
         Mine mine=new Mine();
         mine.setFromPerson(fromPerson);
         mine.setLocation(point);
-        URL url= singlePersonModel.class.getResource("/images/Weapon/BoomWeapon/Mine.png");
+        URL url= SinglePersonModel.class.getResource("/images/Weapon/BoomWeapon/Mine.png");
         ImageIcon icon=new ImageIcon(url);
         icon.setImage(icon.getImage().getScaledInstance(20,20,Image.SCALE_DEFAULT));
         mine.setSize(20,20);
@@ -1099,8 +1099,8 @@ public class singlePersonModel extends JFrame
     //随机生成一个坐标
     private Point randomPoint()
     {
-        int x=random.nextInt(singlePersonModel.gameAreaWidth /CELL)*CELL;
-        int y=random.nextInt(singlePersonModel.gameAreaHeight/CELL)*CELL;
+        int x=random.nextInt(SinglePersonModel.gameAreaWidth /CELL)*CELL;
+        int y=random.nextInt(SinglePersonModel.gameAreaHeight/CELL)*CELL;
         return new Point(x,y);
     }
     //获取人物的中心坐标
