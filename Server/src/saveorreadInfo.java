@@ -51,7 +51,7 @@ class saveorreadInfo {
      * 保存注册信息到文件
      * @param player 存入文件玩家
      */
-    public static void  savePlayerInfo(Client player){
+    /*public static void  savePlayerInfo(Client player){
         try {
             File allPlayerFile=new File(".","allPlayerInfo.txt");
             if(!allPlayerFile.exists()) allPlayerFile.createNewFile();
@@ -59,12 +59,39 @@ class saveorreadInfo {
             FileOutputStream  writeInfo=new FileOutputStream(allPlayerFile,true);//设定为可以后接式的文件写入
             ObjectOutputStream writePlayerInfo=new ObjectOutputStream(writeInfo);
             writePlayerInfo.writeObject(player);
-            /**
-             * 写入文件后将对象保存到内存中以应对下次访问检查
-             */
             CreatServer.allPlayer.add(player);
             CreatServer.allPlayernum++;
             System.out.println("文件中写入一个玩家数据其ID为"+player.getId());
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+    }*/
+
+    /**
+     * 压入一个注册用户到内存用户数据链表allPlayer中
+     * @param player
+     * @return
+     */
+    public static  boolean addClient(Client player){
+        if(CreatServer.allPlayer.add(player)) return true;
+        return false;
+    }
+    /**
+     * 每次服务器停止运行时将全部用户数据保存到文件
+     * @param allPlayer
+     */
+    public static void  saveAllClientInfo(List<Client> allPlayer){
+        try {
+            File allPlayerFile=new File(".","allPlayerInfo.txt");
+            if(!allPlayerFile.exists()) allPlayerFile.createNewFile();
+            //创建文件写入流
+            FileOutputStream  writeInfo=new FileOutputStream(allPlayerFile);//设定为可以后接式的文件写入
+            ObjectOutputStream writePlayerInfo=new ObjectOutputStream(writeInfo);
+            for(Client player:allPlayer)
+            {
+                writePlayerInfo.writeObject(player);
+            }
         }
         catch (IOException e){
             e.printStackTrace();
@@ -75,7 +102,7 @@ class saveorreadInfo {
      * 从文件读取注册玩家数据到 allPlayer
      * @param allPlayer 暂存已注册玩家数据
      */
-    public static void  readAllInfo(List<Client> allPlayer){
+    public static void readAllClientInfo(List<Client> allPlayer){
             try {
                 //创建文件对象如不存在则自动创建一个
                 File allPlayerFile=new File(".","allPlayerInfo.txt");

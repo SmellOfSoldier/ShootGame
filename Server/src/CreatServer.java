@@ -21,7 +21,7 @@ import java.util.List;
  */
 public class CreatServer {
     private JFrame frame;
-    private JTextArea contentArea;
+    private JTextArea GuiShowMes;
     private  JTextField txt_mes;
     private  JTextField txt_max;
     private  JTextField txt_port;
@@ -71,7 +71,7 @@ public class CreatServer {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if(isStart) {//如果服务器已经启动则进行警告
-                    contentArea.append("服务器已经开启。"+"\r\n");
+                    GuiShowMes.append("服务器消息：服务器已经开启。"+"\n");
                     JOptionPane.showMessageDialog(frame, "服务器已经开启。",
                             "错误操作", JOptionPane.ERROR_MESSAGE);
                     return;
@@ -85,7 +85,7 @@ public class CreatServer {
                     e1.printStackTrace();
                 }
                 //开启成功进行开启扫尾工作
-                contentArea.append("服务器开启成功");
+                GuiShowMes.append("服务器消息：服务器开启成功。\n");
             }
             //
         });
@@ -95,7 +95,7 @@ public class CreatServer {
             public void actionPerformed(ActionEvent e) {
                 String inputCommand=txt_mes.getText().trim();//获取输入的命令
                 txt_mes.setText(null);//将命令行置空
-                contentArea.append(inputCommand+"\r\n");//信息框里面显示输入命令
+                GuiShowMes.append(inputCommand+"\r\n");//信息框里面显示输入命令
 
             }
         });
@@ -125,9 +125,10 @@ public class CreatServer {
             allGameRoom=Collections.synchronizedList(new LinkedList<>());//创建房间列表
             onlineClients=Collections.synchronizedList(new LinkedList<>());//创建在线玩家列表
             serverSocket=new ServerSocket(port);//创建服务Socket
-            serverThread=new ServerThread(serverSocket,30);//创建服务器线程
+            serverThread=new ServerThread(serverSocket,30, GuiShowMes);//创建服务器线程
             serverThread.start();//服务器线程开启
-            saveorreadInfo.readAllInfo(allPlayer);//从文件读取所有已经注册玩家
+            saveorreadInfo.readAllClientInfo(allPlayer);//从文件读取所有已经注册玩家
+            GuiShowMes.append("服务器消息：成功读取已注册玩家数据到内存。\n");
             isStart=true;
         } catch (BindException e) {
             e.printStackTrace();
@@ -140,8 +141,6 @@ public class CreatServer {
             throw new BindException("服务器开启错误。");
         }
     }
-
-
     /**
      * 关闭服务器函数进行关闭和扫尾工作
      */
@@ -149,7 +148,7 @@ public class CreatServer {
         try{
 
         System.out.println("服务端线程成功关闭。");//测试使用
-        contentArea.append("服务器已经成功关闭"+"\r\n");
+        GuiShowMes.append("服务器消息：服务器已经成功关闭"+"\n");
         for(PrintStream sendStream:CreatServer.clientPrintStreamMap.values())
         {
             sendStream.println(Sign.ServerExit);//返回服务器关闭消息
@@ -160,10 +159,12 @@ public class CreatServer {
             client.setOline(false);
             client.setPlaying(false);
         }
+            saveorreadInfo.saveAllClientInfo(allPlayer);//保存所有注册用户信息到文件
         if(serverSocket!=null) serverSocket.close();//如果serverSocket存在则关闭它
             listModel.removeAllElements();//清空用户列表
             isStart=false;//服务器状态置为关闭
             if(serverThread!=null) serverThread.interrupt();//服务端主线程如果存在则停止服务端主线程
+
         }
 
         catch (IOException e){
@@ -191,9 +192,9 @@ public class CreatServer {
             initial();
         }
         private  void initial(){
-            contentArea= new JTextArea();
+            GuiShowMes = new JTextArea();
             //设置为不可输入
-            contentArea.setEditable(false);
+            GuiShowMes.setEditable(false);
             txt_max=new JTextField("20");
             txt_mes=new JTextField();
             txt_port=new JTextField("25565");
@@ -204,7 +205,7 @@ public class CreatServer {
             users = new JList(listModel);
             lpanel=new JScrollPane(users);
             lpanel.setBorder(new TitledBorder("在线玩家"));
-            rpane=new JScrollPane(contentArea);
+            rpane=new JScrollPane(GuiShowMes);
             rpane.setBorder(new TitledBorder("服务器运行信息"));
             centerSplit=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,lpanel,rpane);
             centerSplit.setDividerLocation(100);

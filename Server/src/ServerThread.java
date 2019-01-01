@@ -1,3 +1,4 @@
+import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -10,14 +11,16 @@ import java.net.SocketException;
 class ServerThread extends Thread{
     private ServerSocket serverSocket;
     private int maxplayer;
+    private JTextArea GuiShowMes;
     /**
      * 服务器线程构造函数
      * @param serverSocket 传入的serverSocket
      * @param maxplayer 传入的最大在线人数
      */
-    public ServerThread(ServerSocket serverSocket,int maxplayer){
+    public ServerThread(ServerSocket serverSocket,int maxplayer,JTextArea GuiShowMes){
         this.serverSocket=serverSocket;
         this.maxplayer=maxplayer;
+        this.GuiShowMes=GuiShowMes;
         System.out.println("服务器线程已经创建。" );//测试
     }
     /**
@@ -33,7 +36,7 @@ class ServerThread extends Thread{
                 System.out.println("尝试连接成功消息");
                 sendStream.println(Sign.SuccessConnected);//返回给尝试连接的客户端成功信息
                 sendStream.flush();
-                ServerClientThread aplayerClient=new ServerClientThread(socket,sendStream,getStream);//创建一个服务线程
+                ServerClientThread aplayerClient=new ServerClientThread(socket,sendStream,getStream,GuiShowMes);//创建一个服务线程
                 aplayerClient.setisConnected(true);//设置此玩家服务线程连接状态为true
                 aplayerClient.start();//启动该服务线程
                 System.out.println("成功建立一个玩家连接。");
@@ -41,6 +44,7 @@ class ServerThread extends Thread{
             catch (SocketException se){
             }
             catch (IOException IOE){
+                saveorreadInfo.saveAllClientInfo(CreatServer.allPlayer);//保存所有注册用户信息到文件
                 IOE.printStackTrace();
             }
         }
