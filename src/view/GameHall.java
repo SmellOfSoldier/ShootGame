@@ -74,6 +74,10 @@ public class GameHall
                 ClientPort.sendStream.println(Sign.Logout);
                 ClientPort.sendStream.flush();
                 //关闭大厅界面
+                if(currentClient!=null)
+                {
+                    currentGameRoom.dispose();
+                }
                 gameHallJFrame.dispose();
                 new LoginFrame();
             }
@@ -582,7 +586,7 @@ public class GameHall
                     //如果有用户离开当前房间或被踢出房间 （非房主）
                     else if(line.startsWith(Sign.ClientLeaveRoom))
                     {
-                        realMessage=getRealMessage(line,Sign.NewClientEnter);
+                        realMessage=getRealMessage(line,Sign.ClientLeaveRoom);
                         //进入房间的用户ID
                         String clientId=realMessage.split(Sign.SplitSign)[0];
                         //进入的房间ID
@@ -591,6 +595,11 @@ public class GameHall
                         DefaultListModel<String> clientIdInRoom=currentGameRoom.getClientIdModel();
                         //将用户从当前房间用户id列表中删除
                         System.out.println(clientIdInRoom.size());
+                        //TODO：T人房间列表不减少的BUG待解决
+                        System.out.println(clientIdInRoom.contains(clientId)+clientId+"\n");
+                        for(int i=0;i<clientIdInRoom.size();i++){
+                            System.out.println(clientIdInRoom.get(i));
+                        }
                         clientIdInRoom.removeElement(clientId);
                         System.out.println(clientIdInRoom.size());
                     }

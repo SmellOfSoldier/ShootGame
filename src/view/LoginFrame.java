@@ -15,6 +15,9 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
+import static view.ClientPort.allOnlineClient;
+import static view.ClientPort.allServerRoom;
+
 /**
  * 登陆界面覆写bylijie
  */
@@ -56,6 +59,10 @@ public class LoginFrame{
             /**
              * 多人游戏点击后直接连接服务器
              */
+            //将静态保存有在线玩家和房间的静态链表清空再开始连接
+            allOnlineClient.removeAll(allOnlineClient);
+            allServerRoom.removeAll(allServerRoom);
+            //开始连接服务器
             ClientPort.socket=new Socket("127.0.0.1",25565);
             ClientPort.sendStream=new PrintStream(ClientPort.socket.getOutputStream());//获取写出流
             ClientPort.getStream=new BufferedReader(new InputStreamReader(ClientPort.socket.getInputStream()));//获取写入流
@@ -131,7 +138,7 @@ public class LoginFrame{
                                 ClientPort.allOnlineClient.add(c);
                             }
                             for (ServerGameRoom r:rooms){
-                                ClientPort.allServerRoom.add(r);
+                                allServerRoom.add(r);
                             }
                         new GameHall(me);//创建游戏大厅并传入登陆者的实例对象
                             //登陆界面关闭

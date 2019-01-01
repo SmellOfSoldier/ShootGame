@@ -89,7 +89,7 @@ class ServerClientThread extends Thread {
                                     CreatServer.onlineClients.add(client);//在在线玩家列表中加入玩家
 
                                     CreatServer.clientPrintStreamMap.put(client, sendStream);//加入玩家写流
-                                    
+                                    System.out.println("发送序列化在线玩家列表。 大小为"+CreatServer.onlineClients.size());
                                     //打包发送初始化消息
                                     String allclientsStr = gson.toJson(CreatServer.onlineClients);
                                     String roomStr = gson.toJson(CreatServer.allGameRoom);
@@ -204,7 +204,7 @@ class ServerClientThread extends Thread {
                         }
                     }
                     /**
-                     * 如果收到T人的消息（房主可用）
+                     * 如果收到踢人的消息（房主可用）
                      */
                     else if (isLogin && line.startsWith(Sign.TickFromRoom)) {
                         realMessage = check.getRealMessage(line, Sign.TickFromRoom);
@@ -261,8 +261,10 @@ class ServerClientThread extends Thread {
                      */
                     else if (isLogin && line.startsWith(Sign.Logout))
                     {
+                        System.out.println(client.getId()+"注销中，在线玩家列表大小为："+CreatServer.onlineClients.size());
                         CreatServer.clientPrintStreamMap.remove(client);
                         CreatServer.onlineClients.remove(client);
+                        System.out.println(client.getId()+"注销完成，在线玩家列表大小为："+CreatServer.onlineClients.size());
                         for(PrintStream sendStream:CreatServer.clientPrintStreamMap.values())
                         {
                             sendStream.println(Sign.OneClientOffline+client.getId());

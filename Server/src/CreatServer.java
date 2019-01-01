@@ -159,7 +159,7 @@ public class CreatServer {
             client.setOline(false);
             client.setPlaying(false);
         }
-            saveorreadInfo.saveAllClientInfo(allPlayer);//保存所有注册用户信息到文件
+        saveorreadInfo.saveAllClientInfo(allPlayer);//保存所有注册用户信息到文件
         if(serverSocket!=null) serverSocket.close();//如果serverSocket存在则关闭它
             listModel.removeAllElements();//清空用户列表
             isStart=false;//服务器状态置为关闭

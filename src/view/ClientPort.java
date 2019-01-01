@@ -17,7 +17,8 @@ public class ClientPort {
 
     public static void main(String[] args)
     {
-        new LoginFrame();
 
+        //开启登陆界面
+        new LoginFrame();
     }
 }
