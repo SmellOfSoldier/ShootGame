@@ -146,7 +146,7 @@ public class LoginFrame{
                         break;
                     }
                     case Sign.WrongPassword:{//密码错误
-                        JOptionPane.showMessageDialog(loginJFrame,"密码错误请重新尝试","提示",JOptionPane.ERROR_MESSAGE);//弹出警告框
+                        JOptionPane.showMessageDialog(loginJFrame,"账号密码错误请重新尝试","提示",JOptionPane.ERROR_MESSAGE);//弹出警告框
                         break;
                     }
                     case  Sign.IsNotRegistered:{//还未注册

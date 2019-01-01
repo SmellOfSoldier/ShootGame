@@ -120,8 +120,11 @@ class ServerClientThread extends Thread {
                         realMessage = check.getRealMessage(line, Sign.Register);
                         String playerid = realMessage.split(Sign.SplitSign)[0];
                         String playerPassword = realMessage.split(Sign.SplitSign)[1];
+                        System.out.println("注册请求名字："+playerid);
                         if (!check.isRegistered(playerid)) {
+                            System.out.println(CreatServer.allPlayer.size());
                             saveorreadInfo.addClient(new Client(playerid,playerPassword));//注册一个玩家到内存
+                            System.out.println(CreatServer.allPlayer.size());
                             sendCommand(Sign.RegisterSuccess);//返回注册成功信息
                             GuiShowMes.append("服务器消息：玩家："+playerid+" 成功注册。\n");//gui界面显示注册成功消息
                         } else sendCommand(Sign.IsRegistered);//否则返回已经注册过的消息

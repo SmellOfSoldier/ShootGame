@@ -11,10 +11,9 @@ class saveorreadInfo {
      * @param player
      * @return
      */
-    public static  boolean addClient(Client player)
+    public static  void addClient(Client player)
     {
-        if(CreatServer.allPlayer.add(player)) return true;
-        return false;
+        CreatServer.allPlayer.add(player);
     }
     /**
      * 每次服务器停止运行时将全部用户数据保存到文件
@@ -55,7 +54,6 @@ class saveorreadInfo {
                     Client one;
                     while((one=(Client)readInfo.readObject())!=null){
                         allPlayer.add(one);
-                        CreatServer.allPlayernum++;//服务器注册玩家数目++
                         }
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();

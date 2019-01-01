@@ -53,7 +53,7 @@ public class check {
     public static boolean isRegistered(String id){
         //TODO:检查是否已经注册bylijie
         System.out.println("开始进行是否注册检查。");
-        for(int i = 0; i< CreatServer.allPlayernum; i++){
+        for(int i = 0; i< CreatServer.allPlayer.size(); i++){
             System.out.println("对比第"+i+"个"+id+" "+ CreatServer.allPlayer.get(i).getId());
             if(id.equals(CreatServer.allPlayer.get(i).getId())) return true;
             else continue;
@@ -74,7 +74,7 @@ public class check {
         /**
          * 遍历数据查找到匹配ID位置
          */
-        for(int i = 0; i< CreatServer.allPlayernum; i++){
+        for(int i = 0; i< CreatServer.allPlayer.size(); i++){
             if(id.equals(CreatServer.allPlayer.get(i).getId())) {
                 position=i;
                 break;

@@ -102,7 +102,11 @@ public class Client implements Serializable {
     }
     public int hashCode()
     {
-        return Integer.valueOf(id);
+        int j=0;
+        for(char c:id.toCharArray()){
+            j=j+(int)c;
+        }
+        return j;
     }
 
     /**

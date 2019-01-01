@@ -37,7 +37,6 @@ public class CreatServer {
     private ServerSocket serverSocket;//ServerSocket线程
     private ServerThread serverThread;
     public static List<ServerGameRoom> allGameRoom;//所有房间
-    public static  int allPlayernum;//储存已注册玩家数目
     public static List<Client> onlineClients;//储存所有在线玩家
     public static  List<Client> allPlayer;//服务器开启时从文件读取到此链表中保存
     public static HashMap<Client, PrintStream> clientPrintStreamMap =new HashMap<>();//创建玩家
@@ -120,7 +119,6 @@ public class CreatServer {
             /**
              * 线程安全静态变量
              */
-            allPlayernum=0;//初始化注册玩家数目
             allPlayer=Collections.synchronizedList(new LinkedList<>());//创建注册玩家列表
             allGameRoom=Collections.synchronizedList(new LinkedList<>());//创建房间列表
             onlineClients=Collections.synchronizedList(new LinkedList<>());//创建在线玩家列表
