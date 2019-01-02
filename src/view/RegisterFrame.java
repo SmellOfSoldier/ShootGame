@@ -10,6 +10,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintStream;
 
+/**
+ * 注册界面bylijie
+ */
 public class RegisterFrame {
     private JFrame registerJFrame;
     private JTextArea contentArea;

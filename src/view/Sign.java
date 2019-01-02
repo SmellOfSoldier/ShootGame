@@ -55,4 +55,6 @@ public interface Sign
     String GrenadeBoom="GRENADE_BOOM";                                 //手雷爆炸
     String OnePlayerDie="ONE_PLAYER_DIE";                              //一个玩家死亡
     String OnePlayerRelive="ONE_PLAYER_RELIVE";                        //一个玩家复活
+    String GameOver="GAME_OVER";                                       //游戏结束
+    String RefreshGameHall="REFRESH_GAME_HALL";                        //刷新游戏大厅
 }

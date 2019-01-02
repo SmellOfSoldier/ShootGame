@@ -369,12 +369,14 @@ class ServerClientThread extends Thread {
                     {
                         //获取爆炸的地雷的下标
                         realMessage=check.getRealMessage(line,Sign.OnePlayerDie);
-                        int diePlayerFlag=Integer.parseInt(realMessage.split(Sign.SplitSign)[0]);
+                        int diePlayerFlag=Integer.parseInt(realMessage);
+                        ServerGameRoom currentroom=null;
                         //转发给房间内其他玩家
                         for(ServerGameRoom s:CreatServer.allGameRoom)//找到当前玩家所在房间
                         {
                             if(s.getAllClients().contains(client))
                             {
+                                currentroom=s;
                                 for(Client c:s.getAllClients())//给房间内所有玩家发送flag玩家死亡的消息
                                 {
                                     PrintStream sendstream=CreatServer.clientPrintStreamMap.get(c);
@@ -382,7 +384,39 @@ class ServerClientThread extends Thread {
                                 }
                             }
                         }
+                        //创建复活信息发送线程
+                        new ClientReliveThread(currentroom,diePlayerFlag).start();
                     }
+                /**
+                 *收到游戏结束消息
+                 */
+                else if(client.isPlaying()&&line.startsWith(Sign.GameOver))
+                {
+                    ServerGameRoom currentroom=null;
+                    //序列化初始化信息
+                    String allclientsStr = gson.toJson(CreatServer.onlineClients);
+                    String roomStr = gson.toJson(CreatServer.allGameRoom);
+                    //转发给房间内其他玩家
+                    for(ServerGameRoom s:CreatServer.allGameRoom)//找到当前玩家所在房间
+                    {
+                        if(s.getAllClients().contains(client))
+                        {
+                            currentroom=s;
+                            for(Client c:s.getAllClients())
+                            {
+                                PrintStream sendstream=CreatServer.clientPrintStreamMap.get(c);
+                                sendstream.println(Sign.RefreshGameHall+allclientsStr+Sign.SplitSign+roomStr);//发送大厅刷新消息
+                                //设置房间内玩家游玩状态为false
+                                c.setPlaying(false);
+                            }
+                        }
+                    }
+                }
+                /**
+                 *
+                 */
+
+
                 /**
                  *
                  */

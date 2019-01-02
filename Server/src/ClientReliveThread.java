@@ -8,21 +8,28 @@ import java.util.List;
  */
 public class ClientReliveThread extends Thread
 {
-    private Client client;
-    public ClientReliveThread(Client client)
+    private ServerGameRoom serverGameRoom;
+    private int clientnum;
+    public ClientReliveThread(ServerGameRoom serverGameRoom,int clientnum)
     {
-        this.client=client;
+        this.serverGameRoom=serverGameRoom;
+        this.clientnum=clientnum;
     }
     public void run()
     {
         try {
             sleep(3000);
-             PrintStream sendstream=CreatServer.clientPrintStreamMap.get(client);
              //生成初始化出生地址的数组
             int[] randomEntrance=Info.randomArray(0,4,1);
             int i=randomEntrance[0];
-                sendstream.println(Sign.GameStart+i);//为死亡的的玩家发送初始化的出生坐标
-
+            /**
+             * 给所有房间内的玩家发送玩家编号为clientnum重新复活在i位置
+             */
+            for(Client c:serverGameRoom.getAllClients())
+            {
+                PrintStream sendstream=CreatServer.clientPrintStreamMap.get(c);
+                sendstream.println(Sign.OnePlayerRelive+clientnum+Sign.SplitSign+i);
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
