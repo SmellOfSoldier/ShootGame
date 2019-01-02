@@ -706,7 +706,10 @@ public class GameHall
                         JOptionPane.showMessageDialog(null,"房间已满","提示",JOptionPane.OK_OPTION);
                     }
                     //如果收到游戏已经开始的命令
-                    else if(line.startsWith(Sign.GameStart)){
+                    else if(line.startsWith(Sign.GameStart))
+                    {
+                        realMessage=getRealMessage(line,Sign.GameStart);
+                        int entrance=(int)realMessage.charAt(0);//获取分配到的随机出生位置坐标的下标
 
                         for(int i=0;i<currentGameRoom.getClientIdModel().size();i++)
                         {

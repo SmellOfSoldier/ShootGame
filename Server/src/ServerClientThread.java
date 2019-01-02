@@ -1,6 +1,7 @@
 import com.google.gson.Gson;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -16,6 +17,7 @@ class ServerClientThread extends Thread {
     private PrintStream sendStream;
     private BufferedReader getStream;
     private JTextArea GuiShowMes;
+    private Point[] entrance=new Point[]{new Point(800,20),new Point(1040,280),new Point(1160,600), new Point(320,760),new Point(20,520)};
     private boolean isConnected = false;//是否连接
     private boolean isLogin = false;//是否登陆
 
@@ -49,6 +51,7 @@ class ServerClientThread extends Thread {
         String command = null;//当前获取的信息需要执行的命令
         String realMessage = null;//去除头部命令的信息
         //线程不被interrupted则持续接收玩家发来的信息
+        Gson gson=new Gson();
         try {
         while (!this.isInterrupted() &&(line=getStream.readLine())!=null) {
             if (isConnected) {
@@ -67,7 +70,6 @@ class ServerClientThread extends Thread {
                             System.out.println("登陆结果为" + loginResult);//1为成功 -1为账号未注册  为密码错误
                             switch (loginResult) {
                                 case 1: {
-                                    Gson gson = new Gson();
                                     realMessage=check.getRealMessage(line,Sign.Login);
                                     String id=realMessage.split(Sign.SplitSign)[0];
                                     isLogin = true;//密码成功则将当前玩家的服务线程登陆状态置为true
@@ -108,7 +110,6 @@ class ServerClientThread extends Thread {
                                 }
                             }
                         } catch (IOException e) {
-                            e.printStackTrace();
                         }
                     }
                     /**
@@ -123,7 +124,7 @@ class ServerClientThread extends Thread {
                         System.out.println("注册请求名字："+playerid);
                         if (!check.isRegistered(playerid)) {
                             System.out.println(CreatServer.allPlayer.size());
-                            saveorreadInfo.addClient(new Client(playerid,playerPassword));//注册一个玩家到内存
+                            Info.addClient(new Client(playerid,playerPassword));//注册一个玩家到内存
                             System.out.println(CreatServer.allPlayer.size());
                             sendCommand(Sign.RegisterSuccess);//返回注册成功信息
                             GuiShowMes.append("服务器消息：玩家："+playerid+" 成功注册。\n");//gui界面显示注册成功消息
@@ -133,7 +134,6 @@ class ServerClientThread extends Thread {
                      * 如果收到创建房间信息
                      */
                     else if (isLogin && line.startsWith(Sign.CreateRoom)) {
-                        Gson gson=new Gson();
                         System.out.println("收到创建房间请求。");
                         realMessage = check.getRealMessage(line, Sign.CreateRoom);
                         ServerGameRoom serverGameRoom = new ServerGameRoom(client.getId(), client, realMessage);//以玩家的id和对象还有发来的房间名字创建房间
@@ -195,7 +195,6 @@ class ServerClientThread extends Thread {
                         client.setGameRoomID(serverGameRoom.getId());
                             System.out.println(serverGameRoom.getAllClients().size());
                         //服务端允许用户加入房间请求，并且发送房间对象序列化
-                        Gson gson=new Gson();
                         String roomStr=gson.toJson(serverGameRoom);
                         sendStream.println(Sign.PermissionEnterRoom+roomStr);
                         }
@@ -247,18 +246,6 @@ class ServerClientThread extends Thread {
                         System.out.println("服务器收到" + client.getId() + "发来的离开房间的信息。");
                         leaveRoom();//离开房间
                     }
-                    /*else if (isLogin && line.startsWith(Sign.Disconnect)) {
-                        System.out.println("服务器收到来自" + client.getId() + "的下线请求");
-                        //首先判断当前玩家是否正在房间中  是否是房间房主
-                        //如果又在房间又是房主
-                        if (client.isInRoom()) {
-                            leaveRoom();
-                        }
-                        //如果不在房中
-                        for (PrintStream sendstream : CreatServer.clientPrintStreamMap.values()) {
-                            sendstream.println(Sign.Disconnect + client.getId());
-                        }
-                    }*/
                     /**
                      * 如果收到注销请求(玩家返回到登陆界面)
                      */
@@ -297,6 +284,14 @@ class ServerClientThread extends Thread {
                         }
                     }
                     /**
+                     * 如果收到断开连接请求（返回到单人与多人游戏选择界面)
+                     */
+                    else if (line.startsWith(Sign.Disconnect)) {
+                        CreatServer.clientPrintStreamMap.remove(client);
+                        stopThisClient( sendStream, getStream);
+                        //关闭此服务线程 tips:原因：玩家请求断开连接退回到单人多人游戏选择界面
+                    }
+                    /**
                      * 如果收到开始游戏的命令
                      */
                     else if(line.startsWith(Sign.StartGame))
@@ -307,26 +302,91 @@ class ServerClientThread extends Thread {
 
                             if(room.getMaster().equals(client))//如果发送开始游戏命令的玩家是房主
                             {
-
+                                //生成初始化出生地址的数组
+                                int[] randomEntrance=Info.randomArray(0,4,4);
+                                int i=0;
+                                String randomStr=gson.toJson(randomEntrance);
                                 for (Client c : room.getAllClients())//开始游戏并告知房间内其他所有人
                                 {
-                                    CreatServer.clientPrintStreamMap.get(c).println(Sign.GameStart);
+                                    CreatServer.clientPrintStreamMap.get(c).println(Sign.GameStart+randomStr+Sign.SplitSign+(i++));//为每位在房间内的玩家发送初始化的出生坐标
+
                                 }
+                                client.setPlaying(true);//设置当前玩家为正在对战状态
                                 GuiShowMes.append("服务器消息：房间："+room.getId()+" 开始游戏。\n");
                             }
                         }
 
                     }
+                /**
+                 * 下面为游戏内服务的命令
+                 */
                     /**
-                     * 如果收到断开连接请求（返回到单人与多人游戏选择界面)
+                     * 游戏内地雷爆炸的消息
                      */
-                    else if (line.startsWith(Sign.Disconnect)) {
-                        CreatServer.clientPrintStreamMap.remove(client);
-                        stopThisClient( sendStream, getStream);
-                        //关闭此服务线程 tips:原因：玩家请求断开连接退回到单人多人游戏选择界面
+                    else if (client.isPlaying() && line.startsWith(Sign.MineBoom))
+                    {
+                        //获取爆炸的地雷的下标
+                        realMessage=check.getRealMessage(line,Sign.MineBoom);
+                        int mineflag=Integer.parseInt(realMessage.split(Sign.SplitSign)[0]);
+                        //转发给房间内其他玩家
+                        for(ServerGameRoom s:CreatServer.allGameRoom)//找到当前玩家所在房间
+                        {
+                            if(s.getAllClients().contains(client))//
+                            {
+                                for(Client c:s.getAllClients())//给房间内所有玩家发送mineflag号地雷爆炸的消息
+                                {
+                                    PrintStream sendstream=CreatServer.clientPrintStreamMap.get(c);
+                                    sendstream.println(Sign.MineBoom+mineflag);//发送地雷爆炸消息
+                                }
+                            }
+                        }
                     }
-
-                    //TODO:待完成的玩家服务线程
+                /**
+                 * 游戏内手雷爆炸消息
+                 */
+                    else if (client.isPlaying() && line.startsWith(Sign.GrenadeBoom))
+                    {
+                        //获取爆炸的地雷的下标
+                        realMessage=check.getRealMessage(line,Sign.GrenadeBoom);
+                        int nadeflag=Integer.parseInt(realMessage.split(Sign.SplitSign)[0]);
+                        //转发给房间内其他玩家
+                        for(ServerGameRoom s:CreatServer.allGameRoom)//找到当前玩家所在房间
+                        {
+                            if(s.getAllClients().contains(client))//
+                            {
+                                for(Client c:s.getAllClients())//给房间内所有玩家发送nadeflag号手雷爆炸的消息
+                                {
+                                    PrintStream sendstream=CreatServer.clientPrintStreamMap.get(c);
+                                    sendstream.println(Sign.GrenadeBoom+nadeflag);//发送手雷爆炸消息
+                                }
+                            }
+                        }
+                    }
+                /**
+                 * 玩家死亡消息
+                 */
+                    else if (client.isPlaying() && line.startsWith(Sign.OnePlayerDie))
+                    {
+                        //获取爆炸的地雷的下标
+                        realMessage=check.getRealMessage(line,Sign.OnePlayerDie);
+                        int diePlayerFlag=Integer.parseInt(realMessage.split(Sign.SplitSign)[0]);
+                        //转发给房间内其他玩家
+                        for(ServerGameRoom s:CreatServer.allGameRoom)//找到当前玩家所在房间
+                        {
+                            if(s.getAllClients().contains(client))
+                            {
+                                for(Client c:s.getAllClients())//给房间内所有玩家发送flag玩家死亡的消息
+                                {
+                                    PrintStream sendstream=CreatServer.clientPrintStreamMap.get(c);
+                                    sendstream.println(Sign.OnePlayerDie+diePlayerFlag);//发送玩家死亡消息
+                                }
+                            }
+                        }
+                    }
+                /**
+                 *
+                 */
+                //TODO:待完成的玩家服务线程
 
                 }
             }

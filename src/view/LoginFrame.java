@@ -100,7 +100,7 @@ public class LoginFrame{
                     e1.printStackTrace();
                 }
 
-               // System.exit(0);// 退出程序
+                System.exit(0);// 退出程序
             }
         });
         /**

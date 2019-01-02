@@ -51,4 +51,8 @@ public interface Sign
     String PermissionEnterRoom="PERMISSION_ENTER_ROOM";                        //允许玩家进入
     String PermissionCreateRoom ="PERMISSION_CREATE_ROOM";                       //允许创建房间
     String RoomFull="ROOM_FULL";                                       //房间已满
+    String MineBoom="MINE_ROOM";                                       //地雷爆炸
+    String GrenadeBoom="GRENADE_BOOM";                                 //手雷爆炸
+    String OnePlayerDie="ONE_PLAYER_DIE";                              //一个玩家死亡
+    String OnePlayerRelive="ONE_PLAYER_RELIVE";                        //一个玩家复活
 }

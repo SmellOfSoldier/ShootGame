@@ -44,7 +44,7 @@ class ServerThread extends Thread{
             catch (SocketException se){
             }
             catch (IOException IOE){
-                saveorreadInfo.saveAllClientInfo(CreatServer.allPlayer);//保存所有注册用户信息到文件
+                Info.saveAllClientInfo(CreatServer.allPlayer);//保存所有注册用户信息到文件
                 IOE.printStackTrace();
             }
         }

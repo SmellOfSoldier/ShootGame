@@ -1,12 +1,12 @@
 public interface Sign
 {
-    String Register="REGISTER_COMMEND";                       //注册
-    String RegisterSuccess="REGISTER_SUCCESS_COMMEND";        //注册成功
-    String Login="LOGIN_COMMEND";                          //登录
-    String LoginSuccess="LOGIN_SUCCESS";                   //登陆成功
-    String OpenGame="OPEN_GAME";                           //玩家打开了点击了多人游戏
-    String Disconnect="DISCONNECT";                             //关闭连接请求（玩家关闭多人游戏界面）
-    String EnterRoom="ENTER_ROOM";                               //加入房间
+    String Register="REGISTER_COMMEND";                                //注册
+    String RegisterSuccess="REGISTER_SUCCESS_COMMEND";                 //注册成功
+    String Login="LOGIN_COMMEND";                                      //登录
+    String LoginSuccess="LOGIN_SUCCESS";                               //登陆成功
+    String OpenGame="OPEN_GAME";                                       //玩家打开了点击了多人游戏
+    String Disconnect="DISCONNECT";                                    //关闭连接请求（玩家关闭多人游戏界面）
+    String EnterRoom="ENTER_ROOM";                                     //加入房间
     String CreateRoom="CREATE_ROOM";                                   //创建房间
     String TickFromRoom="TICK_FROM_ROOM";                              //T出房间
     String LeaveRoom="LEAVE_ROOM";                                     //离开房间
@@ -41,12 +41,16 @@ public interface Sign
     String YoursInformation="YOURS_INFORMATION";                       //用户的信息
     String RefreshInformation="REFRESH_INFORMATION";                   //刷新消息请求
     String AddRoom="ADD_ROOM";                                         //增添游戏房间
-    String DeleteRoom="DELETE_ROOM";                                      //删除游戏房间
-    String OneClientOnline ="ONE_CLIENT_ONLINE";                                     //增添玩家
-    String OneClientOffline ="ONE_CLIENT_OFFLINE";                                  //减少玩家
+    String DeleteRoom="DELETE_ROOM";                                   //删除游戏房间
+    String OneClientOnline ="ONE_CLIENT_ONLINE";                       //增添玩家
+    String OneClientOffline ="ONE_CLIENT_OFFLINE";                     //减少玩家
     String OtherClientLeaveRoom="OTHER_CLIENT_LEAVE_ROOM";             //非当前房间的玩家离开房间
     String OtherClientEnterRoom="OTHER_CLIENT_ENTER_ROOM";             //非当前房间的玩家加入房间
-    String PermissionEnterRoom="PERMISSION_ENTER_ROOM";                        //允许玩家进入
-    String PermissionCreateRoom ="PERMISSION_CREATE_ROOM";                       //允许创建房间
+    String PermissionEnterRoom="PERMISSION_ENTER_ROOM";                //允许玩家进入
+    String PermissionCreateRoom ="PERMISSION_CREATE_ROOM";             //允许创建房间
     String RoomFull="ROOM_FULL";                                       //房间已满
+    String MineBoom="MINE_ROOM";                                       //地雷爆炸
+    String GrenadeBoom="GRENADE_BOOM";                                 //手雷爆炸
+    String OnePlayerDie="ONE_PLAYER_DIE";                              //一个玩家死亡
+    String OnePlayerRelive="ONE_PLAYER_RELIVE";                        //一个玩家复活
 }
