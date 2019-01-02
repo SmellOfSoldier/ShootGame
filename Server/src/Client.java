@@ -123,4 +123,12 @@ public class Client implements Serializable {
     {
         return password;
     }
+    /**
+     * 清空所有状态值
+     */
+    public void clear(){
+        isOnline=false;
+        isPlaying=false;
+        roomID=null;
+    }
 }

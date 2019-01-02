@@ -28,6 +28,7 @@ class saveorreadInfo {
             ObjectOutputStream writePlayerInfo=new ObjectOutputStream(writeInfo);
             for(Client player:allPlayer)
             {
+                player.clear();//清空所有对象状态值
                 writePlayerInfo.writeObject(player);
             }
         }

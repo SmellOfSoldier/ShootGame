@@ -71,13 +71,18 @@ public class GameHall
         logout.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ClientPort.sendStream.println(Sign.Logout);
-                ClientPort.sendStream.flush();
                 //关闭大厅界面
                 if(currentClient!=null)
                 {
-                    currentGameRoom.dispose();
+
+                    if(currentGameRoom!=null)
+                    {
+                        ClientPort.sendStream.println(Sign.LeaveRoom);
+                        currentGameRoom.dispose();
+                    }
                 }
+                ClientPort.sendStream.println(Sign.Logout);
+                ClientPort.sendStream.flush();
                 gameHallJFrame.dispose();
                 new LoginFrame();
             }
@@ -90,6 +95,7 @@ public class GameHall
                 super.mousePressed(e);
                 if(e.getClickCount()==2)
                 {
+                    System.out.println(currentClient.getRoomID()+"当前玩家所在房间的id为：");
                     if(currentClient.getRoomID()==null)
                     {
                         System.out.println("加入房间中。");
@@ -595,7 +601,6 @@ public class GameHall
                         DefaultListModel<String> clientIdInRoom=currentGameRoom.getClientIdModel();
                         //将用户从当前房间用户id列表中删除
                         System.out.println(clientIdInRoom.size());
-                        //TODO：T人房间列表不减少的BUG待解决
                         System.out.println(clientIdInRoom.contains(clientId)+clientId+"\n");
                         for(int i=0;i<clientIdInRoom.size();i++){
                             System.out.println(clientIdInRoom.get(i));
@@ -737,9 +742,12 @@ public class GameHall
         PrintStream ps=ClientPort.sendStream;
         //将人物的id与将要离开的房间的id发送给服务端
         ps.println(Sign.ClientLeaveRoom);
-        currentClient.setRoomNull();
         currentGameRoom.setVisible(false);
-        currentGameRoom=null;
+        System.out.println(currentGameRoom==null);
+        if(!currentGameRoom.getId().equals(currentClient.getId()))
+        {
+            currentGameRoom=null;
+        }
     }
 
 
