@@ -744,7 +744,7 @@ public class GameHall
         ps.println(Sign.ClientLeaveRoom);
         currentGameRoom.setVisible(false);
         System.out.println(currentGameRoom==null);
-        if(!currentGameRoom.getId().equals(currentClient.getId()))
+        if(currentGameRoom!=null&&!currentGameRoom.getId().equals(currentClient.getId()))
         {
             currentGameRoom=null;
         }
