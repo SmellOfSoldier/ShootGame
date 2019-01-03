@@ -31,6 +31,7 @@ import java.util.concurrent.locks.Lock;
  */
 public class MultiPlayerModel extends JFrame
 {
+    private JFrame superiorMenu;
     private static Gson gson=new Gson();
     private Point[] entrance=new Point[]{new Point(800,20),new Point(1040,280),new Point(1160,600), new Point(320,760),new Point(20,520)};         //刷怪位置
     private Point mousePoint =new Point();      //鼠标当前制作位置

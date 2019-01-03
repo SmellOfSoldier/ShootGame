@@ -33,6 +33,7 @@ import java.util.Random;
  */
 public class SinglePersonModel extends JFrame
 {
+    private JFrame superiorMenu;
     private Point[] entrance=new Point[]{new Point(800,20),new Point(1040,280),new Point(1160,600), new Point(320,760),new Point(20,520)};         //刷怪位置
     private Point mousePoint =new Point();      //鼠标当前制作位置
     private Random random=new Random();
@@ -75,9 +76,10 @@ public class SinglePersonModel extends JFrame
     private Timer hiderMoveThread=null;         //隐匿者线程
     private Timer reLiveAiThread=null;          //复活AI线程
     private Timer grenadeMoveThread=null;       //控制手雷移动的线程
-    SinglePersonModel()
+    SinglePersonModel( JFrame superiorMenu)
     {
         gameArea=new GameArea();
+        this.superiorMenu=superiorMenu;
         createPlayer();
         createAI();
         initialPersonMoveThread();
@@ -87,6 +89,7 @@ public class SinglePersonModel extends JFrame
             public void windowClosing(WindowEvent e)
             {
                 SinglePersonModel.this.dispose();
+                superiorMenu.setVisible(true);
             }
         });
         this.setSize(gameFrameWidth,gameFrameHeight);
