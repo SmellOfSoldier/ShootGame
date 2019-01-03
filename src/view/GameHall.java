@@ -96,8 +96,9 @@ public class GameHall
                 }
                 ClientPort.sendStream.println(Sign.Logout);
                 ClientPort.sendStream.flush();
+                new LoginFrame(gameHallJFrame);
                 gameHallJFrame.dispose();
-                new LoginFrame();
+
             }
         });
         //加入房间事件
@@ -134,7 +135,7 @@ public class GameHall
         offlineGame.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new SinglePersonModel();
+                new SinglePersonModel(gameHallJFrame);
             }
         });
         //关闭事件

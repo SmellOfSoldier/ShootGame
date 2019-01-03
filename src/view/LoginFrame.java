@@ -23,6 +23,7 @@ import static view.ClientPort.allServerRoom;
  */
 public class LoginFrame{
     private JFrame loginJFrame;
+    private JFrame superiorMenu;
     private boolean isConnected;//标记是否与服务器连接
     private JTextArea contentArea;
     private JLabel accountlable;
@@ -41,7 +42,8 @@ public class LoginFrame{
     //private  volatile boolean  isConnected = false;
     //private Map<String,User> onlineUsers=new HashMap<String, User>();
 
-    LoginFrame(){
+    LoginFrame(JFrame superiorMenu){
+        this.superiorMenu=superiorMenu;
         loginJFrame=new JFrame();
         loginJFrame.setTitle("登陆界面");
         loginJFrame.setSize(600,435);
@@ -53,7 +55,6 @@ public class LoginFrame{
         loginJFrame.setVisible(true);
         //设置相对屏幕绝对位置l
         loginJFrame.setLocationRelativeTo(null);
-        isConnected=true;
         loginJFrame.setVisible(true);
         try {
             /**
@@ -71,6 +72,7 @@ public class LoginFrame{
             connectResult=ClientPort.getStream.readLine();
             if(connectResult.equals(Sign.SuccessConnected)){
                 //TODO:与服务器成功建立连接
+                isConnected=true;
                 contentArea.append("请输入账号密码进行登陆。\r\n");
             }
             /*else{
@@ -78,7 +80,10 @@ public class LoginFrame{
                 JOptionPane.showMessageDialog(loginJFrame, "服务器出现问题未响应连接请求，多人游戏不可使用。", "提示", JOptionPane.INFORMATION_MESSAGE);//弹出提示框
             }*/
         } catch (IOException e) {
-            e.printStackTrace();
+            JOptionPane.showMessageDialog(loginJFrame, "服务器出现问题未响应连接请求，多人游戏不可使用。", "提示", JOptionPane.INFORMATION_MESSAGE);//弹出提示框
+            loginJFrame.dispose();//使登陆界面消失
+            if(superiorMenu!=null) superiorMenu.setVisible(true);//使游戏选择菜单出现
+
         }
         /**
          * 设置关闭连接的消息
