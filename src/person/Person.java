@@ -54,13 +54,14 @@ public class Person extends JLabel implements Serializable
     {
         this.killNum+=killNum;
     }
-    public void setDieNum(int dieNum)
+    public void addDieNum(int dieNum)
     {
         this.dieNum+=dieNum;
     }
     public void setDie(boolean isDie)                       //设置人物的死亡状态
     {
         this.isDie=isDie;
+        healthPoint=0;
         this.setVisible(false);
     }
 
@@ -165,10 +166,6 @@ public class Person extends JLabel implements Serializable
         {
             healthPoint-=hp;
         }
-        if (this instanceof Player)
-        {
-            SinglePersonModel.healthLevel.setValue(healthPoint);
-        }
     }
     public void dicardWeapon(int type)              //丢弃武器,type为要丢弃武器的种类
     {
@@ -187,6 +184,12 @@ public class Person extends JLabel implements Serializable
             return false;
         return true;
     }
+
+    /**
+     * 切换武器
+     * @param type:武器类型
+     * @param gameArea:游戏显示区域
+     */
     public void changeWeapon(int type,JPanel gameArea)                  //切换武器
     {
 

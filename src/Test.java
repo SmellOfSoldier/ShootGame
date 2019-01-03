@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URL;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.locks.Condition;
@@ -20,7 +21,7 @@ public class Test
 
     public static void main(String[] args)
     {
-            Lock lock=new ReentrantLock();
+            /*Lock lock=new ReentrantLock();
             Condition condition=lock.newCondition();
             Thread1 t1 = new Thread1(lock,condition);
             Thread2 t2=new Thread2(lock,condition);
@@ -47,12 +48,21 @@ public class Test
             jFrame.add(jButton1, BorderLayout.SOUTH);
             jFrame.pack();
             jFrame.setVisible(true);
-            t1.start();
+            t1.start();*/
+            List<Integer> list=new LinkedList<>();
+            list.add(1);
+        System.out.println(list.contains(2));
 
     }
 }
 
+class A {
+}
 
+class B extends A
+{
+
+}
 class Thread1 extends Thread
 {
     Lock lock=new ReentrantLock();

@@ -67,7 +67,7 @@ public class SinglePersonModel extends JFrame
     public static JLabel[] itemBars=new JLabel[]{new JLabel(),new JLabel(),new JLabel(),new JLabel()};
     private static Player player;                      //游戏玩家
     private Timer shotThread=null;              //开火线程
-    private GameArea gameArea=null;
+    private GameArea gameArea=null;             //游戏显示区域
     private Timer automaticBulletThread=null;   //自动步枪子弹飞行线程
     private Timer sniperBulletThread=null;      //狙击步枪子弹飞行线程
     private Timer playerMoveThread=null;        //玩家移动的线程
@@ -84,8 +84,9 @@ public class SinglePersonModel extends JFrame
         //关闭窗口推出程序
         this.addWindowListener(new WindowAdapter() {
             @Override
-            public void windowClosing(WindowEvent e) {
-                System.exit(0);
+            public void windowClosing(WindowEvent e)
+            {
+                SinglePersonModel.this.dispose();
             }
         });
         this.setSize(gameFrameWidth,gameFrameHeight);
@@ -155,6 +156,7 @@ public class SinglePersonModel extends JFrame
                                         {
                                             restStart();
                                             gameOver=true;
+                                            healthLevel.setValue(0);
                                             break;
                                         }
                                         else
@@ -366,11 +368,14 @@ public class SinglePersonModel extends JFrame
                             player.setlSpeed(TravelSpeed.personTravelSpeed);
                             break;
                         case KeyEvent.VK_R:             //装填子弹
-                            int weaponType=player.getUsingWeaponType();
+                            Weapon usingWeapon=player.getUsingWeapon();
                             //如果玩家当前使用的是枪,则可以换子弹
-                            if(weaponType== WeaponType.automaticRifle || weaponType==WeaponType.sniperRifle)
+                            if(usingWeapon instanceof Gun)
                             {
                                 player.reLoad();
+                                int bulletLeftInGun=((Gun)usingWeapon).getBulletLeft();
+                                int bulletLeftOnPerson=player.getBulletLeftOnPerson();
+                                SinglePersonModel.bulletLeft.setText("子弹："+bulletLeftInGun+"/"+bulletLeftOnPerson);
                             }
                             break;
                             //玩家捡起道具
@@ -413,26 +418,48 @@ public class SinglePersonModel extends JFrame
                             }
                             break;
                             //切换武器
-                        case KeyEvent.VK_1:
-                            player.changeWeapon(WeaponType.automaticRifle,gameArea);
-                            if (shotThread!=null &&shotThread.isRunning())
+                        case KeyEvent.VK_1: {
+                            player.changeWeapon(WeaponType.automaticRifle, gameArea);
+                            if (shotThread != null && shotThread.isRunning())
                                 shotThread.stop();
+                            int bulletLeftInGun = ((Gun) player.getUsingWeapon()).getBulletLeft();
+                            int bulletLeftOnPerson = player.getBulletLeftOnPerson();
+                            bulletLeft.setText("子弹：" + bulletLeftInGun + "/" + bulletLeftOnPerson);
+                            Point point= SinglePersonModel.flagPoint[player.getUsingWeaponType()-1];
+                            SinglePersonModel.usingWeaponFlag.setLocation(point);
                             break;
-                        case KeyEvent.VK_2:
-                            player.changeWeapon(WeaponType.sniperRifle,gameArea);
-                            if (shotThread!=null &&shotThread.isRunning())
+                        }
+                        case KeyEvent.VK_2: {
+                            player.changeWeapon(WeaponType.sniperRifle, gameArea);
+                            if (shotThread != null && shotThread.isRunning())
                                 shotThread.stop();
+                            int bulletLeftInGun = ((Gun) player.getUsingWeapon()).getBulletLeft();
+                            int bulletLeftOnPerson = player.getBulletLeftOnPerson();
+                            bulletLeft.setText("子弹：" + bulletLeftInGun + "/" + bulletLeftOnPerson);
+                            Point point= SinglePersonModel.flagPoint[player.getUsingWeaponType()-1];
+                            SinglePersonModel.usingWeaponFlag.setLocation(point);
                             break;
-                        case KeyEvent.VK_3:
-                            player.changeWeapon(WeaponType.grenade,gameArea);
-                            if (shotThread!=null &&shotThread.isRunning())
+                        }
+                        case KeyEvent.VK_3: {
+                            player.changeWeapon(WeaponType.grenade, gameArea);
+                            if (shotThread != null && shotThread.isRunning())
                                 shotThread.stop();
+                            int grenadeLeft=player.getBulletLeftOnPerson();
+                            bulletLeft.setText("手雷："+grenadeLeft);
+                            Point point= SinglePersonModel.flagPoint[player.getUsingWeaponType()-1];
+                            SinglePersonModel.usingWeaponFlag.setLocation(point);
                             break;
-                        case KeyEvent.VK_4:
-                            player.changeWeapon(WeaponType.mine,gameArea);
-                            if(shotThread!=null && shotThread.isRunning())
+                        }
+                        case KeyEvent.VK_4: {
+                            player.changeWeapon(WeaponType.mine, gameArea);
+                            if (shotThread != null && shotThread.isRunning())
                                 shotThread.stop();
+                            int mineLeft=player.getBulletLeftOnPerson();
+                            bulletLeft.setText("地雷："+mineLeft);
+                            Point point= SinglePersonModel.flagPoint[player.getUsingWeaponType()-1];
+                            SinglePersonModel.usingWeaponFlag.setLocation(point);
                             break;
+                        }
                     }
                 }
                 @Override
@@ -542,6 +569,7 @@ public class SinglePersonModel extends JFrame
                                         person.setDie(true);            //设置AI死亡
                                         if(person instanceof Player)
                                         {
+                                            healthLevel.setValue(0);
                                             int choice= JOptionPane.showConfirmDialog(null,"你扑街了！再来一把？","",JOptionPane.YES_NO_CANCEL_OPTION);
                                             if(choice==0)
                                             {
@@ -557,6 +585,10 @@ public class SinglePersonModel extends JFrame
                                     else
                                     {
                                         person.reduceHealthPoint(bullet.getDamageValue());
+                                    }
+                                    if(person.equals(player))
+                                    {
+                                        healthLevel.setValue(player.getHealthPoint());
                                     }
                                     deleteBullet[++i]=bullet;       //将击中目标的子弹保存起来
                                     break;
@@ -615,6 +647,7 @@ public class SinglePersonModel extends JFrame
                                         person.dieSpecialEffect(gameArea);
                                         if(person instanceof Player)
                                         {
+                                            healthLevel.setValue(0);
                                             int choice= JOptionPane.showConfirmDialog(null,"你扑街了！再来一把？","",JOptionPane.YES_NO_CANCEL_OPTION);
                                             if(choice==0)
                                             {
@@ -631,6 +664,11 @@ public class SinglePersonModel extends JFrame
                                     else
                                     {
                                         person.reduceHealthPoint(bullet.getDamageValue());
+                                    }
+                                    //如果被击中的人是玩家
+                                    if(person instanceof Player)
+                                    {
+                                        healthLevel.setValue(person.getHealthPoint());
                                     }
                                     deleteBullet[++i]=bullet;       //将击中目标的子弹保存起来
                                     break;
@@ -688,6 +726,7 @@ public class SinglePersonModel extends JFrame
                                     if(person instanceof Player)        //如果炸到的是玩家，则游戏结束
                                     {
                                         gameOver=true;
+                                        healthLevel.setValue(0);
                                         int choice= JOptionPane.showConfirmDialog(null,"你扑街了！再来一把？","",JOptionPane.YES_NO_CANCEL_OPTION);
                                         if(choice==0)
                                         {
@@ -985,7 +1024,7 @@ public class SinglePersonModel extends JFrame
         System.gc();
         createPlayer();
         createAI();
-        player.setDieNum(dieNum);
+        player.addDieNum(dieNum);
         player.addKillNum(killNum);
         MusicPlayer.playActionMusic();
         eliteSoldierMoveThread.restart();
@@ -1018,6 +1057,7 @@ public class SinglePersonModel extends JFrame
             player.peekWeapon(new Mine(),10);
             player.peekWeapon(new Grenade(),10);
             player.changeWeapon(1,gameArea);
+            bulletLeft.setText("子弹："+30+"/"+10000);
             personList.add(player);
             healthLevel.setValue(player.getHealthPoint());
         }

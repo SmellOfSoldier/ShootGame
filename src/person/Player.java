@@ -40,12 +40,10 @@ public class Player extends Person implements Serializable
     public void addKillNum(int killNum)
     {
         super.addKillNum(killNum);
-        SinglePersonModel.killAndDieField.setText("击杀/死亡："+getKillNum()+"/"+getDieNum());
     }
-    public void setDieNum(int dieNum)
+    public void addDieNum(int dieNum)
     {
-        super.setDieNum(dieNum);
-        SinglePersonModel.killAndDieField.setText("击杀/死亡："+getKillNum()+"/"+getDieNum());
+        super.addDieNum(dieNum);
     }
 
     /**
@@ -57,55 +55,14 @@ public class Player extends Person implements Serializable
         MusicPlayer.playDieMusic();     //播放死亡音效
         if (die) {
             super.setDie(true);
-            setDieNum(1);
-            SinglePersonModel.healthLevel.setValue(0);
+            addDieNum(1);
         }
     }
 
     /**
-     * 重写父类的方法，增添修改屏幕上显示子弹数目的功能
-     * @param type
+     * 重写父类的方法，增添播放被攻击的时候人物音效
+     * @param hp
      */
-    public void changeWeapon(int type, JPanel gameArea)                  //切换武器
-    {
-        super.changeWeapon(type,gameArea);
-        Weapon weapon=getUsingWeapon();
-        //如果是枪类武器
-        if(weapon instanceof Gun)
-        {
-            int bulletLeftInGun=((Gun)weapon).getBulletLeft();
-            int bulletLeftOnPerson=getBulletLeftOnPerson();
-            SinglePersonModel.bulletLeft.setText("子弹："+bulletLeftInGun+"/"+bulletLeftOnPerson);
-        }
-        else
-        {
-            int left=getBulletLeftOnPerson();
-            SinglePersonModel.bulletLeft.setText("子弹："+left);
-        }
-        Point point= SinglePersonModel.flagPoint[getUsingWeaponType()-1];
-        SinglePersonModel.usingWeaponFlag.setLocation(point);
-        gameArea.repaint();
-    }
-    /**
-     * 重写Person的reLoad方法，增添修改显示子弹的bulletLeft这个JTextField功能
-     */
-    public void reLoad()
-    {
-        super.reLoad();
-        Weapon weapon=getUsingWeapon();
-        //如果是枪类武器
-        if(weapon instanceof Gun)
-        {
-            int bulletLeftInGun=((Gun)weapon).getBulletLeft();
-            int bulletLeftOnPerson=getBulletLeftOnPerson();
-            SinglePersonModel.bulletLeft.setText("子弹："+bulletLeftInGun+"/"+bulletLeftOnPerson);
-        }
-        else
-        {
-            int left=getBulletLeftOnPerson();
-            SinglePersonModel.bulletLeft.setText("子弹："+left);
-        }
-    }
     public void reduceHealthPoint(int hp)
     {
         MusicPlayer.playBeenHitMusic();
