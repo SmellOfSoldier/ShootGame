@@ -56,8 +56,8 @@ class ClientThread extends Thread {
         try {
         sign:while (!this.isInterrupted() &&(line=getStream.readLine())!=null)
         {
-            if (isConnected) {
-
+            if (isConnected)
+            {
                     //TODO:服务线程run待完成
                     System.out.println("线程阻塞中等待命令。");
                     System.out.println("收到一个命令信息" + line);
@@ -70,8 +70,10 @@ class ClientThread extends Thread {
                             System.out.println("进度登陆函数");
                             int loginResult = check.checkLoginInfo(line);
                             System.out.println("登陆结果为" + loginResult);//1为成功 -1为账号未注册  为密码错误
-                            switch (loginResult) {
-                                case 1: {
+                            switch (loginResult)
+                            {
+                                case 1:
+                                    {
                                     realMessage=check.getRealMessage(line,Sign.Login);
                                     String id=realMessage.split(Sign.SplitSign)[0];
                                     isLogin = true;//密码成功则将当前玩家的服务线程登陆状态置为true
@@ -317,6 +319,14 @@ class ClientThread extends Thread {
                                 GuiShowMes.append("服务器消息：房间："+currentGameRoom.getId()+" 开始游戏。\n");
                             }
                     }
+                    /**
+                     * 如果收到客户端游戏启动准备完毕的消息
+                     *
+                     */
+                    else if(line.startsWith(Sign.GameReadyStart))
+                    {
+                        client.setPlaying(true);
+                    }
                 /**
                  * 下面为游戏内服务的命令
                  */
@@ -327,10 +337,11 @@ class ClientThread extends Thread {
                     {
                         //直接获取玩家移动的消息
                         realMessage=line;
+                        System.out.println(currentGameRoom.getAllClients().size());
                         for(Client c:currentGameRoom.getAllClients())
                         {
                             //直接转发给房间内所有的在线玩家
-                            PrintStream sendstream= StartServer.clientPrintStreamMap.get(client);
+                            PrintStream sendstream= StartServer.clientPrintStreamMap.get(c);
                             sendstream.println(realMessage);
                         }
                     }
@@ -344,7 +355,7 @@ class ClientThread extends Thread {
                         for(Client c:currentGameRoom.getAllClients())
                         {
                             //直接转发给房间内所有的在线玩家
-                            PrintStream sendstream= StartServer.clientPrintStreamMap.get(client);
+                            PrintStream sendstream= StartServer.clientPrintStreamMap.get(c);
                             sendstream.println(realMessage);
                         }
                     }
@@ -376,12 +387,11 @@ class ClientThread extends Thread {
                         realMessage=check.getRealMessage(line,Sign.GrenadeBoom);
                         int nadeflag=Integer.parseInt(realMessage.split(Sign.SplitSign)[0]);
                         //转发给房间内其他玩家
-
-                                for(Client c:currentGameRoom.getAllClients())//给房间内所有玩家发送nadeflag号手雷爆炸的消息
-                                {
-                                    PrintStream sendstream= StartServer.clientPrintStreamMap.get(c);
-                                    sendstream.println(Sign.GrenadeBoom+nadeflag);//发送手雷爆炸消息
-                                }
+                        for(Client c:currentGameRoom.getAllClients())//给房间内所有玩家发送nadeflag号手雷爆炸的消息
+                            {
+                                PrintStream sendstream= StartServer.clientPrintStreamMap.get(c);
+                                sendstream.println(Sign.GrenadeBoom+nadeflag);//发送手雷爆炸消息
+                            }
 
 
                     }

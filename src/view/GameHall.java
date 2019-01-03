@@ -745,6 +745,7 @@ public class GameHall
                         {
                             players.add(createPlayer(i,entrance[pointIndex[i]],currentGameRoom.getClientIdModel().get(i)));
                         }
+                        sendstream.println(Sign.GameReadyStart);
                         new MultiPlayerModel(players.get(myPlayerIndex),players);
                         condition.await();          //业务线程睡眠，等待游戏结束后被唤醒
                         System.out.println("游戏结束");

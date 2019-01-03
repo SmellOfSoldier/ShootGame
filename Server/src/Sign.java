@@ -58,4 +58,5 @@ public interface Sign
     String PlayerStopMove="PLAYER_STOP_MOVE";                           //玩家停止移动
     String RefreshGameHall="REFRESH_GAME_HALL";                        //刷新游戏大厅
     String CloseLocalThread="CLOSE_LOCAL_THREAD";                       //关闭本地的业务线程
+    String GameReadyStart="GameReadyStart";                             //游戏即将开始
 }

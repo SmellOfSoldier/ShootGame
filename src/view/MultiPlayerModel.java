@@ -221,46 +221,10 @@ public class MultiPlayerModel extends JFrame
                     {
                         realMessage=getRealMessage(line,Sign.PlayerMove);
                         int index=Integer.parseInt(realMessage.split(Sign.SplitSign)[0]);
-                        int dir=Integer.parseInt(realMessage.split(Sign.SplitSign)[1]);
+                        String pointStr=realMessage.split(Sign.SplitSign)[1];
+                        Point newPoint=gson.fromJson(pointStr,Point.class);
                         Player player=playerList.get(index);
-                        switch (dir)
-                        {
-                            case MoveDirection.left:
-                                player.setlSpeed(TravelSpeed.personTravelSpeed);
-                                break;
-                            case MoveDirection.right:
-                                player.setrSpeed(TravelSpeed.personTravelSpeed);
-                                break;
-                            case MoveDirection.up:
-                                player.setuSpeed(TravelSpeed.personTravelSpeed);
-                                break;
-                            case MoveDirection.down:
-                                player.setdSpeed(TravelSpeed.personTravelSpeed);
-                                break;
-                        }
-                    }
-                    //如果收到玩家停止移动的消息
-                    else if(line.startsWith(Sign.PlayerStopMove))
-                    {
-                        realMessage=getRealMessage(line,Sign.PlayerStopMove);
-                        int index=Integer.parseInt(realMessage.split(Sign.SplitSign)[0]);
-                        int dir=Integer.parseInt(realMessage.split(Sign.SplitSign)[1]);
-                        Player player=playerList.get(index);
-                        switch (dir)
-                        {
-                            case MoveDirection.left:
-                                player.setlSpeed(0);
-                                break;
-                            case MoveDirection.right:
-                                player.setrSpeed(0);
-                                break;
-                            case MoveDirection.up:
-                                player.setuSpeed(0);
-                                break;
-                            case MoveDirection.down:
-                                player.setdSpeed(0);
-                                break;
-                        }
+                        player.setLocation(newPoint);
                     }
                 }
             }
@@ -283,25 +247,20 @@ public class MultiPlayerModel extends JFrame
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                for(Player player: playerList)
+                Point oldPoint=me.getLocation();
+                Point newPoint=new Point(oldPoint.x+me.getrSpeed()-me.getlSpeed(),oldPoint.y+me.getdSpeed()-me.getuSpeed());
+                if(!ifHitWall(newPoint,me.getRadius(),false))
                 {
-                    //如果玩家不是死亡状态，则可以进行移动
-                    if(!player.ifDie())
+                    String pointStr=gson.toJson(newPoint);
+                    ClientPort.sendStream.println(Sign.PlayerMove+me.getId()+Sign.SplitSign+pointStr);
+                }
+                for(Mine mine :mineList)
+                {
+                    if (ifStepMine(mine,me))
                     {
-                        Point oldPoint = player.getLocation();
-                        Point newPoint = new Point(oldPoint.x + player.getrSpeed() - player.getlSpeed(), oldPoint.y + player.getdSpeed() - player.getuSpeed());
-                        if (!ifHitWall(newPoint, player.getRadius(), false))
-                            player.setLocation(newPoint);
-                        for (Mine mine : mineList) {
-                            //如果有玩家踩到了地雷，向服务器发送地雷爆炸的消息
-                            if (ifStepMine(mine, player)) {
-                                Gson gson = new Gson();
-                                String mineStr = gson.toJson(mine);
-                                ClientPort.sendStream.println(Sign.MineBoom + mineStr);
-                            }
-                        }
+                        String mineStr=gson.toJson(mine);
+                        ClientPort.sendStream.println(Sign.MineBoom+mineStr);
                     }
-
                 }
             }
         });
@@ -410,16 +369,16 @@ public class MultiPlayerModel extends JFrame
                     switch (e.getKeyCode())
                     {
                         case KeyEvent.VK_W:
-                            ClientPort.sendStream.println(Sign.PlayerMove+me.getId()+Sign.SplitSign+MoveDirection.up);
+                            me.setuSpeed(TravelSpeed.personTravelSpeed);
                             break;
                         case KeyEvent.VK_S:
-                            ClientPort.sendStream.println(Sign.PlayerMove+me.getId()+Sign.SplitSign+MoveDirection.down);
+                            me.setdSpeed(TravelSpeed.personTravelSpeed);
                             break;
                         case KeyEvent.VK_D:
-                            ClientPort.sendStream.println(Sign.PlayerMove+me.getId()+Sign.SplitSign+MoveDirection.right);
+                            me.setrSpeed(TravelSpeed.personTravelSpeed);
                             break;
                         case KeyEvent.VK_A:
-                            ClientPort.sendStream.println(Sign.PlayerMove+me.getId()+Sign.SplitSign+MoveDirection.left);
+                            me.setlSpeed(TravelSpeed.personTravelSpeed);
                             break;
                         case KeyEvent.VK_R:             //装填子弹
                             Weapon usingWeapon=me.getUsingWeapon();
@@ -524,16 +483,16 @@ public class MultiPlayerModel extends JFrame
                     switch (e.getExtendedKeyCode())
                     {
                         case KeyEvent.VK_W:
-                           ClientPort.sendStream.println(Sign.PlayerStopMove+me.getId()+Sign.SplitSign+MoveDirection.up);
+                           me.setuSpeed(0);
                             break;
                         case KeyEvent.VK_S:
-                            ClientPort.sendStream.println(Sign.PlayerStopMove+me.getId()+Sign.SplitSign+MoveDirection.down);
+                           me.setdSpeed(0);
                             break;
                         case KeyEvent.VK_D:
-                            ClientPort.sendStream.println(Sign.PlayerStopMove+me.getId()+Sign.SplitSign+MoveDirection.right);
+                            me.setrSpeed(0);
                             break;
                         case KeyEvent.VK_A:
-                            ClientPort.sendStream.println(Sign.PlayerStopMove+me.getId()+Sign.SplitSign+MoveDirection.left);
+                            me.setlSpeed(0);
                             break;
                     }
                 }
