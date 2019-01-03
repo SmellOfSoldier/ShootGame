@@ -17,10 +17,13 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.URL;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Random;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
 
 /**
  * 该模式为多人在线模式
@@ -39,8 +42,8 @@ public class MultiPlayerModel extends JFrame
     public static JProgressBar healthLevel=new JProgressBar(0, Player.maxHealthPoint);        //显示玩家生命的进度条
     public static JTextField bulletLeft=new JTextField();                           //显示武器子弹剩余量
     public static JTextField killAndDieField =new  JTextField();                             //显示玩家击杀死亡数
-    public static JLabel usingWeaponFlag=new JLabel();                   //玩家当前使用武器的标记
-    public static Point []flagPoint=new Point[4];
+    public static JLabel usingWeaponFlag=new JLabel();                   //玩家当前使用武器的标记图标
+    public static Point []flagPoint=new Point[4];                       //玩家当前使用武器的标记图标的位置
     //存放自动步枪子弹的链表
     private static java.util.List<Bullet> automaticBulletList = Collections.synchronizedList(new LinkedList<Bullet>());
     //存放狙击枪子弹的链表
@@ -52,20 +55,21 @@ public class MultiPlayerModel extends JFrame
     //存放掉落物品的链表
     private static java.util.List<RewardProp> rewardPropList=Collections.synchronizedList(new LinkedList<RewardProp>());
     //存放所有Person的链表
-    private static java.util.List<Person> personList=Collections.synchronizedList(new LinkedList<Person>());
+    private static java.util.List<Player> playerList =Collections.synchronizedList(new LinkedList<Player>());
     //存放物品栏
     public static JLabel[] itemBars=new JLabel[]{new JLabel(),new JLabel(),new JLabel(),new JLabel()};
-    private static Player player;                      //游戏玩家
+    private static Player me;                      //本地玩家
     private Timer shotThread=null;              //开火线程
     private GameArea gameArea=null;
     private Timer automaticBulletThread=null;   //自动步枪子弹飞行线程
     private Timer sniperBulletThread=null;      //狙击步枪子弹飞行线程
     private Timer playerMoveThread=null;        //玩家移动的线程
     private Timer grenadeMoveThread=null;       //控制手雷移动的线程
-    MultiPlayerModel()
+    MultiPlayerModel(Player me, java.util.List<Player> allPerson)
     {
         gameArea=new GameArea();
-        createPlayer();
+        playerList =allPerson;
+        MultiPlayerModel.me =me;
         initialPersonMoveThread();
         //关闭窗口推出程序
         this.addWindowListener(new WindowAdapter() {
@@ -80,6 +84,159 @@ public class MultiPlayerModel extends JFrame
         this.add(gameArea);
         MusicPlayer.playActionMusic();
         this.setVisible(true);
+        new GameThread(ClientPort.threadLock,ClientPort.threadCondition).start();
+    }
+
+    /**
+     * 游戏数据传输线程，用来传输多人游戏时玩家之间的数据
+     */
+    class GameThread extends Thread
+    {
+        private Lock lock=null;
+        private Condition condition=null;
+        public GameThread(Lock lock, Condition condition)
+        {
+            this.lock=lock;
+            this.condition=condition;
+        }
+        public void run()
+        {
+            lock.lock();
+            String line=null;
+            String realMessage=null;
+            try
+            {
+                while ((line = ClientPort.getStream.readLine()) != null)
+                {
+                    //如果收到游戏结束的命令
+                    if(line.startsWith(Sign.GameOver))
+                    {
+
+                    }
+                    //如果收到手雷爆炸的消息
+                    else if(line.startsWith(Sign.GrenadeBoom))
+                    {
+                        int index=Integer.parseInt(getRealMessage(line,Sign.GrenadeBoom));
+                        Grenade grenade=grenadeList.get(index);
+                        //手雷爆炸特效
+                        grenade.boom(gameArea);
+                        //位于爆炸半径内的玩家将全部死亡
+                        for(Player player:playerList)
+                        {
+                            //玩家的中心位置
+                            Point playerPoint=getCentralPoint(player.getLocation());
+                            //手雷的爆炸中心位置
+                            Point grenadePoint=getCentralPoint(grenade.getLocation());
+                            //如果该玩家位于爆炸半径内
+                            if(playerPoint.distance(grenadePoint)<grenade.getDamageRadius())
+                            {
+                                //向服务器发送该玩家死亡的消息
+                                ClientPort.sendStream.println(Sign.OnePlayerDie+player.getId());
+                            }
+                        }
+                        grenadeList.remove(grenade);
+                    }
+                    //如果收到地雷爆炸的消息
+                    else if(line.startsWith(Sign.MineBoom))
+                    {
+                        int index=Integer.parseInt(getRealMessage(line,Sign.MineBoom));
+                        Mine mine=mineList.get(index);
+                        //地雷爆炸特效
+                        mine.boom(gameArea,mine.getLocation());
+                        //地雷的爆炸半径
+                        int damageRadius=mine.getDamageRadius();
+                        //位于地雷爆炸半径内的玩家将全部死亡
+                        for(Player tplayer:playerList)
+                        {
+                            //玩家的中心坐标
+                            Point playerPoint=getCentralPoint(tplayer.getLocation());
+                            //地雷的爆炸中心坐标
+                            Point minePoint=getCentralPoint(mine.getLocation());
+                            //如果玩家中心坐标于手雷的中心坐标小于爆炸半径
+                            if(playerPoint.distance(minePoint)<damageRadius)
+                            {
+                                mine.getFromPerson().addKillNum(1);
+                                //向服务器发送该玩家死亡的消息
+                                ClientPort.sendStream.println(Sign.OnePlayerDie+tplayer.getId());
+                            }
+                        }
+                        mineList.remove(mine);
+
+                    }
+                    //如果收到玩家死亡的消息
+                    else if(line.startsWith(Sign.OnePlayerDie))
+                    {
+                        int index=Integer.parseInt(getRealMessage(line,Sign.OnePlayerDie));
+                        Player player=playerList.get(index);
+                        player.setDie(true);
+                        player.dieSpecialEffect(gameArea);
+                        player.setVisible(false);
+                    }
+                    //如果收到玩家复活的消息
+                    else if(line.startsWith(Sign.OnePlayerRelive))
+                    {
+                        realMessage=getRealMessage(line,Sign.OnePlayerRelive);
+                        int playerIndex=Integer.parseInt(realMessage.split(Sign.SplitSign)[0]);
+                        int relivePointIndex=Integer.parseInt(realMessage.split(Sign.SplitSign)[1]);
+                        Player player=playerList.get(playerIndex);
+                        player.addHealthPoint(Player.maxHealthPoint);
+                        player.setLocation(entrance[relivePointIndex]);
+                        player.setDie(false);
+                        player.setVisible(true);
+                    }
+                    //如果收到玩家移动的消息
+                    else if(line.startsWith(Sign.PlayerMove))
+                    {
+                        realMessage=getRealMessage(line,Sign.PlayerMove);
+                        int index=Integer.parseInt(realMessage.split(Sign.SplitSign)[0]);
+                        int dir=Integer.parseInt(realMessage.split(Sign.SplitSign)[1]);
+                        Player player=playerList.get(index);
+                        switch (dir)
+                        {
+                            case MoveDirection.left:
+                                player.setlSpeed(TravelSpeed.personTravelSpeed);
+                                break;
+                            case MoveDirection.right:
+                                player.setrSpeed(TravelSpeed.personTravelSpeed);
+                                break;
+                            case MoveDirection.up:
+                                player.setuSpeed(TravelSpeed.personTravelSpeed);
+                                break;
+                            case MoveDirection.down:
+                                player.setdSpeed(TravelSpeed.personTravelSpeed);
+                                break;
+                        }
+                    }
+                    //如果收到玩家停止移动的消息
+                    else if(line.startsWith(Sign.PlayerStopMove))
+                    {
+                        realMessage=getRealMessage(line,Sign.PlayerMove);
+                        int index=Integer.parseInt(realMessage.split(Sign.SplitSign)[0]);
+                        int dir=Integer.parseInt(realMessage.split(Sign.SplitSign)[1]);
+                        Player player=playerList.get(index);
+                        switch (dir)
+                        {
+                            case MoveDirection.left:
+                                player.setlSpeed(0);
+                                break;
+                            case MoveDirection.right:
+                                player.setrSpeed(0);
+                                break;
+                            case MoveDirection.up:
+                                player.setuSpeed(0);
+                                break;
+                            case MoveDirection.down:
+                                player.setdSpeed(0);
+                                break;
+                        }
+                    }
+                }
+            }
+            catch (IOException ioe)
+            {
+                ioe.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -90,18 +247,31 @@ public class MultiPlayerModel extends JFrame
         /**
          * 初始化控制玩家移动的线程
          */
-        playerMoveThread=new Timer(player.getSpeed(), new ActionListener() {
+        playerMoveThread=new Timer(me.getSpeed(), new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                Point oldPoint=player.getLocation();
-                Point newPoint=new Point(oldPoint.x+player.getrSpeed()-player.getlSpeed(),oldPoint.y+player.getdSpeed()-player.getuSpeed());
-                if(!ifHitWall(newPoint,player.getRadius(),false))
-                    player.setLocation(newPoint);
+                for(Player player: playerList)
+                {
+                    Point oldPoint = player.getLocation();
+                    Point newPoint = new Point(oldPoint.x + player.getrSpeed() - player.getlSpeed(), oldPoint.y + player.getdSpeed() - player.getuSpeed());
+                    if (!ifHitWall(newPoint, player.getRadius(), false))
+                        player.setLocation(newPoint);
+                    int index=0;
+                    for(Mine mine:mineList)
+                    {
+                        //如果有玩家踩到了地雷，向服务器发送地雷爆炸的消息
+                        if(ifStepMine(mine,player))
+                        {
+                            ClientPort.sendStream.println(Sign.MineBoom+index);
+                        }
+                        index++;
+                    }
+
+                }
             }
         });
     }
-
     /**
      * 内部类
      * 游戏的画面显示区域
@@ -197,28 +367,28 @@ public class MultiPlayerModel extends JFrame
                     switch (e.getKeyCode())
                     {
                         case KeyEvent.VK_W:
-                            player.setuSpeed(TravelSpeed.personTravelSpeed);
+                            ClientPort.sendStream.println(Sign.PlayerMove+me.getId()+Sign.SplitSign+MoveDirection.up);
                             break;
                         case KeyEvent.VK_S:
-                            player.setdSpeed(TravelSpeed.personTravelSpeed);
+                            ClientPort.sendStream.println(Sign.PlayerMove+me.getId()+Sign.SplitSign+MoveDirection.down);
                             break;
                         case KeyEvent.VK_D:
-                            player.setrSpeed(TravelSpeed.personTravelSpeed);
+                            ClientPort.sendStream.println(Sign.PlayerMove+me.getId()+Sign.SplitSign+MoveDirection.right);
                             break;
                         case KeyEvent.VK_A:
-                            player.setlSpeed(TravelSpeed.personTravelSpeed);
+                            ClientPort.sendStream.println(Sign.PlayerMove+me.getId()+Sign.SplitSign+MoveDirection.left);
                             break;
                         case KeyEvent.VK_R:             //装填子弹
-                            int weaponType=player.getUsingWeaponType();
+                            int weaponType= me.getUsingWeaponType();
                             //如果玩家当前使用的是枪,则可以换子弹
                             if(weaponType== WeaponType.automaticRifle || weaponType==WeaponType.sniperRifle)
                             {
-                                player.reLoad();
+                                me.reLoad();
                             }
                             break;
                         //玩家捡起道具
                         case KeyEvent.VK_F:
-                            Point playerPoint=player.getLocation();
+                            Point playerPoint= me.getLocation();
                             int index=-1;
                             int i=0;
                             for(RewardProp rewardProp:rewardPropList)
@@ -231,19 +401,19 @@ public class MultiPlayerModel extends JFrame
                                     if(rewardProp.getType()==0)
                                     {
                                         MedicalPackage medicalPackage=(MedicalPackage) rewardProp.getReward();
-                                        player.addHealthPoint(medicalPackage.getHealthPoint());
+                                        me.addHealthPoint(medicalPackage.getHealthPoint());
                                     }
                                     //如果是地雷或者是手雷
                                     else if(rewardProp.getType()== RewardType.Mine || rewardProp.getType()==RewardType.Grenade)
                                     {
-                                        player.peekWeapon((Weapon) rewardProp.getReward(),1);
-                                        int left=player.getBulletLeftOnPerson();
+                                        me.peekWeapon((Weapon) rewardProp.getReward(),1);
+                                        int left= me.getBulletLeftOnPerson();
                                         bulletLeft.setText("子弹："+left);
                                     }
                                     //如果道具是枪
                                     else
                                     {
-                                        player.peekWeapon((Weapon) rewardProp.getReward(),0);
+                                        me.peekWeapon((Weapon) rewardProp.getReward(),0);
                                     }
                                     index=i;
                                 }
@@ -257,43 +427,44 @@ public class MultiPlayerModel extends JFrame
                             break;
                         //切换武器
                         case KeyEvent.VK_1:
-                            player.changeWeapon(WeaponType.automaticRifle,gameArea);
+                            me.changeWeapon(WeaponType.automaticRifle,gameArea);
                             if (shotThread!=null &&shotThread.isRunning())
                                 shotThread.stop();
                             break;
                         case KeyEvent.VK_2:
-                            player.changeWeapon(WeaponType.sniperRifle,gameArea);
+                            me.changeWeapon(WeaponType.sniperRifle,gameArea);
                             if (shotThread!=null &&shotThread.isRunning())
                                 shotThread.stop();
                             break;
                         case KeyEvent.VK_3:
-                            player.changeWeapon(WeaponType.grenade,gameArea);
+                            me.changeWeapon(WeaponType.grenade,gameArea);
                             if (shotThread!=null &&shotThread.isRunning())
                                 shotThread.stop();
                             break;
                         case KeyEvent.VK_4:
-                            player.changeWeapon(WeaponType.mine,gameArea);
+                            me.changeWeapon(WeaponType.mine,gameArea);
                             if(shotThread!=null && shotThread.isRunning())
                                 shotThread.stop();
                             break;
                     }
                 }
                 @Override
+                //玩家松开移动按钮
                 public void keyReleased(KeyEvent e)
                 {
                     switch (e.getExtendedKeyCode())
                     {
                         case KeyEvent.VK_W:
-                            player.setuSpeed(0);
+                           ClientPort.sendStream.println(Sign.PlayerStopMove+me.getId()+Sign.SplitSign+MoveDirection.up);
                             break;
                         case KeyEvent.VK_S:
-                            player.setdSpeed(0);
+                            ClientPort.sendStream.println(Sign.PlayerStopMove+me.getId()+Sign.SplitSign+MoveDirection.down);
                             break;
                         case KeyEvent.VK_D:
-                            player.setrSpeed(0);
+                            ClientPort.sendStream.println(Sign.PlayerStopMove+me.getId()+Sign.SplitSign+MoveDirection.right);
                             break;
                         case KeyEvent.VK_A:
-                            player.setlSpeed(0);
+                            ClientPort.sendStream.println(Sign.PlayerStopMove+me.getId()+Sign.SplitSign+MoveDirection.left);
                             break;
                     }
                 }
@@ -319,27 +490,27 @@ public class MultiPlayerModel extends JFrame
                 @Override
                 public void mouseClicked(MouseEvent mouseEvent)        //非枪类武器攻击
                 {
-                    Weapon weapon=player.getUsingWeapon();
-                    Point startPoint=getCentralPoint(player.getLocation());
+                    Weapon weapon= me.getUsingWeapon();
+                    Point startPoint=getCentralPoint(me.getLocation());
                     if(!(weapon instanceof Gun))
                     {
-                        attack(startPoint, mousePoint, player);
+                        attack(startPoint, mousePoint, me);
                     }
 
                 }
                 public void mousePressed(MouseEvent mouseEvent)         //枪类武器攻击
                 {
-                    Weapon weapon=player.getUsingWeapon();
-                    Point startPoint = getCentralPoint(player.getLocation());
+                    Weapon weapon= me.getUsingWeapon();
+                    Point startPoint = getCentralPoint(me.getLocation());
                     if(weapon instanceof Gun)
                     {
                         int fireRate = ((Gun) weapon).getFireRate();
-                        attack(startPoint, mousePoint, player);
+                        attack(startPoint, mousePoint, me);
                         shotThread = new Timer(fireRate, new ActionListener() {       //玩家开火
                             @Override
                             public void actionPerformed(ActionEvent e) {
-                                Point startPoint = getCentralPoint(player.getLocation());
-                                attack(startPoint, mousePoint, player);
+                                Point startPoint = getCentralPoint(me.getLocation());
+                                attack(startPoint, mousePoint, me);
                             }
                         });
                         shotThread.start();
@@ -348,12 +519,12 @@ public class MultiPlayerModel extends JFrame
                 @Override
                 public void mouseReleased(MouseEvent e)
                 {
-                    Weapon weapon=player.getUsingWeapon();
+                    Weapon weapon= me.getUsingWeapon();
                     if(weapon instanceof Gun && ((Gun)weapon).ifContinuedShot())
                     {
                         MusicPlayer.stopContinueAttackMusic();
                     }
-                    player.setAttacking(false);
+                    me.setAttacking(false);
                     if(shotThread!=null && shotThread.isRunning())
                         shotThread.stop();
                 }       //玩家停止开火
@@ -375,7 +546,7 @@ public class MultiPlayerModel extends JFrame
                             Point oldPoint=bullet.getLocation();
                             Point newPoint=new Point(oldPoint.x+bullet.getxSpeed(),oldPoint.y+bullet.getySpeed());
                             bullet.setLocation(newPoint);
-                            for(Person person:personList)          //判断每个人是否被子弹击中
+                            for(Person person: playerList)          //判断每个人是否被子弹击中
                             {
                                 if((ifHitPerson(bullet,person)) && !person.ifDie() && !person.equals(bullet.getFromPerson()))    //如果击中AI
                                 {
@@ -387,7 +558,7 @@ public class MultiPlayerModel extends JFrame
                                         bullet.getFromPerson().addKillNum(1);       //这颗子弹的所有者击杀数加1
                                         person.dieSpecialEffect(gameArea);
                                         person.setVisible(false);
-                                        person.setDie(true);                        //设置AI死亡
+                                        person.setDie(true);
                                         /*
 
 
@@ -442,7 +613,7 @@ public class MultiPlayerModel extends JFrame
                             Point oldPoint=bullet.getLocation();
                             Point newPoint=new Point(oldPoint.x+bullet.getxSpeed(),oldPoint.y+bullet.getySpeed());
                             bullet.setLocation(newPoint);
-                            for(Person person:personList)          //判断每个敌人是否被子弹击中
+                            for(Person person: playerList)          //判断每个敌人是否被子弹击中
                             {
                                 if((ifHitPerson(bullet,person)) && !person.ifDie() && !person.equals(bullet.getFromPerson()))    //如果击中AI
                                 {
@@ -511,7 +682,7 @@ public class MultiPlayerModel extends JFrame
                             grenade.boom(gameArea);
                             Point grenadePoint=getCentralPoint(grenade.getLocation());
                             Person fromPerson=grenade.getFromPerson();
-                            for(Person person:personList)           //遍历所有人，判断是否有人在爆炸半径中
+                            for(Person person: playerList)           //遍历所有人，判断是否有人在爆炸半径中
                             {
                                 Point personPoint=getCentralPoint(person.getLocation());
                                 int personRadius=person.getRadius();
@@ -689,7 +860,7 @@ public class MultiPlayerModel extends JFrame
                 gameArea.add(grenade);
                 grenadeList.add(grenade);
                 person.reduceGrenadeNum(1);
-                int bulletLeftOnPerson=player.getBulletLeftOnPerson();
+                int bulletLeftOnPerson= me.getBulletLeftOnPerson();
                 bulletLeft.setText("手雷："+bulletLeftOnPerson);
             }
             else
@@ -703,8 +874,8 @@ public class MultiPlayerModel extends JFrame
             if(!person.ifEmptyMine())
             {
                 MusicPlayer.playDiscontinueAttackMusic(weapon.getWeaponName());
-                stepMine(player.getLocation(), person);
-                int bulletLeftOnPerson=player.getBulletLeftOnPerson();
+                stepMine(me.getLocation(), person);
+                int bulletLeftOnPerson= me.getBulletLeftOnPerson();
                 bulletLeft.setText("地雷："+bulletLeftOnPerson);
             }
             else
@@ -717,16 +888,16 @@ public class MultiPlayerModel extends JFrame
         {
             SniperRifle gun=(SniperRifle) weapon;
             //判断狙击枪是否在上膛或拉栓状态，如果不是则可以开枪
-            if(!player.ifReloading() && !gun.isPollBolt())
+            if(!me.ifReloading() && !gun.isPollBolt())
             {
                 if (!gun.emptyBulletNum() ) //如果还有子弹
                 {
                     gun.setPollBolt(true);      //狙击枪进入拉栓状态
-                    createBullet(player,startPoint, endPoint, BulletType.k127, weapon.getDamageValue(), weapon.getType());
+                    createBullet(me,startPoint, endPoint, BulletType.k127, weapon.getDamageValue(), weapon.getType());
                     gun.reduceBulletNum(1);     //子弹里面的弹夹减1
                     //修改子弹的数目，在屏幕左上角的显示
                     int bulletLeftInGun=((Gun)weapon).getBulletLeft();
-                    int bulletLeftOnPerson=player.getBulletLeftOnPerson();
+                    int bulletLeftOnPerson= me.getBulletLeftOnPerson();
                     bulletLeft.setText("子弹："+bulletLeftInGun+"/"+bulletLeftOnPerson);
 
                     MusicPlayer.playDiscontinueAttackMusic(weapon.getWeaponName());
@@ -741,14 +912,14 @@ public class MultiPlayerModel extends JFrame
         else if(weapon.getType()==WeaponType.automaticRifle)
         {
             AutomaticRifle gun=(AutomaticRifle) weapon;
-            if(!player.ifReloading() )
+            if(!me.ifReloading() )
             {
                 if (!gun.emptyBulletNum() ) //如果还有子弹
                 {
-                    createBullet(player,startPoint, endPoint, ((Gun) weapon).getBulletType(), weapon.getDamageValue(), weapon.getType());
+                    createBullet(me,startPoint, endPoint, ((Gun) weapon).getBulletType(), weapon.getDamageValue(), weapon.getType());
                     gun.reduceBulletNum(1);     //子弹里面的弹夹减1
                     int bulletLeftInGun=((Gun)weapon).getBulletLeft();
-                    int bulletLeftOnPerson=player.getBulletLeftOnPerson();
+                    int bulletLeftOnPerson= me.getBulletLeftOnPerson();
                     bulletLeft.setText("子弹："+bulletLeftInGun+"/"+bulletLeftOnPerson);
                     if(!person.isAttacking())
                     {
@@ -765,36 +936,6 @@ public class MultiPlayerModel extends JFrame
                     shotThread.stop();
                 }
             }
-        }
-    }
-    //创建玩家
-    private void createPlayer()
-    {
-        try {
-            Rotate rotate = new Rotate();
-            player = new Player("1", "DJF");
-            int size = 2 * (player.getRadius());
-            player.setSize(size, size);
-            InputStream is = startGame.class.getResourceAsStream("/images/header_b.png");
-            BufferedImage bufferedImage = ImageIO.read(is);
-            ImageIcon icon = new ImageIcon();
-            icon.setImage(bufferedImage);
-            icon.setImage(icon.getImage().getScaledInstance(size, size, Image.SCALE_DEFAULT));
-            player.setIcon(icon);
-            player.setLocation(400, 300);
-            gameArea.add(player);
-            player.peekWeapon(new M4A1(), 10000);
-            player.peekWeapon(new AWM(), 100);
-            player.peekWeapon(new Mine(),5);
-            player.peekWeapon(new Grenade(),5);
-            player.changeWeapon(1,gameArea);
-            personList.add(player);
-            healthLevel.setValue(player.getHealthPoint());
-
-        }
-        catch (IOException ioe)
-        {
-            ioe.printStackTrace();
         }
     }
     //安装地雷
@@ -845,7 +986,7 @@ public class MultiPlayerModel extends JFrame
             return true;
         return false;
     }
-    public static Player getPlayer(){return player;}
+    public static Player getMe(){return me;}
     public static java.util.List getAutomaticBulletList()
     {
         return automaticBulletList;
@@ -853,5 +994,16 @@ public class MultiPlayerModel extends JFrame
     public static java.util.List getSniperBulletList()
     {
         return sniperBulletList;
+    }
+    /**
+     * 用于依据标志符号切割掉客户端发送来的字符串开始的命令
+     * @param line 每次客户端发送过来的字符串
+     * @param cmd 字符串中开头包含的命令
+     * @return 返回命令后的字符串
+     */
+    public static String getRealMessage(String line,String cmd)
+    {
+        String realMessage=line.substring(cmd.length(),line.length());
+        return realMessage;
     }
 }

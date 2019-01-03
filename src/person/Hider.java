@@ -28,7 +28,7 @@ public class Hider extends AI implements Serializable
     private  AudioClip shotPlayer=null;
     private static URL shotUrl=Hider.class.getResource("/musics/shot/AWM.wav");
     AWM awm=new AWM();
-    public Hider(String id)
+    public Hider(int id)
     {
         super(id,"隐匿者",100,10,speed,vision);
         changeWeapon(WeaponType.automaticRifle,null);

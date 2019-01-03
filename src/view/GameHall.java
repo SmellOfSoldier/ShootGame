@@ -1,18 +1,31 @@
 package view;
 
+import Arsenal.AWM;
+import Arsenal.M4A1;
+import Weapon.Grenade;
+import Weapon.Mine;
 import com.google.gson.Gson;
+import javafx.scene.transform.Rotate;
 import person.Player;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 游戏大厅类bylijie
@@ -20,7 +33,6 @@ import java.util.List;
 public class GameHall
 {
     private static Client currentClient=null;//当前用户
-
     private JFrame gameHallJFrame;//大厅frame
     private JButton killList;//击杀榜
     private JButton logout;//注销
@@ -40,6 +52,7 @@ public class GameHall
     private boolean isEnterRoom=false;//是否加入房间
     private  GameRoom currentGameRoom=null;//当前房间
     private  ClientThread clientThread=null;
+    private Point[] entrance=new Point[]{new Point(800,20),new Point(1040,280),new Point(1160,600), new Point(320,760),new Point(20,520)};         //刷怪位置
     GameHall(Client currentClient)
     {
         this.currentClient=currentClient;
@@ -210,7 +223,7 @@ public class GameHall
             this.add(gamerIcon);
             this.add(rpane);
             this.add(lpanel);
-            clientThread=new ClientThread(ClientPort.socket,ClientPort.sendStream,ClientPort.getStream);
+            clientThread=new ClientThread(ClientPort.socket,ClientPort.sendStream,ClientPort.getStream,ClientPort.threadLock,ClientPort.threadCondition);
             clientThread.start();
 
 
@@ -548,16 +561,23 @@ public class GameHall
      */
     public class ClientThread extends  Thread
     {
+        private Lock lock=null;
+        Condition condition=null;
         private Socket socket;
         private PrintStream sendstream;
         private BufferedReader getstream;
-        ClientThread(Socket socket,PrintStream sendstream,BufferedReader getstream)
+        ClientThread(Socket socket,PrintStream sendstream,BufferedReader getstream,Lock lock,Condition condition)
         {
+            this.lock=lock;
             this.socket=socket;
             this.sendstream=sendstream;
             this.getstream=getstream;
+            this.condition=condition;
         }
-        public void run(){
+
+        public void run()
+        {
+            lock.lock();
             String line=null;//接收到的初始字符串（信息）
             String command = null;//当前获取的信息需要执行的命令
             String realMessage = null;//去除头部命令的信息
@@ -709,12 +729,20 @@ public class GameHall
                     else if(line.startsWith(Sign.GameStart))
                     {
                         realMessage=getRealMessage(line,Sign.GameStart);
-                        int entrance=(int)realMessage.charAt(0);//获取分配到的随机出生位置坐标的下标
-
-                        for(int i=0;i<currentGameRoom.getClientIdModel().size();i++)
+                        //本地玩家的下标
+                        int myPlayerIndex=Integer.parseInt(realMessage.split(Sign.SplitSign)[1]);
+                        Gson gson=new Gson();
+                        String pointsIndexStr=realMessage.split(Sign.SplitSign)[0];
+                        System.out.println(pointsIndexStr);
+                        Integer [] pointIndex=gson.fromJson(pointsIndexStr,Integer[].class);
+                        List<Player> players= Collections.synchronizedList(new LinkedList<>());
+                        for(int i=0;i<pointIndex.length;i++)
                         {
-                            currentGameRoom.putMessage(currentGameRoom.getClientIdModel().get(i)+"\n");
+                            players.add(createPlayer(i,entrance[pointIndex[i]],currentGameRoom.getClientIdModel().get(i)));
                         }
+                        new MultiPlayerModel(players.get(myPlayerIndex),players);
+                        condition.await();          //业务线程睡眠，等待游戏结束后被唤醒
+
                     }
                     //TODO:客户端线程
                 }
@@ -747,9 +775,46 @@ public class GameHall
         ps.println(Sign.ClientLeaveRoom);
         currentGameRoom.setVisible(false);
         System.out.println(currentGameRoom==null);
-        if(currentGameRoom!=null&&!currentGameRoom.getId().equals(currentClient.getId()))
+        if(currentGameRoom!=null && !currentGameRoom.getId().equals(currentClient.getId()))
         {
             currentGameRoom=null;
+        }
+    }
+
+    /**
+     * 创建玩家
+     * @param id：玩家对应链表中的下标
+     * @param startPoint：玩家出生位置
+     * @return
+     */
+    private Player createPlayer(int id,Point startPoint,String name)
+    {
+        Player player=null;
+        try {
+            Rotate rotate = new Rotate();
+             player = new Player(id,name);
+            int size = 2 * (player.getRadius());
+            player.setSize(size, size);
+            InputStream is = startGame.class.getResourceAsStream("/images/header_b.png");
+            BufferedImage bufferedImage = ImageIO.read(is);
+            ImageIcon icon = new ImageIcon();
+            icon.setImage(bufferedImage);
+            icon.setImage(icon.getImage().getScaledInstance(size, size, Image.SCALE_DEFAULT));
+            player.setIcon(icon);
+            player.setLocation(400, 300);
+            player.peekWeapon(new M4A1(), 10000);
+            player.peekWeapon(new AWM(), 100);
+            player.peekWeapon(new Mine(),10);
+            player.peekWeapon(new Grenade(),10);
+            player.setLocation(startPoint);
+        }
+        catch (IOException ioe)
+        {
+            ioe.printStackTrace();
+        }
+        finally
+        {
+            return player;
         }
     }
 

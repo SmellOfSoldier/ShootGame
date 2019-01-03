@@ -302,8 +302,15 @@ class ServerClientThread extends Thread {
 
                             if(room.getMaster().equals(client))//如果发送开始游戏命令的玩家是房主
                             {
+                                String roomId=client.getRoomID();
+                                int playerNum=0;
+                                for(ServerGameRoom serverGameRoom:CreatServer.allGameRoom)
+                                {
+                                    if(serverGameRoom.getId().equals(roomId));
+                                    playerNum=serverGameRoom.getAllClients().size();
+                                }
                                 //生成初始化出生地址的数组
-                                int[] randomEntrance=Info.randomArray(0,4,4);
+                                Integer[] randomEntrance=Info.randomArray(0,4,playerNum);
                                 int i=0;
                                 String randomStr=gson.toJson(randomEntrance);
                                 for (Client c : room.getAllClients())//开始游戏并告知房间内其他所有人
@@ -362,6 +369,7 @@ class ServerClientThread extends Thread {
                             }
                         }
                     }
+
                 /**
                  * 玩家死亡消息
                  */

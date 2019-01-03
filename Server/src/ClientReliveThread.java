@@ -20,7 +20,7 @@ public class ClientReliveThread extends Thread
         try {
             sleep(3000);
              //生成初始化出生地址的数组
-            int[] randomEntrance=Info.randomArray(0,4,1);
+            Integer[] randomEntrance=Info.randomArray(0,4,1);
             int i=randomEntrance[0];
             /**
              * 给所有房间内的玩家发送玩家编号为clientnum重新复活在i位置

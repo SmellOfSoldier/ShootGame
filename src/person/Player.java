@@ -19,7 +19,7 @@ public class Player extends Person implements Serializable
     private int rSpeed=0;                           //人物每次右边方向移动的像素
     private int uSpeed=0;                           //人物每次上边方向移动的像素
     private int dSpeed=0;                           //人物每次下边方向移动的像素
-    public Player(String id,String name)
+    public Player(int id,String name)
     {
         super(id,name,maxHealthPoint,10,20);
     }

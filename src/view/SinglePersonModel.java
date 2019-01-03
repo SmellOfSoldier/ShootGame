@@ -473,22 +473,17 @@ public class SinglePersonModel extends JFrame
             //玩家射击
             this.addMouseListener(new MouseAdapter()
             {
-                @Override
-                public void mouseClicked(MouseEvent mouseEvent)        //非枪类武器攻击
+                public void mousePressed(MouseEvent mouseEvent)         //玩家攻击
                 {
                     Weapon weapon=player.getUsingWeapon();
-                    Point startPoint=getCentralPoint(player.getLocation());
+                    Point startPoint = getCentralPoint(player.getLocation());
+                    //如果是非枪类武器攻击
                     if(!(weapon instanceof Gun))
                     {
                         attack(startPoint, mousePoint, player);
                     }
-
-                }
-                public void mousePressed(MouseEvent mouseEvent)         //枪类武器攻击
-                {
-                    Weapon weapon=player.getUsingWeapon();
-                    Point startPoint = getCentralPoint(player.getLocation());
-                    if(weapon instanceof Gun)
+                    //如果是枪类武器攻击
+                    else if(weapon instanceof Gun)
                     {
                         int fireRate = ((Gun) weapon).getFireRate();
                         attack(startPoint, mousePoint, player);
@@ -1007,7 +1002,7 @@ public class SinglePersonModel extends JFrame
     {
         try {
             Rotate rotate = new Rotate();
-            player = new Player("1", "DJF");
+            player = new Player(1, "DJF");
             int size = 2 * (player.getRadius());
             player.setSize(size, size);
             InputStream is = startGame.class.getResourceAsStream("/images/header_b.png");
@@ -1020,12 +1015,11 @@ public class SinglePersonModel extends JFrame
             gameArea.add(player);
             player.peekWeapon(new M4A1(), 10000);
             player.peekWeapon(new AWM(), 100);
-            player.peekWeapon(new Mine(),5);
-            player.peekWeapon(new Grenade(),5);
+            player.peekWeapon(new Mine(),10);
+            player.peekWeapon(new Grenade(),10);
             player.changeWeapon(1,gameArea);
             personList.add(player);
             healthLevel.setValue(player.getHealthPoint());
-
         }
         catch (IOException ioe)
         {
@@ -1064,7 +1058,7 @@ public class SinglePersonModel extends JFrame
         //创建精英战士
         for(int i=0;i<5;i++)
         {
-            EliteSoldier eliteSoldier=new EliteSoldier(personList.size()+"");
+            EliteSoldier eliteSoldier=new EliteSoldier(personList.size());
             eliteSoldier.setLocation(entrance[random.nextInt(entrance.length)]);
             Point endPoint=player.getLocation();        //获取玩家坐标作为寻路终点
             Point startPoint=eliteSoldier.getLocation();    //AI当前坐标为寻路起点
@@ -1075,7 +1069,7 @@ public class SinglePersonModel extends JFrame
         }
         for(int i=0;i<2;i++)
         {
-            Hider hider=new Hider(personList.size()+"");
+            Hider hider=new Hider(personList.size());
             hider.setLocation(entrance[random.nextInt(entrance.length)]);
             Point endPoint=player.getLocation();        //获取玩家坐标作为寻路终点
             Point startPoint=hider.getLocation();    //AI当前坐标为寻路起点

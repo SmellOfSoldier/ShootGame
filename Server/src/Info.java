@@ -76,7 +76,7 @@ class Info {
      * @param n  随机数个数
      * @return int[] 随机数结果集
      */
-    public static int[] randomArray(int min,int max,int n){
+    public static Integer[] randomArray(int min,int max,int n){
         int len = max-min+1;
 
         if(max < min || n > len){
@@ -89,7 +89,7 @@ class Info {
             source[i-min] = i;
         }
 
-        int[] result = new int[n];
+        Integer[] result = new Integer[n];
         Random rd = new Random();
         int index = 0;
         for (int i = 0; i < result.length; i++) {
