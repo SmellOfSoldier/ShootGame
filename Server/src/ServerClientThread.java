@@ -328,6 +328,49 @@ class ServerClientThread extends Thread {
                  * 下面为游戏内服务的命令
                  */
                     /**
+                     * 如果收到玩家移动的消息
+                     */
+                    else if(client.isPlaying()&&line.startsWith(Sign.PlayerMove))
+                    {
+                        //直接获取玩家移动的消息
+                        realMessage=line;
+                        for(ServerGameRoom s:CreatServer.allGameRoom)
+                        {
+                            if(s.getAllClients().contains(client))
+                            {
+                                for(Client c:s.getAllClients())
+                                {
+                                    //直接转发给房间内所有的在线玩家
+                                    PrintStream sendstream=CreatServer.clientPrintStreamMap.get(client);
+                                    sendstream.println(realMessage);
+
+                                }
+                            }
+                        }
+
+                    }
+                    /**
+                     * 如果收到玩家停止移动的消息
+                     */
+                    else if(client.isPlaying()&&line.startsWith(Sign.PlayerStopMove))
+                    {
+                        //直接获取玩家停止移动的消息
+                        realMessage=line;
+                        for(ServerGameRoom s:CreatServer.allGameRoom)
+                        {
+                            if(s.getAllClients().contains(client))
+                            {
+                                for(Client c:s.getAllClients())
+                                {
+                                    //直接转发给房间内所有的在线玩家
+                                    PrintStream sendstream=CreatServer.clientPrintStreamMap.get(client);
+                                    sendstream.println(realMessage);
+
+                                }
+                            }
+                        }
+                    }
+                    /**
                      * 游戏内地雷爆炸的消息
                      */
                     else if (client.isPlaying() && line.startsWith(Sign.MineBoom))
