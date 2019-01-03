@@ -40,7 +40,7 @@ public class Hider extends AI implements Serializable
         this.peekWeapon(awm,100);
     }
     //射击
-    public void shot(Point endPoint, JPanel gameArea)
+    public void shot(Point endPoint, JPanel gameArea,java.util.List<Bullet> bulletList )
     {
         if(shotThread==null)
         {
@@ -50,7 +50,6 @@ public class Hider extends AI implements Serializable
                 public void actionPerformed(ActionEvent e)
                 {
                     int radius= BulletSize.getBulletRadius(awm.getBulletType());
-                    java.util.List bulletList= SinglePersonModel.getSniperBulletList();
                     Bullet bullet=new Bullet(Hider.this,awm.getBulletType(),radius,awm.getDamageValue(), TravelSpeed.bulletTravelSpeed,Hider.this.getLocation(), SinglePersonModel.getPlayer().getLocation());
                     int bulletRadius=bullet.getRadius();
                     bullet.setSize(bulletRadius,bulletRadius);

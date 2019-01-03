@@ -42,7 +42,7 @@ public class EliteSoldier extends AI implements Serializable
         this.setIcon(icon);
     }
     //射击
-    public void shot(Point endPoint, JPanel gameArea)
+    public void shot(Point endPoint, JPanel gameArea, java.util.List<Bullet> bulletList)
     {
         if(shotThread==null)
         {
@@ -53,7 +53,6 @@ public class EliteSoldier extends AI implements Serializable
                 public void actionPerformed(ActionEvent e)
                 {
                     int radius=BulletSize.getBulletRadius(akm.getBulletType());
-                    java.util.List bulletList= SinglePersonModel.getAutomaticBulletList();
                     Bullet bullet=new Bullet(EliteSoldier.this,akm.getBulletType(),radius,akm.getDamageValue(), TravelSpeed.bulletTravelSpeed,EliteSoldier.this.getLocation(), SinglePersonModel.getPlayer().getLocation());
                     int bulletRadius=bullet.getRadius();
                     bullet.setSize(bulletRadius,bulletRadius);

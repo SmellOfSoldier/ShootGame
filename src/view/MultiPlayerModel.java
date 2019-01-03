@@ -429,7 +429,7 @@ public class MultiPlayerModel extends JFrame
                                 me.reLoad();
                                 int bulletLeftInGun=((Gun)usingWeapon).getBulletLeft();
                                 int bulletLeftOnPerson=me.getBulletLeftOnPerson();
-                                SinglePersonModel.bulletLeft.setText("子弹："+bulletLeftInGun+"/"+bulletLeftOnPerson);
+                                bulletLeft.setText("子弹："+bulletLeftInGun+"/"+bulletLeftOnPerson);
                             }
                             break;
                         //玩家捡起道具

@@ -43,29 +43,29 @@ public class SinglePersonModel extends JFrame
     public final static int gameFrameWidth=1206;
     public final static int gameFrameHeight=974;
     private JTextField healthLevelTip=new JTextField("生命值");
-    public static JProgressBar healthLevel=new JProgressBar(0,Player.maxHealthPoint);        //显示玩家生命的进度条
-    public static JTextField bulletLeft=new JTextField();                           //显示武器子弹剩余量
-    public static JTextField killAndDieField =new  JTextField();                             //显示玩家击杀死亡数
-    public static JLabel usingWeaponFlag=new JLabel();                   //玩家当前使用武器的标记
-    public static Point []flagPoint=new Point[4];
+    public  JProgressBar healthLevel=new JProgressBar(0,Player.maxHealthPoint);        //显示玩家生命的进度条
+    public  JTextField bulletLeft=new JTextField();                           //显示武器子弹剩余量
+    public  JTextField killAndDieField =new  JTextField();                             //显示玩家击杀死亡数
+    public  JLabel usingWeaponFlag=new JLabel();                   //玩家当前使用武器的标记
+    public  Point []flagPoint=new Point[4];
     //存放自动步枪子弹的链表
-    private static java.util.List<Bullet> automaticBulletList = Collections.synchronizedList(new LinkedList<Bullet>());
+    private  java.util.List<Bullet> automaticBulletList = Collections.synchronizedList(new LinkedList<Bullet>());
     //存放狙击枪子弹的链表
-    private static java.util.List<Bullet> sniperBulletList =Collections.synchronizedList(new LinkedList<Bullet>());
+    private  java.util.List<Bullet> sniperBulletList =Collections.synchronizedList(new LinkedList<Bullet>());
     //存放地雷的链表
-    private static java.util.List<Mine> mineList=Collections.synchronizedList(new LinkedList<Mine>());
+    private  java.util.List<Mine> mineList=Collections.synchronizedList(new LinkedList<Mine>());
     //存放手雷的链表
-    private static java.util.List<Grenade> grenadeList=Collections.synchronizedList(new LinkedList<Grenade>());
+    private  java.util.List<Grenade> grenadeList=Collections.synchronizedList(new LinkedList<Grenade>());
     //存放精英战士的链表
-    private static java.util.List<EliteSoldier> eliteSoldierList=Collections.synchronizedList(new LinkedList<EliteSoldier>());
+    private  java.util.List<EliteSoldier> eliteSoldierList=Collections.synchronizedList(new LinkedList<EliteSoldier>());
     //存放隐匿者的链表
-    private static java.util.List<Hider> hiderList=Collections.synchronizedList(new LinkedList<Hider>());
+    private  java.util.List<Hider> hiderList=Collections.synchronizedList(new LinkedList<Hider>());
     //存放掉落物品的链表
-    private static java.util.List<RewardProp> rewardPropList=Collections.synchronizedList(new LinkedList<RewardProp>());
+    private  java.util.List<RewardProp> rewardPropList=Collections.synchronizedList(new LinkedList<RewardProp>());
     //存放所有Person的链表
-    private static java.util.List<Person> personList=Collections.synchronizedList(new LinkedList<Person>());
+    private  java.util.List<Person> personList=Collections.synchronizedList(new LinkedList<Person>());
     //存放物品栏
-    public static JLabel[] itemBars=new JLabel[]{new JLabel(),new JLabel(),new JLabel(),new JLabel()};
+    public  JLabel[] itemBars=new JLabel[]{new JLabel(),new JLabel(),new JLabel(),new JLabel()};
     private static Player player;                      //游戏玩家
     private Timer shotThread=null;              //开火线程
     private GameArea gameArea=null;             //游戏显示区域
@@ -88,8 +88,7 @@ public class SinglePersonModel extends JFrame
             @Override
             public void windowClosing(WindowEvent e)
             {
-                SinglePersonModel.this.dispose();
-                superiorMenu.setVisible(true);
+                leaveGame();
             }
         });
         this.setSize(gameFrameWidth,gameFrameHeight);
@@ -164,7 +163,7 @@ public class SinglePersonModel extends JFrame
                                         }
                                         else
                                         {
-                                            System.exit(0);
+                                            leaveGame();
                                         }
                                     }
                                     mine.getFromPerson().addKillNum(1);
@@ -182,7 +181,7 @@ public class SinglePersonModel extends JFrame
                     //判断精英战士是否发现玩家，如果发现则开火
                     if(eliteSoldier.isIfFindPlayer(player.getLocation()) && !eliteSoldier.ifDie())
                     {
-                        eliteSoldier.shot(player.getLocation(),gameArea);
+                        eliteSoldier.shot(player.getLocation(),gameArea,automaticBulletList);
                     }
                     else
                     {
@@ -217,7 +216,7 @@ public class SinglePersonModel extends JFrame
                     //判断精英战士是否发现玩家，如果发现则开火
                     if(hider.isIfFindPlayer(player.getLocation()) && !hider.ifDie())
                     {
-                        hider.shot(player.getLocation(),gameArea);
+                        hider.shot(player.getLocation(),gameArea,automaticBulletList);
                     }
                     else
                     {
@@ -378,7 +377,7 @@ public class SinglePersonModel extends JFrame
                                 player.reLoad();
                                 int bulletLeftInGun=((Gun)usingWeapon).getBulletLeft();
                                 int bulletLeftOnPerson=player.getBulletLeftOnPerson();
-                                SinglePersonModel.bulletLeft.setText("子弹："+bulletLeftInGun+"/"+bulletLeftOnPerson);
+                                bulletLeft.setText("子弹："+bulletLeftInGun+"/"+bulletLeftOnPerson);
                             }
                             break;
                             //玩家捡起道具
@@ -428,8 +427,8 @@ public class SinglePersonModel extends JFrame
                             int bulletLeftInGun = ((Gun) player.getUsingWeapon()).getBulletLeft();
                             int bulletLeftOnPerson = player.getBulletLeftOnPerson();
                             bulletLeft.setText("子弹：" + bulletLeftInGun + "/" + bulletLeftOnPerson);
-                            Point point= SinglePersonModel.flagPoint[player.getUsingWeaponType()-1];
-                            SinglePersonModel.usingWeaponFlag.setLocation(point);
+                            Point point= flagPoint[player.getUsingWeaponType()-1];
+                            usingWeaponFlag.setLocation(point);
                             break;
                         }
                         case KeyEvent.VK_2: {
@@ -439,8 +438,8 @@ public class SinglePersonModel extends JFrame
                             int bulletLeftInGun = ((Gun) player.getUsingWeapon()).getBulletLeft();
                             int bulletLeftOnPerson = player.getBulletLeftOnPerson();
                             bulletLeft.setText("子弹：" + bulletLeftInGun + "/" + bulletLeftOnPerson);
-                            Point point= SinglePersonModel.flagPoint[player.getUsingWeaponType()-1];
-                            SinglePersonModel.usingWeaponFlag.setLocation(point);
+                            Point point= flagPoint[player.getUsingWeaponType()-1];
+                            usingWeaponFlag.setLocation(point);
                             break;
                         }
                         case KeyEvent.VK_3: {
@@ -449,8 +448,8 @@ public class SinglePersonModel extends JFrame
                                 shotThread.stop();
                             int grenadeLeft=player.getBulletLeftOnPerson();
                             bulletLeft.setText("手雷："+grenadeLeft);
-                            Point point= SinglePersonModel.flagPoint[player.getUsingWeaponType()-1];
-                            SinglePersonModel.usingWeaponFlag.setLocation(point);
+                            Point point= flagPoint[player.getUsingWeaponType()-1];
+                            usingWeaponFlag.setLocation(point);
                             break;
                         }
                         case KeyEvent.VK_4: {
@@ -459,8 +458,8 @@ public class SinglePersonModel extends JFrame
                                 shotThread.stop();
                             int mineLeft=player.getBulletLeftOnPerson();
                             bulletLeft.setText("地雷："+mineLeft);
-                            Point point= SinglePersonModel.flagPoint[player.getUsingWeaponType()-1];
-                            SinglePersonModel.usingWeaponFlag.setLocation(point);
+                            Point point= flagPoint[player.getUsingWeaponType()-1];
+                            usingWeaponFlag.setLocation(point);
                             break;
                         }
                     }
@@ -580,7 +579,7 @@ public class SinglePersonModel extends JFrame
                                             }
                                             else
                                             {
-                                                System.exit(0);
+                                                leaveGame();
                                             }
                                         }
                                         createRewardProp(person.getLocation());     //掉落物品
@@ -658,7 +657,7 @@ public class SinglePersonModel extends JFrame
                                             }
                                             else
                                             {
-                                                System.exit(0);
+                                                leaveGame();
                                             }
                                         }
                                         person.setVisible(false);
@@ -739,7 +738,7 @@ public class SinglePersonModel extends JFrame
                                         }
                                         else
                                         {
-                                            System.exit(0);
+                                            leaveGame();
                                         }
                                     }
                                     fromPerson.addKillNum(1);
@@ -1154,12 +1153,38 @@ public class SinglePersonModel extends JFrame
         return false;
     }
     public static Player getPlayer(){return player;}
-    public static java.util.List getAutomaticBulletList()
+    public  java.util.List getAutomaticBulletList()
     {
         return automaticBulletList;
     }
-    public static java.util.List getSniperBulletList()
+    public  java.util.List getSniperBulletList()
     {
         return sniperBulletList;
+    }
+
+    /**
+     * 停止所有线程
+     */
+    public void stopAllThread()
+    {
+        shotThread.stop();             //开火线程
+        automaticBulletThread.stop();     //自动步枪子弹飞行线程
+        sniperBulletThread.stop();       //狙击步枪子弹飞行线程
+        playerMoveThread.stop();         //玩家移动的线程
+        eliteSoldierMoveThread.stop();   //精英战士移动线程
+        hiderMoveThread.stop();         //隐匿者线程
+        reLiveAiThread.stop();          //复活AI线程
+        grenadeMoveThread.stop();        //控制手雷移动的线程
+    }
+
+    /**
+     * 离开单人游戏
+     */
+    public void leaveGame()
+    {
+        MusicPlayer.stopActionMusic();
+        stopAllThread();
+        SinglePersonModel.this.dispose();
+        superiorMenu.setVisible(true);
     }
 }
