@@ -98,7 +98,6 @@ public class GameHall
                 ClientPort.sendStream.flush();
                 new LoginFrame(gameHallJFrame);
                 gameHallJFrame.dispose();
-
             }
         });
         //加入房间事件
@@ -582,7 +581,7 @@ public class GameHall
             String line=null;//接收到的初始字符串（信息）
             String command = null;//当前获取的信息需要执行的命令
             String realMessage = null;//去除头部命令的信息
-            while (!this.isInterrupted())
+            sign:while (!this.isInterrupted())
             {
                 try {
                     line=getstream.readLine();
@@ -628,6 +627,11 @@ public class GameHall
                         }
                         clientIdInRoom.removeElement(clientId);
                         System.out.println(clientIdInRoom.size());
+                    }
+                    //如果用户注销，并且收到服务端关闭业务线程的命令
+                    else if(line.startsWith(Sign.CloseLocalThread))
+                    {
+                        break sign;
                     }
                     //如果房间被解散（房主离开房间）
                     else if(line.startsWith(Sign.RoomDismiss))
@@ -757,6 +761,8 @@ public class GameHall
                     ex.printStackTrace();
                 }
             }
+            System.out.println("线程关闭");
+            lock.unlock();
         }
         /**
          *  停止该连接线程
@@ -782,7 +788,6 @@ public class GameHall
             currentGameRoom=null;
         }
     }
-
     /**
      * 创建玩家
      * @param id：玩家对应链表中的下标
@@ -791,10 +796,11 @@ public class GameHall
      */
     private Player createPlayer(int id,Point startPoint,String name)
     {
-        Player player=null;
-        try {
+        Player player = null;
+        try
+        {
             Rotate rotate = new Rotate();
-             player = new Player(id,name);
+            player = new Player(id, name);
             int size = 2 * (player.getRadius());
             player.setSize(size, size);
             InputStream is = startGame.class.getResourceAsStream("/images/header_b.png");
@@ -805,8 +811,8 @@ public class GameHall
             player.setIcon(icon);
             player.setLocation(400, 300);
             player.peekWeapon(new AWM(), 100);
-            player.peekWeapon(new Mine(),10);
-            player.peekWeapon(new Grenade(),10);
+            player.peekWeapon(new Mine(), 10);
+            player.peekWeapon(new Grenade(), 10);
             player.peekWeapon(new M4A1(), 10000);
             player.setLocation(startPoint);
         }
@@ -819,9 +825,6 @@ public class GameHall
             return player;
         }
     }
-
-
-
     /**
      * 用于依据标志符号切割掉客户端发送来的字符串开始的命令
      * @param line 每次客户端发送过来的字符串

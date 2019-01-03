@@ -1167,7 +1167,8 @@ public class SinglePersonModel extends JFrame
      */
     public void stopAllThread()
     {
-        shotThread.stop();             //开火线程
+        if(shotThread!=null&&shotThread.isRunning())
+            shotThread.stop();             //开火线程
         automaticBulletThread.stop();     //自动步枪子弹飞行线程
         sniperBulletThread.stop();       //狙击步枪子弹飞行线程
         playerMoveThread.stop();         //玩家移动的线程

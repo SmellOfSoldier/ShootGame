@@ -54,7 +54,8 @@ class ClientThread extends Thread {
         //线程不被interrupted则持续接收玩家发来的信息
         Gson gson=new Gson();
         try {
-        while (!this.isInterrupted() &&(line=getStream.readLine())!=null) {
+        sign:while (!this.isInterrupted() &&(line=getStream.readLine())!=null)
+        {
             if (isConnected) {
 
                     //TODO:服务线程run待完成
@@ -150,6 +151,7 @@ class ClientThread extends Thread {
                         GuiShowMes.append("服务器消息：玩家："+client.getId()+" 成功创建名字为 "+client.getId()+" 的房间。\n");//gui界面显示成功创建房间信息
                         sendStream.println(Sign.PermissionCreateRoom +roomStr);
                         int i=0;
+                        System.out.println("创建房间前map的大小"+StartServer.clientPrintStreamMap.size());
                         for (PrintStream sendstream : StartServer.clientPrintStreamMap.values()) {
                             System.out.println(i++);
                             sendstream.println(Sign.NewRoomCreate + roomStr);
@@ -251,7 +253,9 @@ class ClientThread extends Thread {
                     else if (isLogin && line.startsWith(Sign.Logout))
                     {
                         System.out.println(client.getId()+"注销中，在线玩家列表大小为："+ StartServer.onlineClients.size());
+                        sendStream.println(Sign.CloseLocalThread);
                         StartServer.clientPrintStreamMap.remove(client);
+                        System.out.println("注销后map的大小"+StartServer.clientPrintStreamMap.size());
                         StartServer.onlineClients.remove(client);
                         System.out.println(client.getId()+"注销完成，在线玩家列表大小为："+ StartServer.onlineClients.size());
                         for(PrintStream sendStream: StartServer.clientPrintStreamMap.values())
@@ -264,6 +268,7 @@ class ClientThread extends Thread {
 
                         //设置当前玩家所在房间为空
                         currentGameRoom=null;
+                        break sign;
                     }
                     /**
                      * 收到聊天信息命令
@@ -291,8 +296,6 @@ class ClientThread extends Thread {
                      */
                     else if(line.startsWith(Sign.StartGame))
                     {
-
-
                             if(currentGameRoom.getMaster().equals(client))//如果发送开始游戏命令的玩家是房主
                             {
                                 String roomId=client.getRoomID();
@@ -309,7 +312,6 @@ class ClientThread extends Thread {
                                 for (Client c : currentGameRoom.getAllClients())//开始游戏并告知房间内其他所有人
                                 {
                                     StartServer.clientPrintStreamMap.get(c).println(Sign.GameStart+randomStr+Sign.SplitSign+(i++));//为每位在房间内的玩家发送初始化的出生坐标
-
                                 }
                                 client.setPlaying(true);//设置当前玩家为正在对战状态
                                 GuiShowMes.append("服务器消息：房间："+currentGameRoom.getId()+" 开始游戏。\n");
@@ -325,17 +327,12 @@ class ClientThread extends Thread {
                     {
                         //直接获取玩家移动的消息
                         realMessage=line;
-
-
-                                for(Client c:currentGameRoom.getAllClients())
-                                {
-                                    //直接转发给房间内所有的在线玩家
-                                    PrintStream sendstream= StartServer.clientPrintStreamMap.get(client);
-                                    sendstream.println(realMessage);
-
-                                }
-
-
+                        for(Client c:currentGameRoom.getAllClients())
+                        {
+                            //直接转发给房间内所有的在线玩家
+                            PrintStream sendstream= StartServer.clientPrintStreamMap.get(client);
+                            sendstream.println(realMessage);
+                        }
                     }
                     /**
                      * 如果收到玩家停止移动的消息
@@ -344,17 +341,13 @@ class ClientThread extends Thread {
                     {
                         //直接获取玩家停止移动的消息
                         realMessage=line;
-
-
-                                for(Client c:currentGameRoom.getAllClients())
-                                {
-                                    //直接转发给房间内所有的在线玩家
-                                    PrintStream sendstream= StartServer.clientPrintStreamMap.get(client);
-                                    sendstream.println(realMessage);
-
-                                }
-
+                        for(Client c:currentGameRoom.getAllClients())
+                        {
+                            //直接转发给房间内所有的在线玩家
+                            PrintStream sendstream= StartServer.clientPrintStreamMap.get(client);
+                            sendstream.println(realMessage);
                         }
+                    }
                     /**
                      * 游戏内地雷爆炸的消息
                      */
