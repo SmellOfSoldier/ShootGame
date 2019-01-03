@@ -775,10 +775,10 @@ public class GameHall
         PrintStream ps=ClientPort.sendStream;
         //将人物的id与将要离开的房间的id发送给服务端
         ps.println(Sign.ClientLeaveRoom);
-        currentGameRoom.setVisible(false);
         System.out.println(currentGameRoom==null);
         if(currentGameRoom!=null && !currentGameRoom.getId().equals(currentClient.getId()))
         {
+            currentGameRoom.setVisible(false);
             currentGameRoom=null;
         }
     }
@@ -804,10 +804,10 @@ public class GameHall
             icon.setImage(icon.getImage().getScaledInstance(size, size, Image.SCALE_DEFAULT));
             player.setIcon(icon);
             player.setLocation(400, 300);
-            player.peekWeapon(new M4A1(), 10000);
             player.peekWeapon(new AWM(), 100);
             player.peekWeapon(new Mine(),10);
             player.peekWeapon(new Grenade(),10);
+            player.peekWeapon(new M4A1(), 10000);
             player.setLocation(startPoint);
         }
         catch (IOException ioe)

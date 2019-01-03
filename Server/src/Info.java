@@ -1,5 +1,4 @@
 import java.io.*;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
@@ -15,7 +14,7 @@ class Info {
      */
     public static  void addClient(Client player)
     {
-        CreatServer.allPlayer.add(player);
+        StartServer.allPlayer.add(player);
     }
     /**
      * 每次服务器停止运行时将全部用户数据保存到文件

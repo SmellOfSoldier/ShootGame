@@ -76,6 +76,7 @@ public class RegisterFrame {
                             JOptionPane.showMessageDialog(registerJFrame, "注册成功", "提示", JOptionPane.INFORMATION_MESSAGE);//弹出提示框
                             //注册成功并开始清空所有输入格
                             clearAllBlanks();
+                            registerJFrame.dispose();
                             break;
                         }
                         case Sign.IsRegistered: {

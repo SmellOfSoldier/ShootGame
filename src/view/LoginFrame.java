@@ -75,15 +75,11 @@ public class LoginFrame{
                 isConnected=true;
                 contentArea.append("请输入账号密码进行登陆。\r\n");
             }
-            /*else{
-                contentArea.append("服务器出现问题未响应连接请求，多人游戏不可使用。\r\n");
-                JOptionPane.showMessageDialog(loginJFrame, "服务器出现问题未响应连接请求，多人游戏不可使用。", "提示", JOptionPane.INFORMATION_MESSAGE);//弹出提示框
-            }*/
         } catch (IOException e) {
+            //如果没有连接上服务器则采取如下操作
             JOptionPane.showMessageDialog(loginJFrame, "服务器出现问题未响应连接请求，多人游戏不可使用。", "提示", JOptionPane.INFORMATION_MESSAGE);//弹出提示框
             loginJFrame.dispose();//使登陆界面消失
             if(superiorMenu!=null) superiorMenu.setVisible(true);//使游戏选择菜单出现
-
         }
         /**
          * 设置关闭连接的消息
@@ -95,7 +91,6 @@ public class LoginFrame{
                     loginJFrame.setVisible(false);
                     //发送Disconnect
                     ClientPort.sendStream.println(Sign.Disconnect);
-
                     isConnected=false;//连接状态置为false
                 }
                 try {
@@ -104,8 +99,8 @@ public class LoginFrame{
                 } catch (InterruptedException e1) {
                     e1.printStackTrace();
                 }
-
-                System.exit(0);// 退出程序
+                loginJFrame.dispose();//使登陆界面消失
+                if(superiorMenu!=null) superiorMenu.setVisible(true);//使游戏选择菜单出现
             }
         });
         /**

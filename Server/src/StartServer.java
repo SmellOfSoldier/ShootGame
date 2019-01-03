@@ -19,7 +19,7 @@ import java.util.List;
  * 用于生成服务器为客户端提供联机服务
  * BY:Lijie
  */
-public class CreatServer {
+public class StartServer {
     private JFrame frame;
     private JTextArea GuiShowMes;
     private  JTextField txt_mes;
@@ -35,7 +35,7 @@ public class CreatServer {
     private  JSplitPane centerSplit;
     private  JList users;
     private ServerSocket serverSocket;//ServerSocket线程
-    private ServerThread serverThread;
+    private ClientThreadCreator serverThread;
     public static List<ServerGameRoom> allGameRoom;//所有房间
     public static List<Client> onlineClients;//储存所有在线玩家
     public static  List<Client> allPlayer;//服务器开启时从文件读取到此链表中保存
@@ -43,13 +43,13 @@ public class CreatServer {
     public static  DefaultListModel listModel;//GUI玩家列表
     private boolean isStart=false;
     public static void main(String[] args) {
-        new CreatServer();
+        new StartServer();
     }
 
     /**
      * 服务端GUI界面构造区域
      */
-    CreatServer()
+    StartServer()
     {
         frame=new JFrame("游戏服务器");
         frame.add(new ServerJPanel());
@@ -123,7 +123,7 @@ public class CreatServer {
             allGameRoom=Collections.synchronizedList(new LinkedList<>());//创建房间列表
             onlineClients=Collections.synchronizedList(new LinkedList<>());//创建在线玩家列表
             serverSocket=new ServerSocket(port);//创建服务Socket
-            serverThread=new ServerThread(serverSocket,30, GuiShowMes);//创建服务器线程
+            serverThread=new ClientThreadCreator(serverSocket,30, GuiShowMes);//创建服务器线程
             serverThread.start();//服务器线程开启
             Info.readAllClientInfo(allPlayer);//从文件读取所有已经注册玩家
             GuiShowMes.append("服务器消息：成功读取已注册玩家数据到内存。\n");
@@ -147,12 +147,12 @@ public class CreatServer {
 
         System.out.println("服务端线程成功关闭。");//测试使用
         GuiShowMes.append("服务器消息：服务器已经成功关闭"+"\n");
-        for(PrintStream sendStream:CreatServer.clientPrintStreamMap.values())
+        for(PrintStream sendStream: StartServer.clientPrintStreamMap.values())
         {
             sendStream.println(Sign.ServerExit);//返回服务器关闭消息
             //TODO:转发给所有玩家服务端被关闭
         }
-        for(Client client:CreatServer.allPlayer)
+        for(Client client: StartServer.allPlayer)
         {
             client.setOline(false);
             client.setPlaying(false);
@@ -171,17 +171,6 @@ public class CreatServer {
         }
     }
 
-    /*/**
-     * 加入房间函数
-     */
-    /*public boolean EnterGameRoom(ServerGameRoom room, utils.Client client){
-        int flage=-1;
-        for(int i=0;i<allGameRoom.size();i++){
-            if(allGameRoom.get(i).equals(room)) flage=i;
-        }
-
-    }*/
-
     /**
      * ServerJPanel统一管理服务器界面布局
      */
@@ -192,6 +181,7 @@ public class CreatServer {
         private  void initial(){
             GuiShowMes = new JTextArea();
             //设置为不可输入
+
             GuiShowMes.setEditable(false);
             txt_max=new JTextField("20");
             txt_mes=new JTextField();

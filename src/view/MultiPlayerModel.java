@@ -242,7 +242,7 @@ public class MultiPlayerModel extends JFrame
                     //如果收到玩家停止移动的消息
                     else if(line.startsWith(Sign.PlayerStopMove))
                     {
-                        realMessage=getRealMessage(line,Sign.PlayerMove);
+                        realMessage=getRealMessage(line,Sign.PlayerStopMove);
                         int index=Integer.parseInt(realMessage.split(Sign.SplitSign)[0]);
                         int dir=Integer.parseInt(realMessage.split(Sign.SplitSign)[1]);
                         Player player=playerList.get(index);

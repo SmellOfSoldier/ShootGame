@@ -53,9 +53,9 @@ public class check {
     public static boolean isRegistered(String id){
         //TODO:检查是否已经注册bylijie
         System.out.println("开始进行是否注册检查。");
-        for(int i = 0; i< CreatServer.allPlayer.size(); i++){
-            System.out.println("对比第"+i+"个"+id+" "+ CreatServer.allPlayer.get(i).getId());
-            if(id.equals(CreatServer.allPlayer.get(i).getId())) return true;
+        for(int i = 0; i< StartServer.allPlayer.size(); i++){
+            System.out.println("对比第"+i+"个"+id+" "+ StartServer.allPlayer.get(i).getId());
+            if(id.equals(StartServer.allPlayer.get(i).getId())) return true;
             else continue;
         }
         return false;
@@ -74,8 +74,8 @@ public class check {
         /**
          * 遍历数据查找到匹配ID位置
          */
-        for(int i = 0; i< CreatServer.allPlayer.size(); i++){
-            if(id.equals(CreatServer.allPlayer.get(i).getId())) {
+        for(int i = 0; i< StartServer.allPlayer.size(); i++){
+            if(id.equals(StartServer.allPlayer.get(i).getId())) {
                 position=i;
                 break;
             }
@@ -84,8 +84,8 @@ public class check {
          * 通过匹配ID位置比对密码
          */
         if(position!=-1){
-            System.out.println("对比第"+position+"个的密码"+id+" "+ CreatServer.allPlayer.get(position).getId());
-            if(CreatServer.allPlayer.get(position).passwordEquals(password)) {
+            System.out.println("对比第"+position+"个的密码"+id+" "+ StartServer.allPlayer.get(position).getId());
+            if(StartServer.allPlayer.get(position).passwordEquals(password)) {
                 System.out.println("密码正确");
                 return true;
             }

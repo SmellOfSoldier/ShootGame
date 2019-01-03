@@ -1,16 +1,13 @@
-import java.io.BufferedReader;
 import java.io.PrintStream;
-import java.net.Socket;
-import java.util.List;
 
 /**
  * 玩家复活延时线程
  */
-public class ClientReliveThread extends Thread
+public class PlayerReliveThread extends Thread
 {
     private ServerGameRoom serverGameRoom;
     private int clientnum;
-    public ClientReliveThread(ServerGameRoom serverGameRoom,int clientnum)
+    public PlayerReliveThread(ServerGameRoom serverGameRoom, int clientnum)
     {
         this.serverGameRoom=serverGameRoom;
         this.clientnum=clientnum;
@@ -27,7 +24,7 @@ public class ClientReliveThread extends Thread
              */
             for(Client c:serverGameRoom.getAllClients())
             {
-                PrintStream sendstream=CreatServer.clientPrintStreamMap.get(c);
+                PrintStream sendstream= StartServer.clientPrintStreamMap.get(c);
                 sendstream.println(Sign.OnePlayerRelive+clientnum+Sign.SplitSign+i);
             }
         } catch (InterruptedException e) {
