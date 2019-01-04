@@ -90,4 +90,8 @@ public class Hider extends AI implements Serializable
         }
         return false;
     }
+    public int hashCode()
+    {
+        return Integer.parseInt(id);
+    }
 }

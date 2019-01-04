@@ -933,7 +933,20 @@ public class SinglePersonModel extends JFrame
             if(!person.ifEmptyMine())
             {
                 MusicPlayer.playDiscontinueAttackMusic(weapon.getWeaponName());
-                stepMine(player.getLocation(), person);
+                Mine mine=new Mine();
+                mine.setFromPersonId(person.getId());
+                mine.setLocation(person.getLocation());
+                person.reduceMineNum(1);
+
+                gameArea.add(mine);
+                mineList.add(mine);
+
+                if(person.equals(player))
+                {
+                    int bulletLeftOnPerson = player.getBulletLeftOnPerson();
+                    bulletLeft.setText("地雷：" + bulletLeftOnPerson);
+                }
+                gameArea.repaint();
                 int bulletLeftOnPerson=player.getBulletLeftOnPerson();
                 bulletLeft.setText("地雷："+bulletLeftOnPerson);
             }
@@ -1075,21 +1088,6 @@ public class SinglePersonModel extends JFrame
             ioe.printStackTrace();
         }
     }
-    //安装地雷
-    private void stepMine(Point point,Person fromPerson)
-    {
-        fromPerson.reduceMineNum(1);
-        Mine mine=new Mine();
-        mine.setFromPersonId(fromPerson.getId());
-        mine.setLocation(point);
-        URL url= SinglePersonModel.class.getResource("/images/Weapon/BoomWeapon/Mine.png");
-        ImageIcon icon=new ImageIcon(url);
-        icon.setImage(icon.getImage().getScaledInstance(20,20,Image.SCALE_DEFAULT));
-        mine.setSize(20,20);
-        mine.setIcon(icon);
-        mineList.add(mine);
-        gameArea.add(mine);
-    }
 
     /**
      * 仍手雷
@@ -1104,10 +1102,11 @@ public class SinglePersonModel extends JFrame
     //创建AI
     private void createAI()
     {
+        int id=1;
         //创建精英战士
         for(int i=0;i<5;i++)
         {
-            EliteSoldier eliteSoldier=new EliteSoldier(personList.size()+1+"");
+            EliteSoldier eliteSoldier=new EliteSoldier((id++) +"");
             eliteSoldier.setLocation(entrance[random.nextInt(entrance.length)]);
             Point endPoint=player.getLocation();        //获取玩家坐标作为寻路终点
             Point startPoint=eliteSoldier.getLocation();    //AI当前坐标为寻路起点
@@ -1118,7 +1117,7 @@ public class SinglePersonModel extends JFrame
         }
         for(int i=0;i<2;i++)
         {
-            Hider hider=new Hider(personList.size()+"");
+            Hider hider=new Hider((id++) +"");
             hider.setLocation(entrance[random.nextInt(entrance.length)]);
             Point endPoint=player.getLocation();        //获取玩家坐标作为寻路终点
             Point startPoint=hider.getLocation();    //AI当前坐标为寻路起点

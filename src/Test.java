@@ -11,9 +11,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URL;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
-import java.util.Vector;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -51,22 +50,49 @@ public class Test
             jFrame.pack();
             jFrame.setVisible(true);
             t1.start();*/
-        Mine mine=new Mine();
-        Gson gson=new Gson();
-        String s=gson.toJson(mine);
-        System.out.println("ok");
-        Mine m=gson.fromJson(s,Mine.class);
+        Set<A> set=new HashSet<>();
+        A b1=new B("1",1);
+        A b2=new B("1",2);
+        set.add(b1);
+        set.add(b2);
+        for(A b:set)
+        {
+            System.out.println(b.value);
+        }
 
     }
 }
 
-class A {
+
+class A
+{
+    public int value;
+    public String id;
+    A(String id,int value)
+    {
+        this.id=id;
+        this.value=value;
+    }
+    public int hashCode()
+    {
+        return Integer.parseInt(id);
+    }
+    public boolean equals(Object obj)
+    {
+        A a=(A)obj;
+        return a.id.equals(this.id);
+    }
 }
 
 class B extends A
 {
-
+    B(String id,int value)
+    {
+        super(id,value);
+    }
 }
+
+
 class Thread1 extends Thread
 {
     Lock lock=new ReentrantLock();

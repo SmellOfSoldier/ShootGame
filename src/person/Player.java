@@ -68,4 +68,8 @@ public class Player extends Person implements Serializable
         MusicPlayer.playBeenHitMusic();
         super.reduceHealthPoint(hp);
     }
+    public int hashCode()
+    {
+        return Integer.parseInt(id);
+    }
 }

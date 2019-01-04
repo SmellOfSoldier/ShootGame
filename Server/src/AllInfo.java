@@ -55,6 +55,7 @@ class AllInfo {
                     ObjectInputStream readInfo=new ObjectInputStream(fils);
                     Client one;
                     while((one=(Client)readInfo.readObject())!=null){
+                        one.clear();
                         allPlayer.add(one);
                         }
                     } catch (ClassNotFoundException e) {

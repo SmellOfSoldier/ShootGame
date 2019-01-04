@@ -4,20 +4,20 @@ import Weapon.*;
 import bullet.*;
 import com.google.gson.Gson;
 import person.*;
+import person.Map;
 import reward.MedicalPackage;
 import reward.RewardProp;
 import reward.RewardType;
 import utils.MusicPlayer;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.Random;
+import java.util.*;
+import java.util.List;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
@@ -26,7 +26,7 @@ import java.util.concurrent.locks.Lock;
  */
 public class MultiPlayerModel extends JFrame
 {
-
+    private JTextField playerId=new JTextField();
     private static  int num=0;
     private JFrame superiorMenu;
     private static Gson gson=new Gson();
@@ -109,6 +109,8 @@ public class MultiPlayerModel extends JFrame
             {
                 while ((line = ClientPort.getStream.readLine()) != null)
                 {
+                    if(!line.startsWith(Sign.PlayerMove))
+                        System.out.println(line);
                     //System.out.println("游戏线程收到一个"+line+"命令");
                     //如果收到游戏结束的命令
                     if(line.startsWith(Sign.GameOver))
@@ -155,7 +157,8 @@ public class MultiPlayerModel extends JFrame
                                     if (playerPoint.distance(grenadePoint) < grenade.getDamageRadius()) {
                                         //向服务器发送该玩家死亡的消息
                                         ClientPort.sendStream.println(Sign.OnePlayerDie + player.getId());
-                                        if (player.equals(me)) {
+                                        if (player.equals(me))
+                                        {
                                             healthLevel.setValue(0);
                                         }
                                     }
@@ -176,48 +179,12 @@ public class MultiPlayerModel extends JFrame
                         gameArea.add(mine);
                         mineList.add(mine);
                     }
-                    //如果收到地雷爆炸的消息
-                    else if(line.startsWith(Sign.MineBoom))
-                    {
-                        String mineStr=getRealMessage(line,Sign.MineBoom);
-                        Mine mine=gson.fromJson(mineStr,Mine.class);
-                        if(mineList.contains(mine))
-                        {
-                            mineList.remove(mine);
-                            //地雷爆炸特效
-                            mine.boom(gameArea, mine.getLocation());
-                            //地雷的爆炸半径
-                            int damageRadius = mine.getDamageRadius();
-                            //位于地雷爆炸半径内的玩家将全部死亡
-                            for (Player player : playerList)
-                            {
-                                //如果玩家不是死亡状态
-                                if(!player.ifDie())
-                                {
-                                    //玩家的中心坐标
-                                    Point playerPoint = getCentralPoint(player.getLocation());
-                                    //地雷的爆炸中心坐标
-                                    Point minePoint = getCentralPoint(mine.getLocation());
-                                    //如果玩家中心坐标于手雷的中心坐标小于爆炸半径
-                                    if (playerPoint.distance(minePoint) < damageRadius)
-                                    {
-                                        Person fromPerson=playerList.get(Integer.parseInt(mine.getFromPersonId()));
-                                        fromPerson.addKillNum(1);
-                                        //向服务器发送该玩家死亡的消息
-                                        ClientPort.sendStream.println(Sign.OnePlayerDie + player.getId());
-                                        if (player.equals(me)) {
-                                            healthLevel.setValue(0);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
                     //如果收到玩家死亡的消息
                     else if(line.startsWith(Sign.OnePlayerDie))
                     {
                         int index=Integer.parseInt(getRealMessage(line,Sign.OnePlayerDie));
                         Player player=playerList.get(index);
+                        System.out.println("死亡人物的id为："+player.getId());
                         if(!player.ifDie())
                         {
                             player.setDie(true);
@@ -242,6 +209,7 @@ public class MultiPlayerModel extends JFrame
                             {
                                 healthLevel.setValue(player.getHealthPoint());
                             }
+                            gameArea.repaint();
                         }
                     }
                     //如果收到玩家移动的消息
@@ -253,6 +221,59 @@ public class MultiPlayerModel extends JFrame
                         Point newPoint=gson.fromJson(pointStr,Point.class);
                         Player player=playerList.get(index);
                         player.setLocation(newPoint);
+                        //被地雷炸死的玩家，用set存放
+                        Set<Player> diePlayer=new HashSet<>();
+                        //爆炸的地雷
+                        List<Mine> boomMine=new LinkedList<Mine>();
+                        //判断玩家是否踩到地雷
+                        for(Mine mine:mineList)
+                        {
+                            //如果踩到地雷,并且玩家不是死亡状态
+                            if(ifStepMine(mine,player) && !player.ifDie())
+                            {
+                                //将地雷添加到爆炸地雷链表中;
+                                boomMine.add(mine);
+                                //地雷爆炸特效
+                                mine.boom(gameArea, mine.getLocation());
+                                //地雷的爆炸半径
+                                int damageRadius = mine.getDamageRadius();
+                                //位于地雷爆炸半径内的玩家将全部死亡
+                                for (Player tplayer : playerList)
+                                {
+                                    //如果玩家不是死亡状态
+                                    if(!tplayer.ifDie())
+                                    {
+                                        //将人物设置死亡
+                                        player.setDie(true);
+                                        //玩家的中心坐标
+                                        Point playerPoint = getCentralPoint(tplayer.getLocation());
+                                        //地雷的爆炸中心坐标
+                                        Point minePoint = getCentralPoint(mine.getLocation());
+                                        //如果玩家中心坐标于手雷的中心坐标小于爆炸半径
+                                        if (playerPoint.distance(minePoint) < damageRadius)
+                                        {
+                                            Person fromPerson=playerList.get(Integer.parseInt(mine.getFromPersonId()));
+                                            fromPerson.addKillNum(1);
+                                            //向服务器发送该玩家死亡的消息
+                                            diePlayer.add(tplayer);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        //将被地雷炸死的玩家id发送给服务器
+                        for(Player tplayer:diePlayer)
+                        {
+                            ClientPort.sendStream.println(Sign.OnePlayerDie+tplayer.getId());
+                            System.out.println(tplayer.getId());
+                        }
+                        //将爆炸的地雷移除链表
+                        mineList.removeAll(boomMine);
+                        for(Mine mine:boomMine)
+                        {
+                            gameArea.remove(mine);
+                        }
+                        gameArea.repaint();
                     }
                 }
             }
@@ -284,13 +305,60 @@ public class MultiPlayerModel extends JFrame
                         String pointStr = gson.toJson(newPoint);
                         ClientPort.sendStream.println(Sign.PlayerMove + me.getId() + Sign.SplitSign + pointStr);
                         me.setLocation(newPoint);
-
-                    }
-                    for (Mine mine : mineList) {
-                        if (ifStepMine(mine, me)) {
-                            String mineStr = gson.toJson(mine);
-                            ClientPort.sendStream.println(Sign.MineBoom + mineStr);
+                        //被地雷炸死的玩家，用set存放
+                        Set<Player> diePlayer=new HashSet<>();
+                        //爆炸的地雷
+                        List<Mine> boomMine=new LinkedList<Mine>();
+                        //判断玩家是否踩到地雷
+                        for(Mine mine:mineList)
+                        {
+                            //如果踩到地雷,并且玩家不是死亡状态
+                            if(ifStepMine(mine,me) && !me.ifDie())
+                            {
+                                //将地雷添加到爆炸地雷链表中;
+                                boomMine.add(mine);
+                                //地雷爆炸特效
+                                mine.boom(gameArea, mine.getLocation());
+                                //地雷的爆炸半径
+                                int damageRadius = mine.getDamageRadius();
+                                //位于地雷爆炸半径内的玩家将全部死亡
+                                for (Player player : playerList)
+                                {
+                                    //如果玩家不是死亡状态
+                                    if(!player.ifDie())
+                                    {
+                                        //将人物设置死亡
+                                        player.setDie(true);
+                                        //玩家的中心坐标
+                                        Point playerPoint = getCentralPoint(player.getLocation());
+                                        //地雷的爆炸中心坐标
+                                        Point minePoint = getCentralPoint(mine.getLocation());
+                                        //如果玩家中心坐标于手雷的中心坐标小于爆炸半径
+                                        if (playerPoint.distance(minePoint) < damageRadius)
+                                        {
+                                            Person fromPerson=playerList.get(Integer.parseInt(mine.getFromPersonId()));
+                                            fromPerson.addKillNum(1);
+                                            diePlayer.add(player);
+                                            System.out.println("被地雷炸死的人的数目目前为"+diePlayer.size());
+                                        }
+                                    }
+                                }
+                            }
                         }
+                        //将被地雷炸死的玩家id发送给服务器
+                        for(Player player:diePlayer)
+                        {
+                            ClientPort.sendStream.println(Sign.OnePlayerDie+player.getId());
+                            System.out.println("向服务器发送id为"+player.getId()+"死亡消息");
+                        }
+                        //将爆炸的地雷移除链表
+                        mineList.removeAll(boomMine);
+                        for(Mine mine:boomMine)
+                        {
+                            gameArea.remove(mine);
+                        }
+                        gameArea.repaint();
+
                     }
                 }
             }
@@ -348,6 +416,12 @@ public class MultiPlayerModel extends JFrame
             flagPoint[2]=new Point(790,820);
             flagPoint[3]=new Point(1020,820);
 
+            playerId.setText("玩家ID："+me.getId());
+            playerId.setSize(120,40);
+            playerId.setLocation(400,40);
+            playerId.setEditable(false);
+
+            this.add(playerId);
             this.add(usingWeaponFlag);
             this.add(healthLevel);
             this.add(healthLevelTip);
@@ -555,7 +629,6 @@ public class MultiPlayerModel extends JFrame
                     {
                         attack(startPoint, mousePoint, me);
                     }
-
                 }
                 public void mousePressed(MouseEvent mouseEvent)         //枪类武器攻击
                 {
@@ -616,6 +689,7 @@ public class MultiPlayerModel extends JFrame
                                     {
                                         bullet.getFromPerson().addKillNum(1);       //这颗子弹的所有者击杀数加1
                                         person.dieSpecialEffect(gameArea);
+                                        System.out.println("693");
                                         person.setVisible(false);
                                         person.setDie(true);
                                         /*
@@ -690,6 +764,7 @@ public class MultiPlayerModel extends JFrame
 
 
                                          */
+                                        System.out.println("768");
                                         person.setVisible(false);
                                         createRewardProp(person.getLocation());     //掉落物品
                                     }
@@ -1024,5 +1099,12 @@ public class MultiPlayerModel extends JFrame
     {
         String realMessage=line.substring(cmd.length(),line.length());
         return realMessage;
+    }
+    /**
+     * 检测玩家移动的时候，有没有踩地雷
+     */
+    private void checkStepMine()
+    {
+
     }
 }

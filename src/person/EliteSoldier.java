@@ -84,4 +84,8 @@ public class EliteSoldier extends AI implements Serializable
         shotPlayer= Applet.newAudioClip(shotUrl);
         shotPlayer.play();
     }
+    public int hashCode()
+    {
+        return Integer.parseInt(id);
+    }
 }

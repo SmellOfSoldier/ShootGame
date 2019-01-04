@@ -2,6 +2,7 @@ package Weapon;
 
 import person.Person;
 import utils.MusicPlayer;
+import view.SinglePersonModel;
 
 import javax.swing.*;
 import java.applet.Applet;
@@ -30,6 +31,11 @@ public class Mine extends Weapon
     public Mine()
     {
         super(WeaponType.mine,"Mine",damageValue);
+        URL url= Mine.class.getResource("/images/Weapon/BoomWeapon/Mine.png");
+        ImageIcon icon=new ImageIcon(url);
+        icon.setImage(icon.getImage().getScaledInstance(20,20,Image.SCALE_DEFAULT));
+        this.setSize(20,20);
+        this.setIcon(icon);
     }
     public void setFromPersonId(String fromPersonId)
     {

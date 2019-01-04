@@ -6,11 +6,11 @@ import java.io.PrintStream;
 public class PlayerReliveThread extends Thread
 {
     private ServerGameRoom serverGameRoom;
-    private int clientnum;
-    public PlayerReliveThread(ServerGameRoom serverGameRoom, int clientnum)
+    private int playerIndex;
+    public PlayerReliveThread(ServerGameRoom serverGameRoom, int playerIndex)
     {
         this.serverGameRoom=serverGameRoom;
-        this.clientnum=clientnum;
+        this.playerIndex = playerIndex;
     }
     public void run()
     {
@@ -25,8 +25,9 @@ public class PlayerReliveThread extends Thread
              */
             for(Client c:serverGameRoom.getAllClients())
             {
+                System.out.println("向玩家"+ playerIndex +"发送复活消息");
                 PrintStream sendstream= StartServer.clientPrintStreamMap.get(c);
-                sendstream.println(Sign.OnePlayerRelive+clientnum+Sign.SplitSign+i);
+                sendstream.println(Sign.OnePlayerRelive+ playerIndex +Sign.SplitSign+i);
             }
         } catch (InterruptedException e) {
             e.printStackTrace();

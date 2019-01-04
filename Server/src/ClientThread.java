@@ -77,15 +77,18 @@ class ClientThread extends Thread {
                                     isLogin = true;//密码成功则将当前玩家的服务线程登陆状态置为true
                                     for(Client c: StartServer.allPlayer)
                                     {
-                                        if(c.getId().equals(id)&&!c.isOline())
+                                        if(c.getId().equals(id))
                                         {
-                                            client=c;
-                                        }
-                                        else
-                                        {
-                                            //回复重复登陆的消息
-                                            sendStream.println(Sign.RepeatLogin);
-                                            isRepeatLogin=true;
+                                           if(c.isOline())
+                                           {
+                                               //回复重复登陆的消息
+                                               sendStream.println(Sign.RepeatLogin);
+                                               isRepeatLogin=true;
+                                           }
+                                           else
+                                           {
+                                                client=c;
+                                           }
                                         }
                                     }
                                     if(!isRepeatLogin)
@@ -435,7 +438,7 @@ class ClientThread extends Thread {
                                 for(Client c:currentGameRoom.getAllClients())//给房间内所有玩家发送flag玩家死亡的消息
                                 {
                                     PrintStream sendstream= StartServer.clientPrintStreamMap.get(c);
-                                    sendstream.println(Sign.OnePlayerDie+diePlayerFlag);//发送玩家死亡消息
+                                    sendstream.println(line);//发送玩家死亡消息
                                 }
 
                         //创建复活信息发送线程
