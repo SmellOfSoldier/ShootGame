@@ -745,7 +745,7 @@ public class GameHall
                         List<Player> players= Collections.synchronizedList(new LinkedList<>());
                         for(int i=0;i<pointIndex.length;i++)
                         {
-                            players.add(createPlayer(i,entrance[pointIndex[i]],currentGameRoom.getClientIdModel().get(i)));
+                            players.add(createPlayer(i+"",entrance[pointIndex[i]],currentGameRoom.getClientIdModel().get(i)));
                         }
                         sendstream.println(Sign.GameReadyStart);
                         new MultiPlayerModel(players.get(myPlayerIndex),players);
@@ -799,7 +799,7 @@ public class GameHall
      * @param startPoint：玩家出生位置
      * @return
      */
-    private Player createPlayer(int id,Point startPoint,String name)
+    private Player createPlayer(String id,Point startPoint,String name)
     {
         Player player = null;
         try

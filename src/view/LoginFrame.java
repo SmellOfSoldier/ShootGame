@@ -10,13 +10,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import static view.ClientPort.allOnlineClient;
-import static view.ClientPort.allServerRoom;
+import static view.ClientPort.*;
 
 /**
  * 登陆界面覆写bylijie
@@ -64,7 +62,9 @@ public class LoginFrame{
             allOnlineClient.removeAll(allOnlineClient);
             allServerRoom.removeAll(allServerRoom);
             //开始连接服务器
-            ClientPort.socket=new Socket("127.0.0.1",25565);
+            ClientPort.socket=new Socket();
+            InetSocketAddress address=new InetSocketAddress("127.0.0.1", 25565);
+            socket.connect(address,2000);
             ClientPort.sendStream=new PrintStream(ClientPort.socket.getOutputStream());//获取写出流
             ClientPort.getStream=new BufferedReader(new InputStreamReader(ClientPort.socket.getInputStream()));//获取写入流
 

@@ -14,7 +14,7 @@ public class AI extends Person implements Serializable
     private Integer yspeed=0;                 //ai在y方向上每次移动的像素
     private int vision;                 //AI视野，当玩家进入视野范围内开枪
     private AiPath path=null;           //ai移动的路径
-    public AI(int id, String name, int healthPoint,int radius,int speed,int vision)
+    public AI(String id, String name, int healthPoint,int radius,int speed,int vision)
     {
         super(id,name,healthPoint,radius,speed);
         this.vision=vision;

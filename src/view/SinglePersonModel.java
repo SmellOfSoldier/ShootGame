@@ -166,7 +166,13 @@ public class SinglePersonModel extends JFrame
                                             leaveGame();
                                         }
                                     }
-                                    mine.getFromPerson().addKillNum(1);
+                                    Person fromPerson=null;
+                                    for(Person p:personList)
+                                    {
+                                        if(p.getId().equals(mine.getFromPersonId()))
+                                            fromPerson=p;
+                                    }
+                                    fromPerson.addKillNum(1);
                                 }
                             }
                         }
@@ -715,7 +721,16 @@ public class SinglePersonModel extends JFrame
                             java.util.List<Person> pList=new LinkedList<Person>();   //用于存放被炸死的person
                             grenade.boom(gameArea);
                             Point grenadePoint=getCentralPoint(grenade.getLocation());
-                            Person fromPerson=grenade.getFromPerson();
+                            //获取手雷持有者的id
+                            String fromPersonId=grenade.getFromPersonId();
+                            //寻找手雷的持有者;
+                            Person fromPerson=null;
+                            for(Person person:personList)
+                            {
+                                if(person.getId().equals(fromPersonId))
+                                    fromPerson=person;
+                                break;
+                            }
                             for(Person person:personList)           //遍历所有人，判断是否有人在爆炸半径中
                             {
                                 Point personPoint=getCentralPoint(person.getLocation());
@@ -899,7 +914,7 @@ public class SinglePersonModel extends JFrame
         {
             if(!person.ifEmptyGrenade()) {
                 Grenade grenade = new Grenade();
-                grenade.setFromPerson(person);              //将手雷的所有者设置为person
+                grenade.setFromPersonId(person.getId());              //将手雷的所有者设置为person
                 grenade.throwGrenade(startPoint, endPoint);
                 gameArea.add(grenade);
                 grenadeList.add(grenade);
@@ -1043,7 +1058,7 @@ public class SinglePersonModel extends JFrame
     {
         try {
             Rotate rotate = new Rotate();
-            player = new Player(1, "DJF");
+            player = new Player("0", "DJF");
             int size = 2 * (player.getRadius());
             player.setSize(size, size);
             InputStream is = startGame.class.getResourceAsStream("/images/header_b.png");
@@ -1073,7 +1088,7 @@ public class SinglePersonModel extends JFrame
     {
         fromPerson.reduceMineNum(1);
         Mine mine=new Mine();
-        mine.setFromPerson(fromPerson);
+        mine.setFromPersonId(fromPerson.getId());
         mine.setLocation(point);
         URL url= SinglePersonModel.class.getResource("/images/Weapon/BoomWeapon/Mine.png");
         ImageIcon icon=new ImageIcon(url);
@@ -1100,7 +1115,7 @@ public class SinglePersonModel extends JFrame
         //创建精英战士
         for(int i=0;i<5;i++)
         {
-            EliteSoldier eliteSoldier=new EliteSoldier(personList.size());
+            EliteSoldier eliteSoldier=new EliteSoldier(personList.size()+1+"");
             eliteSoldier.setLocation(entrance[random.nextInt(entrance.length)]);
             Point endPoint=player.getLocation();        //获取玩家坐标作为寻路终点
             Point startPoint=eliteSoldier.getLocation();    //AI当前坐标为寻路起点
@@ -1111,7 +1126,7 @@ public class SinglePersonModel extends JFrame
         }
         for(int i=0;i<2;i++)
         {
-            Hider hider=new Hider(personList.size());
+            Hider hider=new Hider(personList.size()+"");
             hider.setLocation(entrance[random.nextInt(entrance.length)]);
             Point endPoint=player.getLocation();        //获取玩家坐标作为寻路终点
             Point startPoint=hider.getLocation();    //AI当前坐标为寻路起点
@@ -1126,7 +1141,7 @@ public class SinglePersonModel extends JFrame
     {
         Point minePoint=getCentralPoint(mine.getLocation());
         Point eliteSoldierPoint=getCentralPoint(person.getLocation());
-        if(minePoint.distance(eliteSoldierPoint) < mine.getRadius() && !person.equals(mine.getFromPerson()))
+        if(minePoint.distance(eliteSoldierPoint) < mine.getRadius() && !person.getId().equals(mine.getFromPersonId()))
         {
             return true;
         }

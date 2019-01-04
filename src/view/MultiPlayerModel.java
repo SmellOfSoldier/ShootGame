@@ -25,6 +25,8 @@ import java.util.concurrent.locks.Lock;
  */
 public class MultiPlayerModel extends JFrame
 {
+
+    private static  int num=0;
     private JFrame superiorMenu;
     private static Gson gson=new Gson();
     private Point[] entrance=new Point[]{new Point(800,20),new Point(1040,280),new Point(1160,600), new Point(320,760),new Point(20,520)};         //刷怪位置
@@ -106,7 +108,7 @@ public class MultiPlayerModel extends JFrame
             {
                 while ((line = ClientPort.getStream.readLine()) != null)
                 {
-                    System.out.println("游戏线程收到一个"+line+"命令");
+                    //System.out.println("游戏线程收到一个"+line+"命令");
                     //如果收到游戏结束的命令
                     if(line.startsWith(Sign.GameOver))
                     {
@@ -167,8 +169,10 @@ public class MultiPlayerModel extends JFrame
                                     //地雷的爆炸中心坐标
                                     Point minePoint = getCentralPoint(mine.getLocation());
                                     //如果玩家中心坐标于手雷的中心坐标小于爆炸半径
-                                    if (playerPoint.distance(minePoint) < damageRadius) {
-                                        mine.getFromPerson().addKillNum(1);
+                                    if (playerPoint.distance(minePoint) < damageRadius)
+                                    {
+                                        Person fromPerson=playerList.get(Integer.parseInt(mine.getFromPersonId()));
+                                        fromPerson.addKillNum(1);
                                         //向服务器发送该玩家死亡的消息
                                         ClientPort.sendStream.println(Sign.OnePlayerDie + player.getId());
                                         if (player.equals(me)) {
@@ -250,9 +254,7 @@ public class MultiPlayerModel extends JFrame
                         String pointStr = gson.toJson(newPoint);
                         ClientPort.sendStream.println(Sign.PlayerMove + me.getId() + Sign.SplitSign + pointStr);
                         me.setLocation(newPoint);
-                        System.out.println("人物向右移动的速度："+me.getrSpeed());
-                        System.out.println("人物向左移动的速度："+me.getlSpeed());
-                        System.out.println(newPoint);
+                        System.out.println(num++);
                     }
                     for (Mine mine : mineList) {
                         if (ifStepMine(mine, me)) {
@@ -853,7 +855,7 @@ public class MultiPlayerModel extends JFrame
         {
             if(!person.ifEmptyGrenade()) {
                 Grenade grenade = new Grenade();
-                grenade.setFromPerson(person);              //将手雷的所有者设置为person
+                grenade.setFromPersonId(person.getId());              //将手雷的所有者设置为person
                 grenade.throwGrenade(startPoint, endPoint);
                 gameArea.add(grenade);
                 grenadeList.add(grenade);
@@ -941,7 +943,7 @@ public class MultiPlayerModel extends JFrame
     {
         fromPerson.reduceMineNum(1);
         Mine mine=new Mine();
-        mine.setFromPerson(fromPerson);
+        mine.setFromPersonId(fromPerson.getId());
         mine.setLocation(point);
         URL url= SinglePersonModel.class.getResource("/images/Weapon/BoomWeapon/Mine.png");
         ImageIcon icon=new ImageIcon(url);
@@ -958,7 +960,7 @@ public class MultiPlayerModel extends JFrame
     {
         Point minePoint=getCentralPoint(mine.getLocation());
         Point eliteSoldierPoint=getCentralPoint(person.getLocation());
-        if(minePoint.distance(eliteSoldierPoint) < mine.getRadius() && !person.equals(mine.getFromPerson()))
+        if(minePoint.distance(eliteSoldierPoint) < mine.getRadius() && !person.getId().equals(mine.getFromPersonId()))
         {
             return true;
         }

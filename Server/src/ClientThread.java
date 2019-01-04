@@ -347,20 +347,6 @@ class ClientThread extends Thread {
                         }
                     }
                     /**
-                     * 如果收到玩家停止移动的消息
-                     */
-                    else if(client.isPlaying()&&line.startsWith(Sign.PlayerStopMove))
-                    {
-                        //直接获取玩家停止移动的消息
-                        realMessage=line;
-                        for(Client c:currentGameRoom.getAllClients())
-                        {
-                            //直接转发给房间内所有的在线玩家
-                            PrintStream sendstream= StartServer.clientPrintStreamMap.get(c);
-                            sendstream.println(realMessage);
-                        }
-                    }
-                    /**
                      * 游戏内地雷爆炸的消息
                      */
                     else if (client.isPlaying() && line.startsWith(Sign.MineBoom))

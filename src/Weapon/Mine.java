@@ -16,7 +16,7 @@ public class Mine extends Weapon
     private static int damageRadius=40;   //杀伤半径
     private static int radius=10;       //地雷半径
     private static JLabel boomEffect=new JLabel(); //爆炸特效
-    private Person fromPerson;      //安装这个地雷的人
+    private String fromPersonId;      //安装这个地雷的人的id
     private static URL boomMusicURL=Grenade.class.getResource("/musics/boom/mineBoom.wav");      //手雷爆炸音效路径
     private AudioClip boomMusicPlayer= Applet.newAudioClip(boomMusicURL);
     static
@@ -31,9 +31,9 @@ public class Mine extends Weapon
     {
         super(WeaponType.mine,"Mine",damageValue);
     }
-    public void setFromPerson(Person fromPerson)
+    public void setFromPersonId(String fromPersonId)
     {
-        this.fromPerson=fromPerson;
+        this.fromPersonId=fromPersonId;
     }
     public void boom(JPanel gameArea, Point point)       //爆炸
     {
@@ -63,5 +63,5 @@ public class Mine extends Weapon
     //获取地雷半径
     public int getRadius(){return radius;}
     //获取安装这个地雷的person
-    public Person getFromPerson(){return fromPerson;}
+    public String getFromPersonId(){return fromPersonId;}
 }

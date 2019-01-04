@@ -30,7 +30,7 @@ public class Grenade extends Weapon implements Serializable
     private static URL boomMusicURL=Grenade.class.getResource("/musics/boom/grenadeBoom.wav");      //手雷爆炸音效路径
     private static URL grenadeImageUrl=Grenade.class.getResource("/images/Weapon/BoomWeapon/grenade.png");  //手雷的图片路径
     private AudioClip boomMusicPlayer= Applet.newAudioClip(boomMusicURL);
-    private Person fromPerson;                      //这个手雷的所有者
+    private String fromPersonId=null;           //手雷持有者的id
     {
         //为手雷设置爆炸特效
         URL url=Mine.class.getResource("/images/specialEffect/boomEffect.gif");
@@ -52,7 +52,7 @@ public class Grenade extends Weapon implements Serializable
     }
     public int getThrowDistance(){return throwDistance;}        //获取投掷距离
     public int getDamageRadius(){return damageRadius;}          //获取爆炸半径
-    public Person getFromPerson(){return fromPerson;}           //获取这个手雷的所有者
+    public String getFromPersonId(){return fromPersonId;}           //获取这个手雷的所有者
     /**
      * 判断手雷是否到达最终坐标
      */
@@ -94,9 +94,9 @@ public class Grenade extends Weapon implements Serializable
     /**
      * 设置手雷的使用者
      */
-    public void setFromPerson(Person fromPerson)
+    public void setFromPersonId(String fromPersonId)
     {
-        this.fromPerson=fromPerson;
+        this.fromPersonId=fromPersonId;
     }
     /**
      * 手雷继续移动

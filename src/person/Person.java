@@ -17,7 +17,7 @@ public class Person extends JLabel implements Serializable
     private boolean isAttacking=false;              //人物是否正在攻击
     private boolean isReload=false;                 //人物是否正在装子弹
     private int speed;                      //人物的移动速度
-    protected int id;                       //编号
+    protected String id;                       //编号
     protected String name;                  //姓名
     private int usingWeaponType;              //目前使用的武器的种类
     private int healthPoint;                //生命值
@@ -29,7 +29,7 @@ public class Person extends JLabel implements Serializable
     private boolean isDie=false;        //是否死亡
     private JLabel dieSpecialEffect=new JLabel();   //死亡特效
     protected Person(){}
-    protected Person(int id,String name,int healthPoint,int radius,int speed)
+    protected Person(String id,String name,int healthPoint,int radius,int speed)
     {
         this.name=name;
         this.id=id;
@@ -42,7 +42,7 @@ public class Person extends JLabel implements Serializable
         dieSpecialEffect.setIcon(icon);
     }
     public int getHealthPoint(){return healthPoint;}       //获取人物当前血量
-    public int getId(){return id;}                          //获取人物编号
+    public String getId(){return id;}                          //获取人物编号
     public int getRadius(){return radius;}                  //获取人物半径
     public String getName(){return name;}                   //获取人物名称www
     public boolean ifDie(){return isDie;}                   //电脑是否死亡
