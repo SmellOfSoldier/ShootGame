@@ -370,17 +370,12 @@ class ClientThread extends Thread {
                  */
                     else if (client.isPlaying() && line.startsWith(Sign.GrenadeBoom))
                     {
-                        //获取爆炸的地雷的下标
-                        realMessage=check.getRealMessage(line,Sign.GrenadeBoom);
-                        int nadeflag=Integer.parseInt(realMessage.split(Sign.SplitSign)[0]);
                         //转发给房间内其他玩家
                         for(Client c:currentGameRoom.getAllClients())//给房间内所有玩家发送nadeflag号手雷爆炸的消息
                             {
                                 PrintStream sendstream= StartServer.clientPrintStreamMap.get(c);
-                                sendstream.println(Sign.GrenadeBoom+nadeflag);//发送手雷爆炸消息
+                                sendstream.println(line);//发送手雷爆炸消息
                             }
-
-
                     }
 
                 /**
@@ -421,9 +416,6 @@ class ClientThread extends Thread {
                             }
 
                 }
-                /**
-                 *
-                 */
 
 
                 /**
