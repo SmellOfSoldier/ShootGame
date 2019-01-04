@@ -25,6 +25,7 @@ import java.util.concurrent.locks.Lock;
  */
 public class MultiPlayerModel extends JFrame
 {
+    private  static int num=0;
     private JFrame superiorMenu;
     private static Gson gson=new Gson();
     private Point[] entrance=new Point[]{new Point(800,20),new Point(1040,280),new Point(1160,600), new Point(320,760),new Point(20,520)};         //刷怪位置
@@ -106,7 +107,7 @@ public class MultiPlayerModel extends JFrame
             {
                 while ((line = ClientPort.getStream.readLine()) != null)
                 {
-                    System.out.println("游戏线程收到一个"+line+"命令");
+                    //System.out.println("游戏线程收到一个"+line+"命令");
                     //如果收到游戏结束的命令
                     if(line.startsWith(Sign.GameOver))
                     {
@@ -250,9 +251,7 @@ public class MultiPlayerModel extends JFrame
                         String pointStr = gson.toJson(newPoint);
                         ClientPort.sendStream.println(Sign.PlayerMove + me.getId() + Sign.SplitSign + pointStr);
                         me.setLocation(newPoint);
-                        System.out.println("人物向右移动的速度："+me.getrSpeed());
-                        System.out.println("人物向左移动的速度："+me.getlSpeed());
-                        System.out.println(newPoint);
+                        System.out.println(num++);
                     }
                     for (Mine mine : mineList) {
                         if (ifStepMine(mine, me)) {
