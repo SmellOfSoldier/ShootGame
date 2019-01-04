@@ -60,9 +60,11 @@ public class Person extends JLabel implements Serializable
     }
     public void setDie(boolean isDie)                       //设置人物的死亡状态
     {
+        if(isDie)
+        {
+            healthPoint=0;
+        }
         this.isDie=isDie;
-        healthPoint=0;
-        this.setVisible(false);
     }
 
     /**

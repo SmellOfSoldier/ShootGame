@@ -52,9 +52,9 @@ public class Player extends Person implements Serializable
      */
     public void setDie(boolean die)
     {
-        MusicPlayer.playDieMusic();     //播放死亡音效
-        if (die) {
-            super.setDie(true);
+        super.setDie(die);
+        if(die) {
+            MusicPlayer.playDieMusic();     //播放死亡音效
             addDieNum(1);
         }
     }

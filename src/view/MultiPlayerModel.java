@@ -133,40 +133,7 @@ public class MultiPlayerModel extends JFrame
                         gameArea.add(grenade);
                         grenadeList.add(grenade);
                     }
-                    //如果收到手雷爆炸的消息
-                    else if(line.startsWith(Sign.GrenadeBoom))
-                    {
-                        realMessage=getRealMessage(line,Sign.GrenadeBoom);
-                        Grenade grenade=gson.fromJson(realMessage,Grenade.class);
-                        if(grenadeList.contains(grenade))
-                        {
-                            grenadeList.remove(grenade);
-                            //手雷爆炸特效
-                            grenade.boom(gameArea);
-                            //位于爆炸半径内的玩家将全部死亡
-                            for (Player player : playerList)
-                            {
-                                //如果玩家不是死亡状态
-                                if(!player.ifDie())
-                                {
-                                    //玩家的中心位置
-                                    Point playerPoint = getCentralPoint(player.getLocation());
-                                    //手雷的爆炸中心位置
-                                    Point grenadePoint = getCentralPoint(grenade.getLocation());
-                                    //如果该玩家位于爆炸半径内
-                                    if (playerPoint.distance(grenadePoint) < grenade.getDamageRadius()) {
-                                        //向服务器发送该玩家死亡的消息
-                                        ClientPort.sendStream.println(Sign.OnePlayerDie + player.getId());
-                                        if (player.equals(me))
-                                        {
-                                            healthLevel.setValue(0);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    //如果收到手雷安放的消息
+                    //如果收到地雷安放的消息
                     else if(line.startsWith(Sign.CreateMine))
                     {
                         realMessage=getRealMessage(line,Sign.CreateMine);
@@ -184,7 +151,6 @@ public class MultiPlayerModel extends JFrame
                     {
                         int index=Integer.parseInt(getRealMessage(line,Sign.OnePlayerDie));
                         Player player=playerList.get(index);
-                        System.out.println("死亡人物的id为："+player.getId());
                         if(!player.ifDie())
                         {
                             player.setDie(true);
@@ -205,6 +171,7 @@ public class MultiPlayerModel extends JFrame
                             player.setLocation(entrance[relivePointIndex]);
                             player.setDie(false);
                             player.setVisible(true);
+                            player.addHealthPoint(Player.maxHealthPoint);
                             if (player.equals(me))
                             {
                                 healthLevel.setValue(player.getHealthPoint());
@@ -243,8 +210,6 @@ public class MultiPlayerModel extends JFrame
                                     //如果玩家不是死亡状态
                                     if(!tplayer.ifDie())
                                     {
-                                        //将人物设置死亡
-                                        player.setDie(true);
                                         //玩家的中心坐标
                                         Point playerPoint = getCentralPoint(tplayer.getLocation());
                                         //地雷的爆炸中心坐标
@@ -298,13 +263,14 @@ public class MultiPlayerModel extends JFrame
             {
                 Point oldPoint=me.getLocation();
                 Point newPoint=new Point(oldPoint.x+me.getrSpeed()-me.getlSpeed(),oldPoint.y+me.getdSpeed()-me.getuSpeed());
-                if(!(oldPoint.x==newPoint.x && oldPoint.y==newPoint.y))
+                if(!(oldPoint.x==newPoint.x && oldPoint.y==newPoint.y)&& !me.ifDie())
                 {
                     if (!ifHitWall(newPoint, me.getRadius(), false))
                     {
                         String pointStr = gson.toJson(newPoint);
                         ClientPort.sendStream.println(Sign.PlayerMove + me.getId() + Sign.SplitSign + pointStr);
                         me.setLocation(newPoint);
+
                         //被地雷炸死的玩家，用set存放
                         Set<Player> diePlayer=new HashSet<>();
                         //爆炸的地雷
@@ -327,8 +293,6 @@ public class MultiPlayerModel extends JFrame
                                     //如果玩家不是死亡状态
                                     if(!player.ifDie())
                                     {
-                                        //将人物设置死亡
-                                        player.setDie(true);
                                         //玩家的中心坐标
                                         Point playerPoint = getCentralPoint(player.getLocation());
                                         //地雷的爆炸中心坐标
@@ -352,7 +316,11 @@ public class MultiPlayerModel extends JFrame
                             System.out.println("向服务器发送id为"+player.getId()+"死亡消息");
                         }
                         //将爆炸的地雷移除链表
-                        mineList.removeAll(boomMine);
+                        if(!boomMine.isEmpty()) {
+                            System.out.println("地雷爆炸前地雷链表大小"+mineList.size());
+                            mineList.removeAll(boomMine);
+                            System.out.println("地雷爆炸后地雷链表大小"+mineList.size());
+                        }
                         for(Mine mine:boomMine)
                         {
                             gameArea.remove(mine);
@@ -800,6 +768,10 @@ public class MultiPlayerModel extends JFrame
             grenadeMoveThread=new Timer(Grenade.speed, new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    //存放被手雷炸死的玩家
+                    Set<Player> diePlayer=new HashSet<>();
+                    //存放爆炸的手雷
+                    List<Grenade> boomGrenade=new LinkedList<>();
                     for(Grenade grenade:grenadeList)
                     {
                         //如果手榴弹到达指定地点，或者超出地图范围
@@ -807,15 +779,52 @@ public class MultiPlayerModel extends JFrame
                         int y=grenade.getLocation().y;
                         if(grenade.ifArrive() || x  > SinglePersonModel.gameAreaWidth ||x<=0 || y> SinglePersonModel.gameAreaHeight || y<=0)
                         {
-                            Gson gson=new Gson();
-                            String grenadeStr=gson.toJson(grenade);
-                            ClientPort.sendStream.println(Sign.GrenadeBoom+grenadeStr);
+                            grenade.boom(gameArea);
+                            boomGrenade.add(grenade);
+                            //位于爆炸半径内的玩家将全部死亡
+                            for (Player player : playerList)
+                            {
+                                //如果玩家不是死亡状态
+                                if(!player.ifDie())
+                                {
+                                    //玩家的中心位置
+                                    Point playerPoint = getCentralPoint(player.getLocation());
+                                    //手雷的爆炸中心位置
+                                    Point grenadePoint = getCentralPoint(grenade.getLocation());
+                                    //如果该玩家位于爆炸半径内
+                                    if (playerPoint.distance(grenadePoint) < grenade.getDamageRadius())
+                                    {
+                                        //向服务器发送该玩家死亡的消息
+                                        diePlayer.add(player);
+                                        if (player.equals(me))
+                                        {
+                                            healthLevel.setValue(0);
+                                        }
+                                    }
+                                }
+                            }
                         }
                         //否则手雷继续移动
                         else
                         {
                             grenade.next();
                         }
+                    }
+                    if(!diePlayer.isEmpty())
+                    {
+                        for(Player player:diePlayer)
+                        {
+                            ClientPort.sendStream.println(Sign.OnePlayerDie+player.getId());
+                        }
+                    }
+                    if(!boomGrenade.isEmpty())
+                    {
+                        for(Grenade grenade:boomGrenade)
+                        {
+                            gameArea.remove(grenade);
+                        }
+                        grenadeList.removeAll(boomGrenade);
+                        gameArea.repaint();
                     }
                 }
             });
