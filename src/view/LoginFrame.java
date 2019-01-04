@@ -56,6 +56,7 @@ public class LoginFrame{
         loginJFrame.setVisible(true);
         try {
             /**
+             *
              * 多人游戏点击后直接连接服务器
              */
             //将静态保存有在线玩家和房间的静态链表清空再开始连接

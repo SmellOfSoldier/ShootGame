@@ -18,7 +18,7 @@ public class PlayerReliveThread extends Thread
             //睡眠三秒后发送玩家复活消息
             sleep(3000);
              //生成初始化出生地址的数组
-            Integer[] randomEntrance=Info.randomArray(0,4,1);
+            Integer[] randomEntrance= AllInfo.randomArray(0,4,1);
             int i=randomEntrance[0];
             /**
              * 给所有房间内的玩家发送玩家编号为clientnum重新复活在i位置

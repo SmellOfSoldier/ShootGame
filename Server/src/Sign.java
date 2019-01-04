@@ -61,6 +61,6 @@ public interface Sign
     String GameReadyStart="GameReadyStart";                            //游戏即将开始
     String CreateBullet="CREATE_BULLET";                               //子弹创建
     String CreateMine="CREATE_MINE";                                   //创建地雷
-    String CreateGrenade="CREATE_NADE";                                   //创建手雷
-
+    String CreateGrenade="CREATE_GRENADE";                             //创建手雷
+    String RepeatLogin="REPEAT_LOGIN";                                 //多次登陆
 }

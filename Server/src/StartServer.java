@@ -125,7 +125,7 @@ public class StartServer {
             serverSocket=new ServerSocket(port);//创建服务Socket
             serverThread=new ClientThreadCreator(serverSocket,30, GuiShowMes);//创建服务器线程
             serverThread.start();//服务器线程开启
-            Info.readAllClientInfo(allPlayer);//从文件读取所有已经注册玩家
+            AllInfo.readAllClientInfo(allPlayer);//从文件读取所有已经注册玩家
             GuiShowMes.append("服务器消息：成功读取已注册玩家数据到内存。\n");
             isStart=true;
         } catch (BindException e) {
@@ -157,7 +157,7 @@ public class StartServer {
             client.setOline(false);
             client.setPlaying(false);
         }
-        Info.saveAllClientInfo(allPlayer);//保存所有注册用户信息到文件
+        AllInfo.saveAllClientInfo(allPlayer);//保存所有注册用户信息到文件
         if(serverSocket!=null) serverSocket.close();//如果serverSocket存在则关闭它
             listModel.removeAllElements();//清空用户列表
             isStart=false;//服务器状态置为关闭

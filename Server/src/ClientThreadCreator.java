@@ -44,7 +44,7 @@ class ClientThreadCreator extends Thread{
             catch (SocketException se){
             }
             catch (IOException IOE){
-                Info.saveAllClientInfo(StartServer.allPlayer);//保存所有注册用户信息到文件
+                AllInfo.saveAllClientInfo(StartServer.allPlayer);//保存所有注册用户信息到文件
                 IOE.printStackTrace();
             }
         }

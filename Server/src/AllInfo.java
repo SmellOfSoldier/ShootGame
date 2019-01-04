@@ -5,7 +5,7 @@ import java.util.Random;
 /**
  * 信息处理类
  */
-class Info {
+class AllInfo {
 
     /**
      * 压入一个注册用户到内存用户数据链表allPlayer中
