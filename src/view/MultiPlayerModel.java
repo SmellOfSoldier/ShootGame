@@ -1,24 +1,18 @@
 package view;
 
-import Arsenal.*;
 import Weapon.*;
 import bullet.*;
 import com.google.gson.Gson;
-import javafx.scene.transform.Rotate;
 import person.*;
 import reward.MedicalPackage;
 import reward.RewardProp;
 import reward.RewardType;
 import utils.MusicPlayer;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
 import java.net.URL;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -86,7 +80,7 @@ public class MultiPlayerModel extends JFrame
         this.setResizable(false);
         this.setLocationRelativeTo(null);
         this.add(gameArea);
-        MusicPlayer.playActionMusic();
+        MusicPlayer.playActionBGM();
         this.setVisible(true);
         new GameThread(ClientPort.threadLock,ClientPort.threadCondition).start();
     }
@@ -249,17 +243,22 @@ public class MultiPlayerModel extends JFrame
             {
                 Point oldPoint=me.getLocation();
                 Point newPoint=new Point(oldPoint.x+me.getrSpeed()-me.getlSpeed(),oldPoint.y+me.getdSpeed()-me.getuSpeed());
-                if(!ifHitWall(newPoint,me.getRadius(),false))
+                if(!(oldPoint.x==newPoint.x && oldPoint.y==newPoint.y))
                 {
-                    String pointStr=gson.toJson(newPoint);
-                    ClientPort.sendStream.println(Sign.PlayerMove+me.getId()+Sign.SplitSign+pointStr);
-                }
-                for(Mine mine :mineList)
-                {
-                    if (ifStepMine(mine,me))
+                    if (!ifHitWall(newPoint, me.getRadius(), false))
                     {
-                        String mineStr=gson.toJson(mine);
-                        ClientPort.sendStream.println(Sign.MineBoom+mineStr);
+                        String pointStr = gson.toJson(newPoint);
+                        ClientPort.sendStream.println(Sign.PlayerMove + me.getId() + Sign.SplitSign + pointStr);
+                        me.setLocation(newPoint);
+                        System.out.println("人物向右移动的速度："+me.getrSpeed());
+                        System.out.println("人物向左移动的速度："+me.getlSpeed());
+                        System.out.println(newPoint);
+                    }
+                    for (Mine mine : mineList) {
+                        if (ifStepMine(mine, me)) {
+                            String mineStr = gson.toJson(mine);
+                            ClientPort.sendStream.println(Sign.MineBoom + mineStr);
+                        }
                     }
                 }
             }

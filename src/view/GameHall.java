@@ -7,6 +7,7 @@ import Weapon.Mine;
 import com.google.gson.Gson;
 import javafx.scene.transform.Rotate;
 import person.Player;
+import utils.MusicPlayer;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -25,7 +26,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 游戏大厅类bylijie
@@ -64,6 +64,7 @@ public class GameHall
         gameHallJFrame.setVisible(true);
         JPanel jPanel=new hallJPanel();
         gameHallJFrame.add(jPanel);
+        MusicPlayer.playGameHallBGM();
         jPanel.repaint();//重画
         /**
          * 创建房间监听
@@ -72,7 +73,7 @@ public class GameHall
             @Override
             public void actionPerformed(ActionEvent e) {
                 if(currentGameRoom==null) {
-                    new creatRoomGui(currentClient);//创建创建房间gui
+                    new createRoomGui(currentClient);//创建创建房间gui
                 }else {
                     JOptionPane.showMessageDialog(gameHallJFrame, "您已经创建过房间请关闭已经创建的房间再尝试", "提示", JOptionPane.ERROR_MESSAGE);//弹出警告框
                 }
@@ -97,6 +98,7 @@ public class GameHall
                 ClientPort.sendStream.println(Sign.Logout);
                 ClientPort.sendStream.flush();
                 new LoginFrame(gameHallJFrame);
+                MusicPlayer.stopGameHallBGM();
                 gameHallJFrame.dispose();
             }
         });
@@ -451,7 +453,7 @@ public class GameHall
     /**
      * 创建房间的GUI界面类
      */
-    public class creatRoomGui {
+    public class createRoomGui {
         private JFrame creatRoomJFrame;
         private createRoomJPanel createRoomjpanel;
         private JLabel roomnamelable;
@@ -463,7 +465,7 @@ public class GameHall
         private PrintStream sendStream;
         private BufferedReader getStream;
         private Client currentclient;
-        creatRoomGui(Client currentclient){
+        createRoomGui(Client currentclient){
             this.currentclient=currentclient;
             createRoomjpanel =new createRoomJPanel();
             creatRoomJFrame=new JFrame();
@@ -747,6 +749,8 @@ public class GameHall
                         }
                         sendstream.println(Sign.GameReadyStart);
                         new MultiPlayerModel(players.get(myPlayerIndex),players);
+                        //停止播放大厅背景音乐
+                        MusicPlayer.stopGameHallBGM();
                         condition.await();          //业务线程睡眠，等待游戏结束后被唤醒
                         System.out.println("游戏结束");
 

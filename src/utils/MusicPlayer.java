@@ -15,13 +15,15 @@ public class MusicPlayer
     private static String []actionMusicFile=new String[]{"action01.wav","action02.wav","action03.wav","action04.wav"};
     private static String []weaponName=new String[]{"AKM","M4A1","AWM","Barret","Mine","Grenade"};
     private static int bgmTime=120000;
-    private static URL bgmUrl=null;         //bgm的路径
+    private static URL actionBGMUrl =null;         //游戏背景音乐的路径
+    private static URL gameHallBGMUrl=null;         //大厅背景音乐路径
     private static URL systemPromotUrl=null;    //系统提示声音的路径
     private static URL bulletHitWallUrl=MusicPlayer.class.getResource("/musics/other/bulletHitWall.wav");   //子弹撞墙的音效文件路径
     private static URL bulletLandUrl=MusicPlayer.class.getResource("/musics/other/bulletLand.wav"); //子弹壳落地的音效文件路径
     private static URL bulletUseOutUrl=MusicPlayer.class.getResource("/musics/other/bulletUseOut.wav");    //子弹落用完的音效路径
     private static URL peekRewardPropUrl=MusicPlayer.class.getResource("/musics/other/peekRewardProp.wav"); //拾起道具音效文件路径
-    private static AudioClip bgmPlayer=null;                    //bgm播放器
+    private static AudioClip actionBGMPlayer =null;                    //游戏背景音乐播放器
+    private static AudioClip gameHallBgmPlayer=null;                    //大厅背景音乐
     private static AudioClip peekRewardPropPlayer=null;         //拾起道具音效播放器
     private static HashMap<String,AudioClip> weaponAudioClipMap=new HashMap<>();      //存放武器开火音效的AudioClip
     private static AudioClip currentWeaponAudioClip;            //目前正在播放的武器音效AudioClip
@@ -33,18 +35,22 @@ public class MusicPlayer
     private static AudioClip dieMusicPlayer=null;                   //人物死亡的音效
 
 
+
     private static Timer bgmThread=new Timer(bgmTime, new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e)
         {
-            bgmPlayer.play();
+            actionBGMPlayer.play();
         }
     });
     static
     {
-        bgmUrl=MusicPlayer.class.getResource("/musics/bgm/bgm.wav");
-        bgmPlayer=Applet.newAudioClip(bgmUrl);
+        actionBGMUrl =MusicPlayer.class.getResource("/musics/bgm/bgm.wav");
+        actionBGMPlayer =Applet.newAudioClip(actionBGMUrl);
         peekRewardPropPlayer=Applet.newAudioClip(peekRewardPropUrl);
+
+        gameHallBGMUrl=MusicPlayer.class.getResource("/musics/bgm/gameHallBgm.wav");
+        gameHallBgmPlayer=Applet.newAudioClip(gameHallBGMUrl);
 
         //初始化武器开火的AudioClipMap
         for(String name:weaponName)
@@ -111,12 +117,12 @@ public class MusicPlayer
     }
     public static void playBgm()        //播放背景音乐
     {
-        bgmPlayer.play();
+        actionBGMPlayer.play();
         bgmThread.start();
     }
     public static void stopBgm()    //停止播放背景音乐
     {
-        bgmPlayer.stop();
+        actionBGMPlayer.stop();
         bgmThread.stop();
     }
     public static void playReloadMusic(String weaponName)    //播放换子弹的声音
@@ -143,11 +149,19 @@ public class MusicPlayer
     {
         peekRewardPropPlayer.play();
     }
-    public static void playActionMusic()                //播放战斗音乐
+    public static void playActionBGM()                //播放战斗音乐
     {
         int index=random.nextInt(actionMusicAudioClips.length);
        currentActionMusicAudioClip= actionMusicAudioClips[index];
        currentActionMusicAudioClip.loop();
+    }
+    public static void playGameHallBGM()                //播放游戏大厅背景音乐
+    {
+        gameHallBgmPlayer.loop();
+    }
+    public static void stopGameHallBGM()                //停止大厅游戏背景音乐
+    {
+        gameHallBgmPlayer.stop();
     }
     public static void stopActionMusic()                //停止播放战斗音乐
     {

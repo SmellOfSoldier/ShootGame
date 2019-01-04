@@ -240,7 +240,6 @@ class ClientThread extends Thread {
                         }
                         //该房间移除该玩家(同时将该玩家的所属房间重新置空)
                         currentGameRoom.removeClient(targetId);
-
                     }
                     /**
                      * 如果收到离开房间的消息(房间内的人)
@@ -341,8 +340,10 @@ class ClientThread extends Thread {
                         for(Client c:currentGameRoom.getAllClients())
                         {
                             //直接转发给房间内所有的在线玩家
-                            PrintStream sendstream= StartServer.clientPrintStreamMap.get(c);
-                            sendstream.println(realMessage);
+                            if(!c.equals(client)) {
+                                PrintStream sendstream = StartServer.clientPrintStreamMap.get(c);
+                                sendstream.println(realMessage);
+                            }
                         }
                     }
                     /**

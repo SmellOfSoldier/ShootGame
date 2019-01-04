@@ -95,7 +95,7 @@ public class SinglePersonModel extends JFrame
         this.setResizable(false);
         this.setLocationRelativeTo(null);
         this.add(gameArea);
-        MusicPlayer.playActionMusic();
+        MusicPlayer.playActionBGM();
         this.setVisible(true);
     }
 
@@ -1028,7 +1028,7 @@ public class SinglePersonModel extends JFrame
         createAI();
         player.addDieNum(dieNum);
         player.addKillNum(killNum);
-        MusicPlayer.playActionMusic();
+        MusicPlayer.playActionBGM();
         eliteSoldierMoveThread.restart();
         hiderMoveThread.restart();
         grenadeMoveThread.restart();
