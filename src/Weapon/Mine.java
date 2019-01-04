@@ -17,7 +17,7 @@ public class Mine extends Weapon
     private static int radius=10;       //地雷半径
     private static JLabel boomEffect=new JLabel(); //爆炸特效
     private String fromPersonId;      //安装这个地雷的人的id
-    private static URL boomMusicURL=Grenade.class.getResource("/musics/boom/mineBoom.wav");      //手雷爆炸音效路径
+    private static URL boomMusicURL=Mine.class.getResource("/musics/boom/mineBoom.wav");      //手雷爆炸音效路径
     private AudioClip boomMusicPlayer= Applet.newAudioClip(boomMusicURL);
     static
     {

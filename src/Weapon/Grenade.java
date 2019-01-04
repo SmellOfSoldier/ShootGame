@@ -68,7 +68,7 @@ public class Grenade extends Weapon implements Serializable
      * @param endPoint：手雷的最终坐标
      * @param startPoint：手雷的起始坐标
      */
-    public void throwGrenade(Point startPoint,Point endPoint)
+    public void calculateGrenadeSpeed(Point startPoint, Point endPoint)
     {
         //计算手雷的xspeed、yspeed、throwDistance
         double distance=startPoint.distance(endPoint);

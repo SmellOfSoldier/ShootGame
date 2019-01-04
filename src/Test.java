@@ -1,3 +1,5 @@
+import Weapon.Mine;
+import com.google.gson.Gson;
 import person.Person;
 
 import javax.swing.*;
@@ -49,9 +51,11 @@ public class Test
             jFrame.pack();
             jFrame.setVisible(true);
             t1.start();*/
-            List<Integer> list=new LinkedList<>();
-            list.add(1);
-        System.out.println(list.contains(2));
+        Mine mine=new Mine();
+        Gson gson=new Gson();
+        String s=gson.toJson(mine);
+        System.out.println("ok");
+        Mine m=gson.fromJson(s,Mine.class);
 
     }
 }

@@ -59,4 +59,8 @@ public interface Sign
     String RefreshGameHall="REFRESH_GAME_HALL";                        //刷新游戏大厅
     String CloseLocalThread="CLOSE_LOCAL_THREAD";                      //关闭本地的业务线程
     String GameReadyStart="GameReadyStart";                            //游戏即将开始
+    String CreateBullet="CREATE_BULLET";                               //子弹创建
+    String CreateMine="CREATE_MINE";                                   //创建地雷
+    String CreateGrenade="CREATE_NADE";                                   //创建手雷
+
 }

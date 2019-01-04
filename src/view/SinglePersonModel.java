@@ -915,7 +915,7 @@ public class SinglePersonModel extends JFrame
             if(!person.ifEmptyGrenade()) {
                 Grenade grenade = new Grenade();
                 grenade.setFromPersonId(person.getId());              //将手雷的所有者设置为person
-                grenade.throwGrenade(startPoint, endPoint);
+                grenade.calculateGrenadeSpeed(startPoint, endPoint);
                 gameArea.add(grenade);
                 grenadeList.add(grenade);
                 person.reduceGrenadeNum(1);

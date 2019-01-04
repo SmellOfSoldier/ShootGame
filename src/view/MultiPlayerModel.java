@@ -14,6 +14,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Random;
@@ -53,8 +54,8 @@ public class MultiPlayerModel extends JFrame
     private static java.util.List<Grenade> grenadeList=Collections.synchronizedList(new LinkedList<Grenade>());
     //存放掉落物品的链表
     private static java.util.List<RewardProp> rewardPropList=Collections.synchronizedList(new LinkedList<RewardProp>());
-    //存放所有Person的链表
-    private static java.util.List<Player> playerList =Collections.synchronizedList(new LinkedList<Player>());
+    //存放所有Player的链表
+    private static java.util.List<Player> playerList =Collections.synchronizedList(new ArrayList<>());
     //存放物品栏
     public static JLabel[] itemBars=new JLabel[]{new JLabel(),new JLabel(),new JLabel(),new JLabel()};
     private static Player me;                      //本地玩家
@@ -114,6 +115,22 @@ public class MultiPlayerModel extends JFrame
                     {
 
                     }
+                    //如果收到手雷扔出的消息
+                    else if(line.startsWith(Sign.CreateGrenade))
+                    {
+                        realMessage=getRealMessage(line,Sign.CreateGrenade);
+                        String [] messageArray=realMessage.split(Sign.SplitSign);
+                        String fromPersonId=messageArray[0];
+                        Point startPoint=gson.fromJson(messageArray[1],Point.class);
+                        Point endPoint=gson.fromJson(messageArray[2],Point.class);
+                        Grenade grenade = new Grenade();
+                        //将手雷的所有者设置为person
+                        grenade.setFromPersonId(fromPersonId);
+                        //计算手雷移动速度,与起始移动坐标
+                        grenade.calculateGrenadeSpeed(startPoint, endPoint);
+                        gameArea.add(grenade);
+                        grenadeList.add(grenade);
+                    }
                     //如果收到手雷爆炸的消息
                     else if(line.startsWith(Sign.GrenadeBoom))
                     {
@@ -145,6 +162,19 @@ public class MultiPlayerModel extends JFrame
                                 }
                             }
                         }
+                    }
+                    //如果收到手雷安放的消息
+                    else if(line.startsWith(Sign.CreateMine))
+                    {
+                        realMessage=getRealMessage(line,Sign.CreateMine);
+                        String [] messageArray=realMessage.split(Sign.SplitSign);
+                        String fromPersonId=messageArray[0];
+                        Point stepPoint=gson.fromJson(messageArray[1],Point.class);
+                        Mine mine =new Mine();
+                        mine.setFromPersonId(fromPersonId);
+                        mine.setLocation(stepPoint);
+                        gameArea.add(mine);
+                        mineList.add(mine);
                     }
                     //如果收到地雷爆炸的消息
                     else if(line.startsWith(Sign.MineBoom))
@@ -254,7 +284,7 @@ public class MultiPlayerModel extends JFrame
                         String pointStr = gson.toJson(newPoint);
                         ClientPort.sendStream.println(Sign.PlayerMove + me.getId() + Sign.SplitSign + pointStr);
                         me.setLocation(newPoint);
-                        System.out.println(num++);
+
                     }
                     for (Mine mine : mineList) {
                         if (ifStepMine(mine, me)) {
@@ -853,15 +883,16 @@ public class MultiPlayerModel extends JFrame
         //如果是投掷类武器
         if(weapon.getType()==WeaponType.grenade)
         {
-            if(!person.ifEmptyGrenade()) {
-                Grenade grenade = new Grenade();
-                grenade.setFromPersonId(person.getId());              //将手雷的所有者设置为person
-                grenade.throwGrenade(startPoint, endPoint);
-                gameArea.add(grenade);
-                grenadeList.add(grenade);
+            if(!person.ifEmptyGrenade())
+            {
+                //人物手雷携带数目减少1个
                 person.reduceGrenadeNum(1);
                 int bulletLeftOnPerson= me.getBulletLeftOnPerson();
                 bulletLeft.setText("手雷："+bulletLeftOnPerson);
+                //向服务端发送扔出手雷的消息
+                String startPointStr=gson.toJson(startPoint);
+                String endPointStr=gson.toJson(endPoint);
+                ClientPort.sendStream.println(Sign.CreateGrenade+me.getId()+Sign.SplitSign+startPointStr+Sign.SplitSign+endPointStr);
             }
             else
             {
@@ -873,10 +904,15 @@ public class MultiPlayerModel extends JFrame
         {
             if(!person.ifEmptyMine())
             {
+                Mine mine=(Mine)weapon;
                 MusicPlayer.playDiscontinueAttackMusic(weapon.getWeaponName());
-                stepMine(me.getLocation(), person);
+                //玩家手雷携带数目减少一个
+                me.reduceMineNum(1);
                 int bulletLeftOnPerson= me.getBulletLeftOnPerson();
                 bulletLeft.setText("地雷："+bulletLeftOnPerson);
+                String stepPointStr=gson.toJson(me.getLocation());
+                //向服务端发出手雷扔出的消息
+                ClientPort.sendStream.println(Sign.CreateMine+me.getId()+Sign.SplitSign+stepPointStr);
             }
             else
             {
@@ -938,23 +974,6 @@ public class MultiPlayerModel extends JFrame
             }
         }
     }
-    //安装地雷
-    private void stepMine(Point point,Person fromPerson)
-    {
-        fromPerson.reduceMineNum(1);
-        Mine mine=new Mine();
-        mine.setFromPersonId(fromPerson.getId());
-        mine.setLocation(point);
-        URL url= SinglePersonModel.class.getResource("/images/Weapon/BoomWeapon/Mine.png");
-        ImageIcon icon=new ImageIcon(url);
-        icon.setImage(icon.getImage().getScaledInstance(20,20,Image.SCALE_DEFAULT));
-        mine.setSize(20,20);
-        mine.setIcon(icon);
-        mineList.add(mine);
-        gameArea.add(mine);
-    }
-
-
     //是否踩到地雷
     private boolean ifStepMine(Mine mine,Person person)
     {

@@ -742,7 +742,7 @@ public class GameHall
                         String pointsIndexStr=realMessage.split(Sign.SplitSign)[0];
                         System.out.println(pointsIndexStr);
                         Integer [] pointIndex=gson.fromJson(pointsIndexStr,Integer[].class);
-                        List<Player> players= Collections.synchronizedList(new LinkedList<>());
+                        List<Player> players= Collections.synchronizedList(new ArrayList<Player>());
                         for(int i=0;i<pointIndex.length;i++)
                         {
                             players.add(createPlayer(i+"",entrance[pointIndex[i]],currentGameRoom.getClientIdModel().get(i)));
