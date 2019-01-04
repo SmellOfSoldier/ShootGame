@@ -1007,14 +1007,6 @@ public class SinglePersonModel extends JFrame
         {
             gameArea.remove(person);
         }
-        for(EliteSoldier eliteSoldier:eliteSoldierList)
-        {
-            eliteSoldier.stopShot();
-        }
-        for(Hider hider :hiderList)
-        {
-            hider.stopShot();
-        }
         for(Bullet bullet:automaticBulletList)
         {
             gameArea.remove(bullet);
@@ -1184,6 +1176,14 @@ public class SinglePersonModel extends JFrame
     {
         if(shotThread!=null&&shotThread.isRunning())
             shotThread.stop();             //开火线程
+        for(EliteSoldier eliteSoldier:eliteSoldierList)
+        {
+            eliteSoldier.stopShot();
+        }
+        for(Hider hider :hiderList)
+        {
+            hider.stopShot();
+        }
         automaticBulletThread.stop();     //自动步枪子弹飞行线程
         sniperBulletThread.stop();       //狙击步枪子弹飞行线程
         playerMoveThread.stop();         //玩家移动的线程

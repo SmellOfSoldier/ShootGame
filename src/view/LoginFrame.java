@@ -63,7 +63,7 @@ public class LoginFrame{
             allServerRoom.removeAll(allServerRoom);
             //开始连接服务器
             ClientPort.socket=new Socket();
-            InetSocketAddress address=new InetSocketAddress("127.0.0.1", 25565);
+            InetSocketAddress address=new InetSocketAddress("192.168.43.152", 25565);
             socket.connect(address,2000);
             ClientPort.sendStream=new PrintStream(ClientPort.socket.getOutputStream());//获取写出流
             ClientPort.getStream=new BufferedReader(new InputStreamReader(ClientPort.socket.getInputStream()));//获取写入流
