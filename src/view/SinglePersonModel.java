@@ -569,7 +569,7 @@ public class SinglePersonModel extends JFrame
                             bullet.setLocation(newPoint);
                             for(Person person:personList)          //判断每个人是否被子弹击中
                             {
-                                if((ifHitPerson(bullet,person)) && !person.ifDie() && !person.equals(bullet.getFromPerson()))    //如果击中AI
+                                if((ifHitPerson(bullet,person)) && !person.ifDie() && !person.getId().equals(bullet.getFromPersonId()))    //如果击中AI
                                 {
                                     flag=true;
                                     sniperBulletList.remove(i);
@@ -577,8 +577,8 @@ public class SinglePersonModel extends JFrame
                                     int healthPoint =person.getHealthPoint();
                                     if(healthPoint-bullet.getDamageValue()<=0)      //如果目标死亡
                                     {
-                                        bullet.getFromPerson().addKillNum(1);       //这颗子弹的所有者击杀数加1
-                                        if(bullet.getFromPerson().equals(player))
+                                        Person fromPerson=personList.get(Integer.parseInt(bullet.getFromPersonId()));       //这颗子弹的所有者击杀数加1
+                                        if(fromPerson.equals(player))
                                         {
                                             killAndDieField.setText("击杀/死亡：（"+player.getKillNum()+"/"+player.getDieNum()+")");
                                         }
@@ -643,7 +643,7 @@ public class SinglePersonModel extends JFrame
                             bullet.setLocation(newPoint);
                             for(Person person:personList)          //判断每个敌人是否被子弹击中
                             {
-                                if((ifHitPerson(bullet,person)) && !person.ifDie() && !person.equals(bullet.getFromPerson()))    //如果击中AI
+                                if((ifHitPerson(bullet,person)) && !person.ifDie() && !person.getId().equals(bullet.getFromPersonId()))    //如果击中AI
                                 {
                                     flag=true;
                                     gameArea.remove(bullet);
@@ -651,8 +651,8 @@ public class SinglePersonModel extends JFrame
                                     int healthPoint =person.getHealthPoint();
                                     if(healthPoint-bullet.getDamageValue()<=0)
                                     {
-                                        bullet.getFromPerson().addKillNum(1);       //这颗子弹的所有者击杀数加1
-                                        if(bullet.getFromPerson().equals(player))
+                                       Person fromPerson=personList.get(Integer.parseInt(bullet.getFromPersonId()));       //这颗子弹的所有者击杀数加1
+                                        if(fromPerson.equals(player))
                                         {
                                             killAndDieField.setText("击杀/死亡：（"+player.getKillNum()+"/"+player.getDieNum()+")");
                                         }
@@ -860,7 +860,7 @@ public class SinglePersonModel extends JFrame
     public void createBullet(Person fromPerson,Point start,Point end,int bulletType,int damageValue,int gunType)
     {
         int bulletRadius= BulletSize.getBulletRadius(bulletType);        //根据子弹的类型获取子弹的大小
-        Bullet bullet=new Bullet(fromPerson,bulletType,bulletRadius,damageValue,TravelSpeed.bulletTravelSpeed,start,end);
+        Bullet bullet=new Bullet(fromPerson.getId(),bulletType,bulletRadius,damageValue,TravelSpeed.bulletTravelSpeed,start,end);
         bullet.setSize(bulletRadius,bulletRadius);
         URL url=startGame.class.getResource("/images/bullet/Bullet.png");
         ImageIcon icon=new ImageIcon(url);

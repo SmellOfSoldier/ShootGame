@@ -72,7 +72,6 @@ public class MultiPlayerModel extends JFrame
     private boolean gameOverFlag=false;         //游戏结束标志
     MultiPlayerModel(Player me, java.util.List<Player> allPerson, JFrame gameHallJframe, GameHall.GameRoom gameRoom,GameHall gameHall)
     {
-
         playerList =allPerson;
         MultiPlayerModel.me =me;
         this.gameHallJframe =gameHallJframe;
@@ -174,6 +173,21 @@ public class MultiPlayerModel extends JFrame
                             gameArea.add(mine);
                         }
                         mineList.add(mine);
+                    }
+                    //如果收到创建子弹的消息
+                    else if(line.startsWith(Sign.CreateBullet))
+                    {
+                        realMessage=getRealMessage(line,Sign.CreateBullet);
+                        String []messageStrs=realMessage.split(Sign.SplitSign);
+                        String fromPersonId=messageStrs[0];
+                        Point startPoint=gson.fromJson(messageStrs[1],Point.class);
+                        Point endPoint=gson.fromJson(messageStrs[2],Point.class);
+                        int bulletType=Integer.parseInt(messageStrs[3]);
+                        int damageValue=Integer.parseInt(messageStrs[4]);
+                        int weaponType=Integer.parseInt(messageStrs[5]);
+                        Player fromPerson=playerList.get(Integer.parseInt(fromPersonId));
+                        createBullet(fromPerson,startPoint,endPoint,bulletType,damageValue,weaponType);
+
                     }
                     //如果收到玩家死亡的消息
                     else if(line.startsWith(Sign.OnePlayerDie))
@@ -699,59 +713,49 @@ public class MultiPlayerModel extends JFrame
                 {
                     if(!sniperBulletList.isEmpty())
                     {
-                        int i=-1;
-                        Bullet[] deleteBullet=new Bullet[sniperBulletList.size()];
-                        for(Bullet bullet:sniperBulletList)
+                        for(int i=0;i<sniperBulletList.size();i++)
                         {
+                            Bullet bullet=sniperBulletList.get(i);
                             boolean flag=false;             //标记该子弹是否击中人
                             Point oldPoint=bullet.getLocation();
                             Point newPoint=new Point(oldPoint.x+bullet.getxSpeed(),oldPoint.y+bullet.getySpeed());
                             bullet.setLocation(newPoint);
                             for(Person person: playerList)          //判断每个人是否被子弹击中
                             {
-                                if((ifHitPerson(bullet,person)) && !person.ifDie() && !person.equals(bullet.getFromPerson()))    //如果击中AI
+                                if((ifHitPerson(bullet,person)) && !person.ifDie() && !person.getId().equals(bullet.getFromPersonId()))    //如果击中AI
                                 {
                                     flag=true;
-                                    bullet.setVisible(false);                   //击中目标后子弹消失
+                                    gameArea.remove(bullet);
+                                    sniperBulletList.remove(i);
                                     int healthPoint =person.getHealthPoint();
                                     if(healthPoint-bullet.getDamageValue()<=0)      //如果目标死亡
                                     {
-                                        bullet.getFromPerson().addKillNum(1);       //这颗子弹的所有者击杀数加1
-                                        person.dieSpecialEffect(gameArea);
-                                        System.out.println("693");
-                                        person.setVisible(false);
-                                        person.setDie(true);
-                                        /*
+                                        person.addDieNum(1);
+                                        Player fromPlayer=playerList.get(Integer.parseInt(bullet.getFromPersonId()));
+                                        fromPlayer.addKillNum(1);
+                                        if(fromPlayer.equals(me))
+                                        {
+                                            killAndDieField.setText("击杀/死亡：（"+me.getKillNum()+"/"+me.getDieNum()+")");
 
-
-
-                                         */
+                                        }
+                                        ClientPort.sendStream.println(Sign.OnePlayerDie+person.getId());
                                         createRewardProp(person.getLocation());     //掉落物品
                                     }
                                     else
                                     {
                                         person.reduceHealthPoint(bullet.getDamageValue());
                                     }
-                                    deleteBullet[++i]=bullet;       //将击中目标的子弹保存起来
                                     break;
                                 }
                             }
                             if(!flag && (ifHitWall(bullet.getLocation(),bullet.getRadius(),true)))    //判断子弹是否撞墙
                             {
-                                deleteBullet[++i]=bullet ;           //将撞墙的子弹保存起来
-                                bullet.setVisible(false);
+                                gameArea.remove(bullet);
+                                sniperBulletList.remove(i);
                                 // MusicPlayer.playBulletHitWallMusic();
                             }
                         }
-                        if(i!=-1)
-                        {
-                            for(int j=0;j<=i;j++)
-                            {
-                                gameArea.remove(deleteBullet[j]);  //将子弹从gameArea中删除
-                                sniperBulletList.remove(deleteBullet[j]);                //将子弹从自动步枪子弹中删除
-                            }
-                            gameArea.repaint();
-                        }
+                        gameArea.repaint();
                     }
                 }
             });
@@ -767,60 +771,44 @@ public class MultiPlayerModel extends JFrame
                 {
                     if(!automaticBulletList.isEmpty())
                     {
-                        int i=-1;
-                        Bullet[] deleteBullet=new Bullet[automaticBulletList.size()];
-                        for(Bullet bullet:automaticBulletList)
+                        for(int i=0;i<automaticBulletList.size();i++)
                         {
+                            Bullet bullet=automaticBulletList.get(i);
                             boolean flag=false;             //标记该子弹是否击中人
                             Point oldPoint=bullet.getLocation();
                             Point newPoint=new Point(oldPoint.x+bullet.getxSpeed(),oldPoint.y+bullet.getySpeed());
                             bullet.setLocation(newPoint);
                             for(Person person: playerList)          //判断每个敌人是否被子弹击中
                             {
-                                if((ifHitPerson(bullet,person)) && !person.ifDie() && !person.equals(bullet.getFromPerson()))    //如果击中AI
+                                if((ifHitPerson(bullet,person)) && !person.ifDie() && !person.getId().equals(bullet.getFromPersonId()))    //如果击中AI
                                 {
                                     flag=true;
-                                    bullet.setVisible(false);                   //击中目标后子弹消失
+                                    automaticBulletList.remove(i);
+                                    gameArea.remove(bullet);
                                     int healthPoint =person.getHealthPoint();
                                     if(healthPoint-bullet.getDamageValue()<=0)
                                     {
-                                        bullet.getFromPerson().addKillNum(1);       //这颗子弹的所有者击杀数加1
-                                        person.setDie(true);                        //设置人物死亡
-                                        person.dieSpecialEffect(gameArea);
-                                        /*
-
-
-
-
-                                         */
-                                        System.out.println("768");
-                                        person.setVisible(false);
+                                        person.addDieNum(1);
+                                        Person fromPerson=playerList.get(Integer.parseInt(bullet.getFromPersonId()));       //这颗子弹的所有者击杀数加1
+                                        fromPerson.addKillNum(1);
+                                        ClientPort.sendStream.println(Sign.OnePlayerDie+person.getId());
                                         createRewardProp(person.getLocation());     //掉落物品
                                     }
                                     else
                                     {
                                         person.reduceHealthPoint(bullet.getDamageValue());
                                     }
-                                    deleteBullet[++i]=bullet;       //将击中目标的子弹保存起来
                                     break;
                                 }
                             }
                             if(!flag && (ifHitWall(bullet.getLocation(),bullet.getRadius(),true)))    //判断子弹是否撞墙
                             {
-                                bullet.setVisible(false);
-                                deleteBullet[++i]=bullet ;           //将撞墙的子弹保存起来
+                                automaticBulletList.remove(i);
+                                gameArea.remove(bullet);
                                 // MusicPlayer.playBulletHitWallMusic();
                             }
                         }
-                        if(i!=-1)
-                        {
-                            for(int j=0;j<=i;j++)
-                            {
-                                gameArea.remove(deleteBullet[j]);  //将子弹从gameArea中删除
-                                automaticBulletList.remove(deleteBullet[j]);                //将子弹从自动步枪子弹中删除
-                            }
-                            gameArea.repaint();
-                        }
+                        gameArea.repaint();
                     }
                 }
             });
@@ -1002,7 +990,7 @@ public class MultiPlayerModel extends JFrame
     public void createBullet(Person fromPerson,Point start,Point end,int bulletType,int damageValue,int gunType)
     {
         int bulletRadius= BulletSize.getBulletRadius(bulletType);        //根据子弹的类型获取子弹的大小
-        Bullet bullet=new Bullet(fromPerson,bulletType,bulletRadius,damageValue,TravelSpeed.bulletTravelSpeed,start,end);
+        Bullet bullet=new Bullet(fromPerson.getId(),bulletType,bulletRadius,damageValue,TravelSpeed.bulletTravelSpeed,start,end);
         bullet.setSize(bulletRadius,bulletRadius);
         URL url=startGame.class.getResource("/images/bullet/Bullet.png");
         ImageIcon icon=new ImageIcon(url);
@@ -1096,13 +1084,18 @@ public class MultiPlayerModel extends JFrame
                 if (!gun.emptyBulletNum() ) //如果还有子弹
                 {
                     gun.setPollBolt(true);      //狙击枪进入拉栓状态
-                    createBullet(me,startPoint, endPoint, BulletType.k127, weapon.getDamageValue(), weapon.getType());
+                    String fromPersonId=me.getId();
+                    String startPointStr=gson.toJson(startPoint);
+                    String endPointStr=gson.toJson(endPoint);
+                    int bulletType=BulletType.k127;
+                    int damageValue=weapon.getDamageValue();
+                    int weaponType=weapon.getType();
+                    ClientPort.sendStream.println(Sign.CreateBullet+fromPersonId+Sign.SplitSign+startPointStr+Sign.SplitSign+endPointStr+Sign.SplitSign+bulletType+Sign.SplitSign+damageValue+Sign.SplitSign+weaponType);
                     gun.reduceBulletNum(1);     //子弹里面的弹夹减1
                     //修改子弹的数目，在屏幕左上角的显示
                     int bulletLeftInGun=((Gun)weapon).getBulletLeft();
                     int bulletLeftOnPerson= me.getBulletLeftOnPerson();
                     bulletLeft.setText("子弹："+bulletLeftInGun+"/"+bulletLeftOnPerson);
-
                     MusicPlayer.playDiscontinueAttackMusic(weapon.getWeaponName());
                 } else                    //没有子弹
                 {
@@ -1119,7 +1112,13 @@ public class MultiPlayerModel extends JFrame
             {
                 if (!gun.emptyBulletNum() ) //如果还有子弹
                 {
-                    createBullet(me,startPoint, endPoint, ((Gun) weapon).getBulletType(), weapon.getDamageValue(), weapon.getType());
+                    String fromPersonId=me.getId();
+                    String startPointStr=gson.toJson(startPoint);
+                    String endPointStr=gson.toJson(endPoint);
+                    int bulletType=gun.getBulletType();
+                    int damageValue=weapon.getDamageValue();
+                    int weaponType=weapon.getType();
+                    ClientPort.sendStream.println(Sign.CreateBullet+fromPersonId+Sign.SplitSign+startPointStr+Sign.SplitSign+endPointStr+Sign.SplitSign+bulletType+Sign.SplitSign+damageValue+Sign.SplitSign+weaponType);
                     gun.reduceBulletNum(1);     //子弹里面的弹夹减1
                     int bulletLeftInGun=((Gun)weapon).getBulletLeft();
                     int bulletLeftOnPerson= me.getBulletLeftOnPerson();

@@ -50,7 +50,7 @@ public class Hider extends AI implements Serializable
                 public void actionPerformed(ActionEvent e)
                 {
                     int radius= BulletSize.getBulletRadius(awm.getBulletType());
-                    Bullet bullet=new Bullet(Hider.this,awm.getBulletType(),radius,awm.getDamageValue(), TravelSpeed.bulletTravelSpeed,Hider.this.getLocation(), SinglePersonModel.getPlayer().getLocation());
+                    Bullet bullet=new Bullet(Hider.this.id,awm.getBulletType(),radius,awm.getDamageValue(), TravelSpeed.bulletTravelSpeed,Hider.this.getLocation(), SinglePersonModel.getPlayer().getLocation());
                     int bulletRadius=bullet.getRadius();
                     bullet.setSize(bulletRadius,bulletRadius);
                     URL url= startGame.class.getResource("/images/bullet/Bullet.png");

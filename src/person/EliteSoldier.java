@@ -53,7 +53,7 @@ public class EliteSoldier extends AI implements Serializable
                 public void actionPerformed(ActionEvent e)
                 {
                     int radius=BulletSize.getBulletRadius(akm.getBulletType());
-                    Bullet bullet=new Bullet(EliteSoldier.this,akm.getBulletType(),radius,akm.getDamageValue(), TravelSpeed.bulletTravelSpeed,EliteSoldier.this.getLocation(), SinglePersonModel.getPlayer().getLocation());
+                    Bullet bullet=new Bullet(EliteSoldier.this.id,akm.getBulletType(),radius,akm.getDamageValue(), TravelSpeed.bulletTravelSpeed,EliteSoldier.this.getLocation(), SinglePersonModel.getPlayer().getLocation());
                     int bulletRadius=bullet.getRadius();
                     bullet.setSize(bulletRadius,bulletRadius);
                     URL url= startGame.class.getResource("/images/bullet/Bullet.png");
