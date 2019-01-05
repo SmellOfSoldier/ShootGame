@@ -141,7 +141,7 @@ public class LoginFrame{
                             for (ServerGameRoom r:rooms){
                                 allServerRoom.add(r);
                             }
-                        new GameHall(me,ip);//创建游戏大厅并传入登陆者的实例对象
+                        ClientPort.gameHall=new GameHall(me,ip);//创建游戏大厅并传入登陆者的实例对象
                             //登陆界面关闭
                             loginJFrame.dispose();
                         break;

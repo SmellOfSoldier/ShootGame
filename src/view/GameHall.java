@@ -858,5 +858,22 @@ public class GameHall
         return realMessage;
     }
 
-
+    /**
+     * 刷新gamehall列表
+     * @param allclient
+     * @param allgameroom
+     */
+    public void RefreshList(List<Client> allclient,List<ServerGameRoom> allgameroom)
+    {
+        onlinePlayer.removeAllElements();
+        rooms.removeAllElements();
+        for(Client c:allclient)
+        {
+            onlinePlayer.addElement(c.getId());
+        }
+        for(ServerGameRoom s:allgameroom)
+        {
+            rooms.addElement(s.getId());
+        }
+    }
 }

@@ -19,7 +19,7 @@ public class ClientPort {
     public static List<GameHall.GameRoom> allGameRoom=Collections.synchronizedList(new LinkedList<>());
     public static Lock threadLock=new ReentrantLock();     //同步锁，用来锁游戏线程和业务线程
     public static Condition threadCondition=threadLock.newCondition();   //用来使线程通信的condition
-
+    public static GameHall gameHall;
     public static void main(String[] args)
     {
         //开启登陆界面

@@ -444,9 +444,22 @@ class ClientThread extends Thread {
                         new PlayerReliveThread(currentGameRoom,diePlayerFlag).start();
                     }
                 /**
-                 *收到游戏结束消息
+                 * 玩家中途离开游戏
                  */
-                /*else if(client.isPlaying()&&line.startsWith(Sign.GameOver))
+                else if(client.isPlaying()&&line.startsWith(Sign.LeaveGame))
+                {
+                    client.setPlaying(false);
+                    currentGameRoom.removeClient(client.getId());
+                    currentGameRoom=null;
+                    //序列化初始化信息
+                    String allclientsStr = gson.toJson(StartServer.onlineClients);
+                    String roomStr = gson.toJson(StartServer.allGameRoom);
+                    sendStream.println(Sign.GameOver+allclientsStr+Sign.SplitSign+roomStr);
+                }
+                /**
+                 *收到刷新消息
+                 */
+                else if(line.startsWith(Sign.RefreshInformation))
                 {
                     //序列化初始化信息
                     String allclientsStr = gson.toJson(StartServer.onlineClients);
@@ -456,14 +469,13 @@ class ClientThread extends Thread {
                             for(Client c:currentGameRoom.getAllClients())
                             {
                                 PrintStream sendstream= StartServer.clientPrintStreamMap.get(c);
-                                sendstream.println(Sign.RefreshGameHall+allclientsStr+Sign.SplitSign+roomStr);//发送大厅刷新消息
+                                sendstream.println(Sign.RefreshInformation+allclientsStr+Sign.SplitSign+roomStr);//发送大厅刷新消息
                                 //设置房间内玩家游玩状态为false
                                 c.setPlaying(false);
                             }
-
-                }*/
-
-
+                            //退出房间
+                            currentGameRoom=null;
+                }
                 /**
                  *
                  */
