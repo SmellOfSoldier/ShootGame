@@ -449,7 +449,6 @@ class ClientThread extends Thread {
                 else if(client.isPlaying()&&line.startsWith(Sign.LeaveGame))
                 {
                     client.setPlaying(false);
-                    currentGameRoom.removeClient(client.getId());
                     currentGameRoom=null;
                     //序列化初始化信息
                     String allclientsStr = gson.toJson(StartServer.onlineClients);
@@ -459,7 +458,7 @@ class ClientThread extends Thread {
                 /**
                  *收到刷新消息
                  */
-                else if(line.startsWith(Sign.RefreshInformation))
+                /*else if(line.startsWith(Sign.RefreshInformation))
                 {
                     //序列化初始化信息
                     String allclientsStr = gson.toJson(StartServer.onlineClients);
@@ -475,7 +474,7 @@ class ClientThread extends Thread {
                             }
                             //退出房间
                             currentGameRoom=null;
-                }
+                }*/
                 /**
                  *
                  */
