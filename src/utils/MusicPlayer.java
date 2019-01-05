@@ -12,7 +12,7 @@ import javax.swing.Timer;
 public class MusicPlayer
 {
     private static Random random=new Random();
-    private static String []actionMusicFile=new String[]{"action01.wav","action02.wav","action03.wav","action04.wav"};
+    private static String []actionMusicFile=new String[]{"action01.wav"/*,"action02.wav","action03.wav","action04.wav"*/};
     private static String []weaponName=new String[]{"AKM","M4A1","AWM","Barret","Mine","Grenade"};
     private static int bgmTime=120000;
     private static URL actionBGMUrl =null;         //游戏背景音乐的路径

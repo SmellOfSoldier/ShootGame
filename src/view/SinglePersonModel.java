@@ -286,6 +286,7 @@ public class SinglePersonModel extends JFrame
             healthLevel.setSize(120,30);
             healthLevel.setLocation(100,10);
             healthLevel.setForeground(new Color(0xFD2016));
+            healthLevel.setValue(Player.maxHealthPoint);
 
             healthLevelTip.setLocation(10,10);
             healthLevelTip.setSize(70,30);
@@ -578,6 +579,7 @@ public class SinglePersonModel extends JFrame
                                     if(healthPoint-bullet.getDamageValue()<=0)      //如果目标死亡
                                     {
                                         Person fromPerson=personList.get(Integer.parseInt(bullet.getFromPersonId()));       //这颗子弹的所有者击杀数加1
+                                        fromPerson.addKillNum(1);
                                         if(fromPerson.equals(player))
                                         {
                                             killAndDieField.setText("击杀/死亡：（"+player.getKillNum()+"/"+player.getDieNum()+")");
@@ -651,7 +653,9 @@ public class SinglePersonModel extends JFrame
                                     int healthPoint =person.getHealthPoint();
                                     if(healthPoint-bullet.getDamageValue()<=0)
                                     {
-                                       Person fromPerson=personList.get(Integer.parseInt(bullet.getFromPersonId()));       //这颗子弹的所有者击杀数加1
+
+                                        Person fromPerson=personList.get(Integer.parseInt(bullet.getFromPersonId()));       //这颗子弹的所有者击杀数加1
+                                        fromPerson.addKillNum(1);
                                         if(fromPerson.equals(player))
                                         {
                                             killAndDieField.setText("击杀/死亡：（"+player.getKillNum()+"/"+player.getDieNum()+")");

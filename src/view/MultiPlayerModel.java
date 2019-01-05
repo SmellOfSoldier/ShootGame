@@ -1,8 +1,10 @@
 package view;
 
+import Arsenal.M4A1;
 import Weapon.*;
 import bullet.*;
 import com.google.gson.Gson;
+import com.sun.javafx.image.IntPixelGetter;
 import person.*;
 import person.Map;
 import reward.MedicalPackage;
@@ -202,7 +204,8 @@ public class MultiPlayerModel extends JFrame
                             if(player.equals(me))
                             {
                                 killAndDieField.setText("击杀/死亡：（"+me.getKillNum()+"/"+me.getDieNum()+")");
-
+                                if(shotThread!=null && shotThread.isRunning())
+                                    shotThread.stop();
                             }
                             //将该玩家埋下的地雷清除
                             List<Mine> deleteMineList=new LinkedList<Mine>();
@@ -223,6 +226,15 @@ public class MultiPlayerModel extends JFrame
 
                         }
                     }
+                    //如果收到服务器发来奖励的消息
+                    else if(line.startsWith(Sign.CreateReward))
+                    {
+                        realMessage=getRealMessage(line,Sign.CreateReward);
+                        int rewardType= Integer.parseInt(realMessage.split(Sign.SplitSign)[0]);
+                        String pointStr=realMessage.split(Sign.SplitSign)[1];
+                        Point point=gson.fromJson(pointStr,Point.class);
+                        gameArea.add(new RewardProp(rewardType,point));
+                    }
                     //如果收到玩家复活的消息
                     else if(line.startsWith(Sign.OnePlayerRelive))
                     {
@@ -240,8 +252,10 @@ public class MultiPlayerModel extends JFrame
                             if (player.equals(me))
                             {
                                 healthLevel.setValue(player.getHealthPoint());
-                                me.setMineNum(10);
-                                me.setGrenadeNum(30);
+                                me.setMineNum(5);
+                                me.setGrenadeNum(10);
+                                me.peekWeapon(new M4A1(),0);
+                                me.setBulletNum(WeaponType.automaticRifle,300);
                             }
                             gameArea.repaint();
                         }
@@ -408,7 +422,7 @@ public class MultiPlayerModel extends JFrame
             healthLevel.setSize(120,30);
             healthLevel.setLocation(100,10);
             healthLevel.setForeground(new Color(0xFD2016));
-            healthLevel.setValue(me.getHealthPoint());
+            healthLevel.setValue(Player.maxHealthPoint);
 
             healthLevelTip.setLocation(10,10);
             healthLevelTip.setSize(70,30);
@@ -436,10 +450,12 @@ public class MultiPlayerModel extends JFrame
             leaveGame.setFont(new Font(null,Font.BOLD,20));
             leaveGame.setSize(100,30);
             leaveGame.setLocation(1050,40);
+            leaveGame.setFocusable(false);
             leaveGame.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     int choice=JOptionPane.showConfirmDialog(null,"真的要退出游戏吗？","提示",JOptionPane.YES_NO_OPTION);
+
                     if(choice==0)
                     {
                         //向服务端发送玩家离开游戏的消息
@@ -560,14 +576,22 @@ public class MultiPlayerModel extends JFrame
                                     //如果是地雷或者是手雷
                                     else if(rewardProp.getType()== RewardType.Mine || rewardProp.getType()==RewardType.Grenade)
                                     {
-                                        me.peekWeapon((Weapon) rewardProp.getReward(),1);
+                                        me.peekWeapon((Weapon) rewardProp.getReward(),5);
                                         int left=me.getBulletLeftOnPerson();
                                         bulletLeft.setText("子弹："+left);
                                     }
                                     //如果道具是枪
                                     else
                                     {
-                                        me.peekWeapon((Weapon) rewardProp.getReward(),0);
+                                        Gun gun=(Gun) rewardProp.getReward();
+                                        if(gun instanceof SniperRifle)
+                                        {
+                                            me.peekWeapon(gun,10);
+                                        }
+                                        else
+                                        {
+                                            me.peekWeapon(gun,300);
+                                        }
                                     }
                                     index=i;
                                 }
@@ -664,7 +688,6 @@ public class MultiPlayerModel extends JFrame
             //玩家射击
             this.addMouseListener(new MouseAdapter()
             {
-
                 public void mousePressed(MouseEvent mouseEvent)         //玩家攻击
                 {
                     if(!me.ifDie())
@@ -688,6 +711,7 @@ public class MultiPlayerModel extends JFrame
                                 }
                             });
                             shotThread.start();
+                            System.gc();
                         }
                     }
                 }

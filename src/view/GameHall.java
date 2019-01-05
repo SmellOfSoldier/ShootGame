@@ -829,8 +829,7 @@ public class GameHall
             icon.setImage(bufferedImage);
             icon.setImage(icon.getImage().getScaledInstance(size, size, Image.SCALE_DEFAULT));
             player.setIcon(icon);
-            player.setLocation(400, 300);
-            player.peekWeapon(new AWM(), 100);
+            //player.peekWeapon(new AWM(), 100);
             player.peekWeapon(new Mine(), 10);
             player.peekWeapon(new Grenade(), 30);
             player.peekWeapon(new M4A1(), 10000);

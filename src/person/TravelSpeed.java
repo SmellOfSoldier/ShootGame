@@ -6,7 +6,7 @@ package person;
 
 public interface TravelSpeed
 {
-     int bulletTravelSpeed=15;      //子弹每次移动的像素
+     int bulletTravelSpeed=20;      //子弹每次移动的像素
      int personTravelSpeed=2;       //人物每次移动的像素
      int grenadeTravelSpeed=8;    //手雷每次移动的像素
 }

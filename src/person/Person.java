@@ -161,6 +161,10 @@ public class Person extends JLabel implements Serializable
     {
         healthPoint+=hp;
     }
+    public void setHealthPoint(int hp)
+    {
+        healthPoint=hp;
+    }
     public void reduceHealthPoint(int hp)               //给人物扣血
     {
         if(hp+healthPoint<0)
@@ -224,5 +228,9 @@ public class Person extends JLabel implements Serializable
     public boolean ifEmptyMine(){return bulletNum[WeaponType.mine]==0;}         //判断人物是否还有地雷
     public boolean ifEmptyGrenade(){return bulletNum[WeaponType.grenade]==0;}   //判断人物是否还有手雷
     public int getBulletLeftOnPerson(){return bulletNum[usingWeaponType];}      //放回人物身上携带的子弹数量
+    public void setBulletNum(int weaponType,int num)                //设置子弹数目
+    {
+        this.bulletNum[weaponType]=num;
+    }
 }
 
