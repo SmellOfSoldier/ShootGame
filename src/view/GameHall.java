@@ -759,7 +759,7 @@ public class GameHall
                         List<Player> players= Collections.synchronizedList(new ArrayList<Player>());
                         for(int i=0;i<pointIndex.length;i++)
                         {
-                            players.add(createPlayer(i+"",entrance[pointIndex[i]],currentGameRoom.getClientIdModel().get(i),currentClient.getId()));
+                            players.add(createPlayer(i+"",entrance[pointIndex[i]],currentGameRoom.getClientIdModel().get(i),currentGameRoom.getClientIdModel().get(i)));
                         }
                         sendstream.println(Sign.GameReadyStart);
                         gameHallJFrame.setVisible(false);

@@ -137,9 +137,11 @@ public class MultiPlayerModel extends JFrame
                             ClientPort.allServerRoom.add(allRooms[i]);
                         }
                         gameHall.refreshList(ClientPort.allOnlineClient,ClientPort.allServerRoom);
+
                         gameOver();
                         System.out.println("游戏正在退出");
                         JOptionPane.showMessageDialog(null,"哎时间总是很短暂，游戏时间到啦","系统提示",JOptionPane.OK_OPTION);
+                        new GameResult(playerList);
                     }
                     //如果收到手雷扔出的消息
                     else if(line.startsWith(Sign.CreateGrenade))

@@ -325,7 +325,7 @@ class ClientThread extends Thread {
 
                                 }
                                 //设置定时游戏结束
-                                new MultiPlayTimeStop(currentGameRoom,4).start();
+                                new MultiPlayTimeStop(currentGameRoom,120).start();
 
                                 client.setPlaying(true);//设置当前玩家为正在对战状态
                                 GuiShowMes.append("服务器消息：房间："+currentGameRoom.getId()+" 开始游戏。\n");
