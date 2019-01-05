@@ -232,9 +232,12 @@ public class MultiPlayerModel extends JFrame
                         int rewardType= Integer.parseInt(realMessage.split(Sign.SplitSign)[0]);
                         String pointStr=realMessage.split(Sign.SplitSign)[1];
                         Point point=gson.fromJson(pointStr,Point.class);
+                        System.out.println(point);
+                        System.out.println(rewardType);
                         RewardProp rewardProp=new RewardProp(rewardType,point);
                         gameArea.add(rewardProp);
                         rewardPropList.add(rewardProp);
+                        gameArea.repaint();
                     }
                     //如果收到玩家复活的消息
                     else if(line.startsWith(Sign.OnePlayerRelive))
@@ -437,7 +440,7 @@ public class MultiPlayerModel extends JFrame
             bulletLeft.setLocation(10,50);
             bulletLeft.setEditable(false);
             bulletLeft.setBackground(new Color(0x75BCE2));
-            bulletLeft.setText("子弹："+30+"/"+10000);
+            bulletLeft.setText("子弹："+30+"/"+me.getBulletLeftOnPerson());
             bulletLeft.setFocusable(false);
 
             killAndDieField.setText("击杀/死亡：(0/0)");

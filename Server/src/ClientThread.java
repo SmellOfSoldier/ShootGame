@@ -327,9 +327,7 @@ class ClientThread extends Thread {
                                     StartServer.clientPrintStreamMap.get(c).println(Sign.GameStart+randomStr+Sign.SplitSign+(i++));//为每位在房间内的玩家发送初始化的出生坐标
 
                                 }
-                                //开始随机产生奖励线程
-                                randomReward=new RandomReward(sendStream);
-                                randomReward.start();
+
                                 //设置定时游戏结束
                                 timeStop=new MultiPlayTimeStop(currentGameRoom,randomReward,120);
                                 timeStop.start();
@@ -344,6 +342,9 @@ class ClientThread extends Thread {
                     else if(line.startsWith(Sign.GameReadyStart))
                     {
                         client.setPlaying(true);
+                        //开始随机产生奖励线程
+                        randomReward=new RandomReward(sendStream);
+                        randomReward.start();
                     }
                 /**
                  * 下面为游戏内服务的命令

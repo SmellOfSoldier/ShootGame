@@ -1,4 +1,5 @@
 import com.google.gson.Gson;
+import reward.RewardType;
 import untils.Map;
 
 import java.awt.*;
@@ -39,7 +40,7 @@ public class RandomReward extends Thread{
                 if(Map.oringemap[y][x]==0) right=true;
             }
             String pointStr=gson.toJson(new Point(x*40,y*40));
-            int z=random.nextInt(8);
+            int z=random.nextInt(RewardType.typeNum);
             sendstream.println(Sign.RandomReward+z+Sign.SplitSign+pointStr);
         }
     }
