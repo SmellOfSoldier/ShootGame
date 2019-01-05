@@ -35,7 +35,7 @@ public class EliteSoldier extends AI implements Serializable
         super(id,"精英战士",healthPoint,10,speed,vision);
         this.peekWeapon(akm,240);
         changeWeapon(WeaponType.automaticRifle,null);
-        URL url=startGame.class.getResource("/images/apple.png");
+        URL url=startGame.class.getResource("/images/AI/"+Person.EliteSoldierImageFile);
         ImageIcon icon=new ImageIcon(url);
         icon.setImage(icon.getImage().getScaledInstance(SinglePersonModel.CELL, SinglePersonModel.CELL,Image.SCALE_DEFAULT));
         this.setSize(SinglePersonModel.CELL, SinglePersonModel.CELL);

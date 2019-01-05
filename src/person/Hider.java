@@ -32,7 +32,7 @@ public class Hider extends AI implements Serializable
     {
         super(id,"隐匿者",100,10,speed,vision);
         changeWeapon(WeaponType.automaticRifle,null);
-        URL url=startGame.class.getResource("/images/orange.png");
+        URL url=startGame.class.getResource("/images/AI/"+Person.HiderImageFile);
         ImageIcon icon=new ImageIcon(url);
         icon.setImage(icon.getImage().getScaledInstance(SinglePersonModel.CELL, SinglePersonModel.CELL,Image.SCALE_DEFAULT));
         this.setSize(SinglePersonModel.CELL, SinglePersonModel.CELL);

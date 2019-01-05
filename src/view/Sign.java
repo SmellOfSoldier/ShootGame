@@ -65,4 +65,5 @@ public interface Sign
     String CreateMine="CREATE_MINE";                                   //创建地雷
     String CreateGrenade="CREATE_GRENADE";                             //创建手雷
     String RepeatLogin="REPEAT_LOGIN";                                 //多次登陆
+    String LeaveGame="LEAVE_GAME";                                      //玩家在游戏中途退出游戏
 }

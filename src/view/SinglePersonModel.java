@@ -1068,10 +1068,8 @@ public class SinglePersonModel extends JFrame
             player = new Player("0", "DJF");
             int size = 2 * (player.getRadius());
             player.setSize(size, size);
-            InputStream is = startGame.class.getResourceAsStream("/images/header_b.png");
-            BufferedImage bufferedImage = ImageIO.read(is);
-            ImageIcon icon = new ImageIcon();
-            icon.setImage(bufferedImage);
+           URL url= startGame.class.getResource("/images/player/"+Person.playerImageFile[0]);
+            ImageIcon icon = new ImageIcon(url);
             icon.setImage(icon.getImage().getScaledInstance(size, size, Image.SCALE_DEFAULT));
             player.setIcon(icon);
             player.setLocation(400, 300);
@@ -1085,9 +1083,9 @@ public class SinglePersonModel extends JFrame
             personList.add(player);
             healthLevel.setValue(player.getHealthPoint());
         }
-        catch (IOException ioe)
+        catch (Exception ex)
         {
-            ioe.printStackTrace();
+            ex.printStackTrace();
         }
     }
 

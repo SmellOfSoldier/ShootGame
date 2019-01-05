@@ -6,10 +6,7 @@ import javax.swing.*;
 import java.applet.Applet;
 import java.applet.AudioClip;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.net.URL;
 import java.util.*;
 import java.util.List;
@@ -50,15 +47,17 @@ public class Test
             jFrame.pack();
             jFrame.setVisible(true);
             t1.start();*/
-        Set<A> set=new HashSet<>();
-        A b1=new B("1",1);
-        A b2=new B("1",2);
-        set.add(b1);
-        set.add(b2);
-        for(A b:set)
-        {
-            System.out.println(b.value);
-        }
+        JFrame jFrame=new JFrame();
+        jFrame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                int choice=JOptionPane.showConfirmDialog(null,"真的要退出游戏？","警告",JOptionPane.YES_NO_OPTION);
+                if(choice==0)
+                    System.exit(0);
+                jFrame.setVisible(true);
+            }
+        });
+        jFrame.setVisible(true);
 
     }
 }

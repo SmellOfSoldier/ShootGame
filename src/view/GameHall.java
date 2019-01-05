@@ -6,6 +6,7 @@ import Weapon.Grenade;
 import Weapon.Mine;
 import com.google.gson.Gson;
 import javafx.scene.transform.Rotate;
+import person.Person;
 import person.Player;
 import utils.MusicPlayer;
 
@@ -761,14 +762,13 @@ public class GameHall
                             players.add(createPlayer(i+"",entrance[pointIndex[i]],currentGameRoom.getClientIdModel().get(i)));
                         }
                         sendstream.println(Sign.GameReadyStart);
-                        gameHallJFrame.setVisible(false);
-                        currentGameRoom.setVisible(false);
+                        //gameHallJFrame.setVisible(false);
+                        //currentGameRoom.setVisible(false);
                         new MultiPlayerModel(players.get(myPlayerIndex),players,gameHallJFrame,currentGameRoom);
                         //停止播放大厅背景音乐
                         MusicPlayer.stopGameHallBGM();
                         //业务线程睡眠，等待游戏结束后被唤醒
                         condition.await();
-                        System.out.println("游戏结束");
 
                     }
                     //TODO:客户端线程
@@ -802,7 +802,6 @@ public class GameHall
         PrintStream ps=ClientPort.sendStream;
         //将人物的id与将要离开的房间的id发送给服务端
         ps.println(Sign.ClientLeaveRoom);
-        System.out.println(currentGameRoom==null);
         if(currentGameRoom!=null && !currentGameRoom.getId().equals(currentClient.getId()))
         {
             currentGameRoom.setVisible(false);
@@ -824,7 +823,7 @@ public class GameHall
             player = new Player(id, name);
             int size = 2 * (player.getRadius());
             player.setSize(size, size);
-            InputStream is = startGame.class.getResourceAsStream("/images/header_b.png");
+            InputStream is = startGame.class.getResourceAsStream("/images/player/"+ Person.playerImageFile[Integer.parseInt(id)]);
             BufferedImage bufferedImage = ImageIO.read(is);
             ImageIcon icon = new ImageIcon();
             icon.setImage(bufferedImage);
