@@ -817,7 +817,7 @@ public class GameHall
             player.setLocation(400, 300);
             player.peekWeapon(new AWM(), 100);
             player.peekWeapon(new Mine(), 10);
-            player.peekWeapon(new Grenade(), 10);
+            player.peekWeapon(new Grenade(), 30);
             player.peekWeapon(new M4A1(), 10000);
             player.setLocation(startPoint);
         }

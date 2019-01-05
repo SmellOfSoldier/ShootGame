@@ -14,7 +14,7 @@ import java.io.Serializable;
  */
 public class Player extends Person implements Serializable
 {
-    public static final int maxHealthPoint=5000;    //最大生命值
+    public static final int maxHealthPoint=1000;    //最大生命值
     private int lSpeed=0;                           //人物每次左边方向移动的像素
     private int rSpeed=0;                           //人物每次右边方向移动的像素
     private int uSpeed=0;                           //人物每次上边方向移动的像素
@@ -53,7 +53,8 @@ public class Player extends Person implements Serializable
     public void setDie(boolean die)
     {
         super.setDie(die);
-        if(die) {
+        if(die)
+        {
             MusicPlayer.playDieMusic();     //播放死亡音效
             addDieNum(1);
         }

@@ -216,6 +216,8 @@ public class Person extends JLabel implements Serializable
     public int getSpeed(){return speed;}                                //获取人物的移动速度
     public void reduceMineNum(int num){bulletNum[WeaponType.mine]-=num;}        //减少人物携带的地雷数量
     public void reduceGrenadeNum(int num){bulletNum[WeaponType.grenade]-=num;}  //减少人物携带的手雷数量
+    public void setGrenadeNum(int num){bulletNum[WeaponType.grenade]=num;}      //设置人物手雷的数目
+    public void setMineNum(int num){bulletNum[WeaponType.mine]=num;}            //设置手雷数目
     public boolean ifEmptyMine(){return bulletNum[WeaponType.mine]==0;}         //判断人物是否还有地雷
     public boolean ifEmptyGrenade(){return bulletNum[WeaponType.grenade]==0;}   //判断人物是否还有手雷
     public int getBulletLeftOnPerson(){return bulletNum[usingWeaponType];}      //放回人物身上携带的子弹数量

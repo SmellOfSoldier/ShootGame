@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Random;
 
@@ -125,31 +126,34 @@ public class SinglePersonModel extends JFrame
             public void actionPerformed(ActionEvent e)
             {
                 boolean gameOver=false;
-                java.util.List<Mine> list=new LinkedList<Mine>();   //存放爆炸的地雷
                 for (EliteSoldier eliteSoldier:eliteSoldierList)
                 {
                     //判断精英战士是否踩了地雷
-                    for(Mine mine :mineList)
+                    Iterator<Mine> mineIterator=mineList.iterator();
+                    while(mineIterator.hasNext())
                     {
+                        Mine mine=mineIterator.next();
                         int damageValue=mine.getDamageValue();
                         Point minePoint=getCentralPoint(mine.getLocation());
                         Point eliteSoldierPoint=getCentralPoint(eliteSoldier.getLocation());
                         //如果精英战士踩到地雷,并且这个地雷不是自己埋下的
                         if(ifStepMine(mine,eliteSoldier))
                         {
-                            list.add(mine);
+                            mineIterator.remove();
                             mine.boom(gameArea,eliteSoldierPoint);
+                            gameArea.remove(mine);
                             mine.setVisible(false);
                             //寻找在爆炸半径内的所有人
                             for(Person person:personList)
                             {
                                 //精英战士的中心位置
                                 Point cp=getCentralPoint(person.getLocation());
-                                //如果在爆炸范围内,并且精英战士不是死亡状态
+                                //如果在爆炸范围内,并且人物不是死亡状态
                                 if(cp.distance(minePoint)<mine.getDamageRadius() && !person.ifDie())
                                 {
                                     person.dieSpecialEffect(gameArea);
                                     person.setDie(true);
+                                    person.setVisible(false);
                                     //如果被炸到的是玩家
                                     if(person instanceof Player)
                                     {
@@ -173,15 +177,15 @@ public class SinglePersonModel extends JFrame
                                             fromPerson=p;
                                     }
                                     fromPerson.addKillNum(1);
+                                    if(fromPerson.equals(player))
+                                    {
+                                        killAndDieField.setText("击杀/死亡：（"+player.getKillNum()+"/"+player.getDieNum()+")");
+                                    }
                                 }
                             }
                         }
                         if (gameOver)
                             break;
-                    }
-                    for(Mine mine:list)
-                    {
-                        mineList.remove(mine);
                     }
 
                     //判断精英战士是否发现玩家，如果发现则开火
@@ -402,6 +406,7 @@ public class SinglePersonModel extends JFrame
                                     {
                                         MedicalPackage medicalPackage=(MedicalPackage) rewardProp.getReward();
                                         player.addHealthPoint(medicalPackage.getHealthPoint());
+                                        healthLevel.setValue(player.getHealthPoint());
                                     }
                                     //如果是地雷或者是手雷
                                     else if(rewardProp.getType()== RewardType.Mine || rewardProp.getType()==RewardType.Grenade)
@@ -554,10 +559,10 @@ public class SinglePersonModel extends JFrame
                 {
                     if(!sniperBulletList.isEmpty())
                     {
-                        int i=-1;
-                        Bullet[] deleteBullet=new Bullet[sniperBulletList.size()];
-                        for(Bullet bullet:sniperBulletList)
+                        Iterator<Bullet> bulletIterator=sniperBulletList.iterator();
+                        while(bulletIterator.hasNext())
                         {
+                            Bullet bullet=bulletIterator.next();
                             boolean flag=false;             //标记该子弹是否击中人
                             Point oldPoint=bullet.getLocation();
                             Point newPoint=new Point(oldPoint.x+bullet.getxSpeed(),oldPoint.y+bullet.getySpeed());
@@ -567,14 +572,19 @@ public class SinglePersonModel extends JFrame
                                 if((ifHitPerson(bullet,person)) && !person.ifDie() && !person.equals(bullet.getFromPerson()))    //如果击中AI
                                 {
                                     flag=true;
-                                    bullet.setVisible(false);                   //击中目标后子弹消失
+                                    bulletIterator.remove();
+                                    gameArea.remove(bullet);
                                     int healthPoint =person.getHealthPoint();
                                     if(healthPoint-bullet.getDamageValue()<=0)      //如果目标死亡
                                     {
                                         bullet.getFromPerson().addKillNum(1);       //这颗子弹的所有者击杀数加1
+                                        if(bullet.getFromPerson().equals(player))
+                                        {
+                                            killAndDieField.setText("击杀/死亡：（"+player.getKillNum()+"/"+player.getDieNum()+")");
+                                        }
                                         person.dieSpecialEffect(gameArea);
                                         person.setVisible(false);
-                                        person.setDie(true);            //设置AI死亡
+                                        person.setDie(true);            //人物AI死亡
                                         if(person instanceof Player)
                                         {
                                             healthLevel.setValue(0);
@@ -598,25 +608,15 @@ public class SinglePersonModel extends JFrame
                                     {
                                         healthLevel.setValue(player.getHealthPoint());
                                     }
-                                    deleteBullet[++i]=bullet;       //将击中目标的子弹保存起来
                                     break;
                                 }
                             }
                             if(!flag && (ifHitWall(bullet.getLocation(),bullet.getRadius(),true)))    //判断子弹是否撞墙
                             {
-                                deleteBullet[++i]=bullet ;           //将撞墙的子弹保存起来
-                                bullet.setVisible(false);
+                                bulletIterator.remove();
+                                gameArea.remove(bullet);
                                 // MusicPlayer.playBulletHitWallMusic();
                             }
-                        }
-                        if(i!=-1)
-                        {
-                            for(int j=0;j<=i;j++)
-                            {
-                                gameArea.remove(deleteBullet[j]);  //将子弹从gameArea中删除
-                                sniperBulletList.remove(deleteBullet[j]);                //将子弹从自动步枪子弹中删除
-                            }
-                            gameArea.repaint();
                         }
                     }
                 }
@@ -634,9 +634,10 @@ public class SinglePersonModel extends JFrame
                     if(!automaticBulletList.isEmpty())
                     {
                         int i=-1;
-                        Bullet[] deleteBullet=new Bullet[automaticBulletList.size()];
-                        for(Bullet bullet:automaticBulletList)
+                        Iterator<Bullet> bulletIterator=automaticBulletList.iterator();
+                        while(bulletIterator.hasNext())
                             {
+                                Bullet bullet=bulletIterator.next();
                             boolean flag=false;             //标记该子弹是否击中人
                             Point oldPoint=bullet.getLocation();
                             Point newPoint=new Point(oldPoint.x+bullet.getxSpeed(),oldPoint.y+bullet.getySpeed());
@@ -646,11 +647,16 @@ public class SinglePersonModel extends JFrame
                                 if((ifHitPerson(bullet,person)) && !person.ifDie() && !person.equals(bullet.getFromPerson()))    //如果击中AI
                                 {
                                     flag=true;
-                                    bullet.setVisible(false);                   //击中目标后子弹消失
+                                    gameArea.remove(bullet);
+                                    bulletIterator.remove();
                                     int healthPoint =person.getHealthPoint();
                                     if(healthPoint-bullet.getDamageValue()<=0)
                                     {
                                         bullet.getFromPerson().addKillNum(1);       //这颗子弹的所有者击杀数加1
+                                        if(bullet.getFromPerson().equals(player))
+                                        {
+                                            killAndDieField.setText("击杀/死亡：（"+player.getKillNum()+"/"+player.getDieNum()+")");
+                                        }
                                         person.setDie(true);                        //设置人物死亡
                                         person.dieSpecialEffect(gameArea);
                                         if(person instanceof Player)
@@ -678,25 +684,15 @@ public class SinglePersonModel extends JFrame
                                     {
                                         healthLevel.setValue(person.getHealthPoint());
                                     }
-                                    deleteBullet[++i]=bullet;       //将击中目标的子弹保存起来
                                     break;
                                 }
                             }
                             if(!flag && (ifHitWall(bullet.getLocation(),bullet.getRadius(),true)))    //判断子弹是否撞墙
                             {
-                                    bullet.setVisible(false);
-                                   deleteBullet[++i]=bullet ;           //将撞墙的子弹保存起来
+                                bulletIterator.remove();
+                                gameArea.remove(bullet);
                                // MusicPlayer.playBulletHitWallMusic();
                             }
-                        }
-                        if(i!=-1)
-                        {
-                            for(int j=0;j<=i;j++)
-                            {
-                                gameArea.remove(deleteBullet[j]);  //将子弹从gameArea中删除
-                                automaticBulletList.remove(deleteBullet[j]);                //将子弹从自动步枪子弹中删除
-                            }
-                            gameArea.repaint();
                         }
                     }
                 }
@@ -706,16 +702,17 @@ public class SinglePersonModel extends JFrame
             grenadeMoveThread=new Timer(Grenade.speed, new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    java.util.List<Grenade> gList=new LinkedList<Grenade>();        //存放爆炸的手雷
-                    for(Grenade grenade:grenadeList)
+                    Iterator<Grenade> grenadeIterator=grenadeList.iterator();
+                    while (grenadeIterator.hasNext())
                     {
+                        Grenade grenade=grenadeIterator.next();
                         //如果手榴弹到达指定地点，或者超出地图范围
                         int x=grenade.getLocation().x;
                         int y=grenade.getLocation().y;
                         if(grenade.ifArrive() || x  > SinglePersonModel.gameAreaWidth ||x<=0 || y> SinglePersonModel.gameAreaHeight || y<=0)
                         {
-                            grenade.setVisible(false);
-                            gList.add(grenade);
+                            gameArea.remove(grenade);
+                            grenadeIterator.remove();
                             boolean gameOver=false;             //判断游戏是否结束
                             int damageRadius=grenade.getDamageRadius();     //爆炸杀伤半径
                             java.util.List<Person> pList=new LinkedList<Person>();   //用于存放被炸死的person
@@ -738,6 +735,7 @@ public class SinglePersonModel extends JFrame
                                 if(personPoint.distance(grenadePoint) < personRadius+damageRadius)      //如果人物在爆炸半径中
                                 {
                                     person.setDie(true);
+                                    person.setVisible(false);
                                     pList.add(person);
                                     person.dieSpecialEffect(gameArea);      //人物死亡特效
                                     if(person instanceof Player)        //如果炸到的是玩家，则游戏结束
@@ -757,6 +755,10 @@ public class SinglePersonModel extends JFrame
                                         }
                                     }
                                     fromPerson.addKillNum(1);
+                                    if(fromPerson.equals(player))
+                                    {
+                                        killAndDieField.setText("击杀/死亡：（"+player.getKillNum()+"/"+player.getDieNum()+")");
+                                    }
                                 }
                             }
                         }
@@ -764,12 +766,6 @@ public class SinglePersonModel extends JFrame
                         {
                             grenade.next();
                         }
-                    }
-                    //将爆炸的手雷移除地图和手雷链表
-                    for(Grenade grenade:gList)
-                    {
-                        grenadeList.remove(grenade);
-                        gameArea.remove(grenade);
                     }
                     gameArea.repaint();
 
@@ -1016,6 +1012,14 @@ public class SinglePersonModel extends JFrame
         int killNum=player.getKillNum();
         int dieNum=player.getDieNum();
         MusicPlayer.stopActionMusic();
+        for(EliteSoldier eliteSoldier:eliteSoldierList)
+        {
+            eliteSoldier.stopShot();
+        }
+        for(Hider hider:hiderList)
+        {
+            hider.stopShot();
+        }
         for(Person person:personList)
         {
             gameArea.remove(person);
