@@ -21,6 +21,7 @@ public class GameTutorialFrame {
         TutoriaFrame.setResizable(false);
         Mes.setSize(520,200);
         Mes.setFont(new Font(Font.DIALOG,1,20));
+        Mes.setEditable(false);
         Mes.setText("                                  游戏帮助\n" +
                 "1.单人模式直接可以玩耍\n" +
                 "2.掉落武器可以使用F键拾取\n" +

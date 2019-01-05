@@ -67,10 +67,15 @@ public class MultiPlayerModel extends JFrame
     private Timer sniperBulletThread=null;      //狙击步枪子弹飞行线程
     private Timer playerMoveThread=null;        //玩家移动的线程
     private Timer grenadeMoveThread=null;       //控制手雷移动的线程
-    MultiPlayerModel(Player me, java.util.List<Player> allPerson)
+    private JFrame gameHall=null;             //游戏大厅
+    private GameHall.GameRoom gameRoom=null;    //游戏房间
+    MultiPlayerModel(Player me, java.util.List<Player> allPerson, JFrame gameHall, GameHall.GameRoom gameRoom)
     {
+
         playerList =allPerson;
         MultiPlayerModel.me =me;
+        this.gameHall=gameHall;
+        this.gameRoom=gameRoom;
         gameArea=new GameArea();
         //将所有玩家加入到游戏画面中
         initialPersonMoveThread();
@@ -117,7 +122,9 @@ public class MultiPlayerModel extends JFrame
                     //如果收到游戏结束的命令
                     if(line.startsWith(Sign.GameOver))
                     {
-
+                        stopAllThread();
+                        gameHall.setVisible(true);
+                        gameRoom.setVisible(true);
                     }
                     //如果收到手雷扔出的消息
                     else if(line.startsWith(Sign.CreateGrenade))
@@ -611,7 +618,8 @@ public class MultiPlayerModel extends JFrame
                         Weapon weapon = me.getUsingWeapon();
                         Point startPoint = getCentralPoint(me.getLocation());
                         //如果是非枪类武器攻击
-                        if (!(weapon instanceof Gun)) {
+                        if (!(weapon instanceof Gun))
+                        {
                             attack(startPoint, mousePoint, me);
                         }
                         //如果是枪类武器攻击
@@ -793,6 +801,8 @@ public class MultiPlayerModel extends JFrame
                             int y = grenade.getLocation().y;
                             if (grenade.ifArrive() || x > SinglePersonModel.gameAreaWidth || x <= 0 || y > SinglePersonModel.gameAreaHeight || y <= 0)
                             {
+                                //手雷的所有者
+                                Player fromPlayer=playerList.get(Integer.parseInt(grenade.getFromPersonId()));
                                 grenadeList.remove(i);
                                 gameArea.remove(grenade);
                                 grenade.boom(gameArea);
@@ -808,15 +818,19 @@ public class MultiPlayerModel extends JFrame
                                         //玩家的中心位置
                                         Point playerPoint = getCentralPoint(player.getLocation());
                                         //如果该玩家位于爆炸半径内
-                                        if (playerPoint.distance(grenadePoint) < damageRadius) {
+                                        if (playerPoint.distance(grenadePoint) < damageRadius)
+                                        {
                                             //向服务器发送该玩家死亡的消息
                                             diePlayer.add(player);
                                             if (player.equals(me)) {
                                                 healthLevel.setValue(0);
                                             }
+                                            fromPlayer.addKillNum(1);
                                         }
                                     }
                                 }
+
+                                //将爆炸半径内的地雷清除
                                 List<Mine> boomMineList=new LinkedList<Mine>();
                                 for(int j=0;j<mineList.size();j++)
                                 {
@@ -830,6 +844,11 @@ public class MultiPlayerModel extends JFrame
                                     }
                                 }
                                 mineList.remove(boomMineList);
+                                if(fromPlayer.equals(me))
+                                {
+                                    killAndDieField.setText("击杀/死亡：（"+me.getKillNum()+"/"+me.getDieNum()+")");
+
+                                }
                             }
                             //否则手雷继续移动
                             else
@@ -837,8 +856,10 @@ public class MultiPlayerModel extends JFrame
                                 grenade.next();
                             }
                         }
-                        if (!diePlayer.isEmpty()) {
-                            for (Player player : diePlayer) {
+                        if (!diePlayer.isEmpty())
+                        {
+                            for (Player player : diePlayer)
+                            {
                                 ClientPort.sendStream.println(Sign.OnePlayerDie + player.getId());
                             }
                         }
@@ -1131,11 +1152,24 @@ public class MultiPlayerModel extends JFrame
         String realMessage=line.substring(cmd.length(),line.length());
         return realMessage;
     }
-    /**
-     * 检测玩家移动的时候，有没有踩地雷
-     */
-    private void checkStepMine()
-    {
 
+    /**
+     * 游戏结束时，结束所有线程
+     */
+    private void stopAllThread()
+    {
+        try
+        {
+            if (shotThread != null && shotThread.isRunning())
+                shotThread.stop();             //开火线程
+            automaticBulletThread.stop();     //自动步枪子弹飞行线程
+            sniperBulletThread.stop();       //狙击步枪子弹飞行线程
+            playerMoveThread.stop();         //玩家移动的线程
+            grenadeMoveThread.stop();        //控制手雷移动的线程
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
     }
 }

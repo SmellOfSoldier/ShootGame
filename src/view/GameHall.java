@@ -67,6 +67,17 @@ public class GameHall
         MusicPlayer.playGameHallBGM();
         jPanel.repaint();//重画
         /**
+         * 游戏帮助监听
+         */
+        gameTutorial.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new GameTutorialFrame();
+            }
+        });
+
+
+        /**
          * 创建房间监听
          */
         createRoom.addActionListener(new ActionListener() {
@@ -748,10 +759,13 @@ public class GameHall
                             players.add(createPlayer(i+"",entrance[pointIndex[i]],currentGameRoom.getClientIdModel().get(i)));
                         }
                         sendstream.println(Sign.GameReadyStart);
-                        new MultiPlayerModel(players.get(myPlayerIndex),players);
+                        gameHallJFrame.setVisible(false);
+                        currentGameRoom.setVisible(false);
+                        new MultiPlayerModel(players.get(myPlayerIndex),players,gameHallJFrame,currentGameRoom);
                         //停止播放大厅背景音乐
                         MusicPlayer.stopGameHallBGM();
-                        condition.await();          //业务线程睡眠，等待游戏结束后被唤醒
+                        //业务线程睡眠，等待游戏结束后被唤醒
+                        condition.await();
                         System.out.println("游戏结束");
 
                     }
