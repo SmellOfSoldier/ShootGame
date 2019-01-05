@@ -76,4 +76,18 @@ public class Player extends Person implements Serializable
     {
         return Integer.parseInt(id);
     }
+
+    public void addHealthPoint(int hp)
+    {
+        int healthPoint =getHealthPoint();
+        if(healthPoint+hp>maxHealthPoint)
+        {
+            super.setHealthPoint(hp);
+        }
+        else
+        {
+            super.addHealthPoint(hp);
+        }
+    }
+
 }

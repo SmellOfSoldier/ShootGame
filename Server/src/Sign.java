@@ -64,4 +64,5 @@ public interface Sign
     String CreateGrenade="CREATE_GRENADE";                             //创建手雷
     String RepeatLogin="REPEAT_LOGIN";                                 //多次登陆
     String LeaveGame="LEAVE_GAME";                                     //玩家游戏中离开房间
+    String RandomReward="RAND_REWARD";                                 //随机奖励
 }

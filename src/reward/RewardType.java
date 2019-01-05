@@ -13,5 +13,4 @@ public interface RewardType
     int Barret=4;            //巴雷特狙击步枪
     int Mine=5;             //地雷
     int Grenade=6;          //手雷
-
 }

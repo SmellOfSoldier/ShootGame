@@ -8,14 +8,16 @@ import java.io.PrintStream;
 public class MultiPlayTimeStop extends Thread {
     private ServerGameRoom currentgame;
     private boolean destroy=false;
+    private RandomReward randomReward;
     private int time;
     private Gson gson;
     String allclientsStr;
     String roomStr;
-    MultiPlayTimeStop(ServerGameRoom currentgame,int time)
+    MultiPlayTimeStop(ServerGameRoom currentgame,RandomReward randomReward,int time)
     {
         this.currentgame=currentgame;
         this.time=time;
+        this.randomReward=randomReward;
         gson=new Gson();
         allclientsStr = gson.toJson(StartServer.onlineClients);
         roomStr = gson.toJson(StartServer.allGameRoom);
@@ -42,6 +44,7 @@ public class MultiPlayTimeStop extends Thread {
     }
     public void stopThisThread()
     {
+        randomReward.stopThisThread();
         destroy=true;
     }
 }

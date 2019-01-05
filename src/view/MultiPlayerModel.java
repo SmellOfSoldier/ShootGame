@@ -202,8 +202,11 @@ public class MultiPlayerModel extends JFrame
                             if(player.equals(me))
                             {
                                 killAndDieField.setText("击杀/死亡：（"+me.getKillNum()+"/"+me.getDieNum()+")");
+                                if(shotThread!=null && shotThread.isRunning())
+                                {
+                                    shotThread.stop(); }
 
-                            }
+                        }
                             //将该玩家埋下的地雷清除
                             List<Mine> deleteMineList=new LinkedList<Mine>();
 
@@ -408,7 +411,7 @@ public class MultiPlayerModel extends JFrame
             healthLevel.setSize(120,30);
             healthLevel.setLocation(100,10);
             healthLevel.setForeground(new Color(0xFD2016));
-            healthLevel.setValue(me.getHealthPoint());
+            healthLevel.setValue(Player.maxHealthPoint);
 
             healthLevelTip.setLocation(10,10);
             healthLevelTip.setSize(70,30);
@@ -435,6 +438,7 @@ public class MultiPlayerModel extends JFrame
 
             leaveGame.setFont(new Font(null,Font.BOLD,20));
             leaveGame.setSize(100,30);
+            leaveGame.setFocusable(false);
             leaveGame.setLocation(1050,40);
             leaveGame.addActionListener(new ActionListener() {
                 @Override
@@ -688,6 +692,7 @@ public class MultiPlayerModel extends JFrame
                                 }
                             });
                             shotThread.start();
+                            System.gc();
                         }
                     }
                 }
