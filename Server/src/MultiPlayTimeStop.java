@@ -7,6 +7,7 @@ import java.io.PrintStream;
  */
 public class MultiPlayTimeStop extends Thread {
     private ServerGameRoom currentgame;
+    private boolean destroy=false;
     private int time;
     private Gson gson;
     String allclientsStr;
@@ -26,16 +27,21 @@ public class MultiPlayTimeStop extends Thread {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        for(Client c:currentgame.getAllClients())
+        if(!destroy)
         {
-            if(c.isPlaying())
-            {
-                PrintStream sendstream = StartServer.clientPrintStreamMap.get(c);
-                sendstream.println(Sign.GameOver + allclientsStr + Sign.SplitSign + roomStr);
-                //设置玩家不在玩耍状态
-                c.setPlaying(false);
+            for (Client c : currentgame.getAllClients()) {
+                if (c.isPlaying()) {
+                    PrintStream sendstream = StartServer.clientPrintStreamMap.get(c);
+                    sendstream.println(Sign.GameOver + allclientsStr + Sign.SplitSign + roomStr);
+                    //设置玩家不在玩耍状态
+                    c.setPlaying(false);
+                }
             }
+            System.out.println("已经通知完" + currentgame.getId() + "所有玩家游戏结束。");
         }
-        System.out.println("已经通知完"+currentgame.getId()+"所有玩家游戏结束。");
+    }
+    public void stopThisThread()
+    {
+        destroy=true;
     }
 }

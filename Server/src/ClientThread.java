@@ -17,6 +17,7 @@ class ClientThread extends Thread {
     private BufferedReader getStream;
     private ServerGameRoom currentGameRoom;
     private JTextArea GuiShowMes;
+    private MultiPlayTimeStop timeStop;
     private boolean isConnected = false;//是否连接
     private boolean isLogin = false;//是否登陆
 
@@ -325,8 +326,8 @@ class ClientThread extends Thread {
 
                                 }
                                 //设置定时游戏结束
-                                new MultiPlayTimeStop(currentGameRoom,120).start();
-
+                                timeStop=new MultiPlayTimeStop(currentGameRoom,120);
+                                timeStop.start();
                                 client.setPlaying(true);//设置当前玩家为正在对战状态
                                 GuiShowMes.append("服务器消息：房间："+currentGameRoom.getId()+" 开始游戏。\n");
                             }
@@ -437,7 +438,7 @@ class ClientThread extends Thread {
                                 }
 
                         //创建复活信息发送线程
-                        new PlayerReliveThread(currentGameRoom,diePlayerFlag).start();
+                        new PlayerReliveThread(currentGameRoom,diePlayerFlag);
                     }
                 /**
                  * 玩家中途离开游戏
@@ -449,6 +450,12 @@ class ClientThread extends Thread {
                     String allclientsStr = gson.toJson(StartServer.onlineClients);
                     String roomStr = gson.toJson(StartServer.allGameRoom);
                     sendStream.println(Sign.GameOver+allclientsStr+Sign.SplitSign+roomStr);
+                    int playeringamenum=0;
+                    for(Client c:currentGameRoom.getAllClients())
+                    {
+                        if(c.isPlaying()) playeringamenum++;
+                    }
+                    if(playeringamenum==0) timeStop.stopThisThread();
                 }
                 /**
                  *收到刷新消息
