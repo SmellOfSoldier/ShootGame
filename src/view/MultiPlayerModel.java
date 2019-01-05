@@ -227,9 +227,9 @@ public class MultiPlayerModel extends JFrame
                         }
                     }
                     //如果收到服务器发来奖励的消息
-                    else if(line.startsWith(Sign.CreateReward))
+                    else if(line.startsWith(Sign.RandomReward))
                     {
-                        realMessage=getRealMessage(line,Sign.CreateReward);
+                        realMessage=getRealMessage(line,Sign.RandomReward);
                         int rewardType= Integer.parseInt(realMessage.split(Sign.SplitSign)[0]);
                         String pointStr=realMessage.split(Sign.SplitSign)[1];
                         Point point=gson.fromJson(pointStr,Point.class);
