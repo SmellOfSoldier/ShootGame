@@ -14,6 +14,9 @@ import view.SinglePersonModel;
  */
 public class Person extends JLabel implements Serializable
 {
+    public static String [] playerImageFile=new String[]{"Player1.png","Player2.png","Player3.png","Player4.png"};
+    public static String EliteSoldierImageFile="EliteSoldier.png";
+    public static String HiderImageFile="Hider.png";
     private boolean isAttacking=false;              //人物是否正在攻击
     private boolean isReload=false;                 //人物是否正在装子弹
     private int speed;                      //人物的移动速度

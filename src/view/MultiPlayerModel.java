@@ -35,11 +35,12 @@ public class MultiPlayerModel extends JFrame
     private Point[] entrance=new Point[]{new Point(800,20),new Point(1040,280),new Point(1160,600), new Point(320,760),new Point(20,520)};         //刷怪位置
     private Point mousePoint =new Point();      //鼠标当前制作位置
     private Random random=new Random();
+    private JButton leaveGame=new JButton("退出");        //退出游戏按钮
     public final static int CELL=20;   //每个方格的大小
     public final static int gameAreaWidth =1200;
     public final static int gameAreaHeight=950;
-    public final static int gameFrameWidth=1206;
-    public final static int gameFrameHeight=974;
+    public final static int gameFrameWidth=1200;
+    public final static int gameFrameHeight=950;
     private JTextField healthLevelTip=new JTextField("生命值");
     public static JProgressBar healthLevel=new JProgressBar(0, Player.maxHealthPoint);        //显示玩家生命的进度条
     public static JTextField bulletLeft=new JTextField();                           //显示武器子弹剩余量
@@ -69,6 +70,7 @@ public class MultiPlayerModel extends JFrame
     private Timer grenadeMoveThread=null;       //控制手雷移动的线程
     private JFrame gameHall=null;             //游戏大厅
     private GameHall.GameRoom gameRoom=null;    //游戏房间
+    private boolean gameOverFlag=false;         //游戏结束标志
     MultiPlayerModel(Player me, java.util.List<Player> allPerson, JFrame gameHall, GameHall.GameRoom gameRoom)
     {
 
@@ -80,15 +82,19 @@ public class MultiPlayerModel extends JFrame
         //将所有玩家加入到游戏画面中
         initialPersonMoveThread();
         //关闭窗口推出程序
-        this.addWindowListener(new WindowAdapter() {
+        this.addWindowListener(new WindowAdapter()
+        {
             @Override
-            public void windowClosing(WindowEvent e) {
-                System.exit(0);
+            public void windowClosing(WindowEvent e)
+            {
+                JOptionPane.showMessageDialog(null,"请不要中途退出游戏！","这是不可以的",JOptionPane.OK_OPTION);
             }
         });
         this.setSize(gameFrameWidth,gameFrameHeight);
         this.setResizable(false);
         this.setLocationRelativeTo(null);
+        this.setUndecorated(true); // 去掉窗口的装饰
+        this.getRootPane().setWindowDecorationStyle(JRootPane.NONE);
         this.add(gameArea);
         MusicPlayer.playActionBGM();
         this.setVisible(true);
@@ -109,12 +115,12 @@ public class MultiPlayerModel extends JFrame
         }
         public void run()
         {
-            lock.lock();
-            String line=null;
-            String realMessage=null;
             try
             {
-                while ((line = ClientPort.getStream.readLine()) != null)
+                lock.lock();
+                String line=null;
+                String realMessage=null;
+                sign:while (!gameOverFlag && (line = ClientPort.getStream.readLine()) != null)
                 {
                     if(!line.startsWith(Sign.PlayerMove))
                         System.out.println(line);
@@ -122,9 +128,7 @@ public class MultiPlayerModel extends JFrame
                     //如果收到游戏结束的命令
                     if(line.startsWith(Sign.GameOver))
                     {
-                        stopAllThread();
-                        gameHall.setVisible(true);
-                        gameRoom.setVisible(true);
+                        gameOver();
                     }
                     //如果收到手雷扔出的消息
                     else if(line.startsWith(Sign.CreateGrenade))
@@ -279,6 +283,13 @@ public class MultiPlayerModel extends JFrame
             {
                 ioe.printStackTrace();
             }
+            finally
+            {
+                condition.signalAll();
+                lock.unlock();
+                MultiPlayerModel.this.dispose();
+                System.out.println("游戏结束");
+            }
         }
     }
 
@@ -394,6 +405,53 @@ public class MultiPlayerModel extends JFrame
             killAndDieField.setBackground(new Color(0xED4078));
             killAndDieField.setEditable(false);
             killAndDieField.setFocusable(false);
+
+            leaveGame.setFont(new Font(null,Font.BOLD,20));
+            leaveGame.setSize(100,30);
+            leaveGame.setLocation(1050,40);
+            leaveGame.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    int choice=JOptionPane.showConfirmDialog(null,"真的要退出游戏吗？","提示",JOptionPane.YES_NO_OPTION);
+                    if(choice==0) {
+                        //向服务端发送玩家离开游戏的消息
+                        ClientPort.sendStream.println(Sign.LeaveRoom + gameRoom.getClientIdModel().get(Integer.parseInt(me.getId())));
+                        String line = null;
+                        try
+                        {
+                            sign:while ((line = ClientPort.getStream.readLine()) != null)
+                            {
+                                if(line.startsWith(Sign.GameOver))
+                                {
+                                    String realMessage=getRealMessage(line,Sign.GameOver);
+                                    String allClientsStr=realMessage.split(Sign.SplitSign)[0];
+                                    String allRoomsStr=realMessage.split(Sign.SplitSign)[1];
+                                    Gson gson=new Gson();
+                                    Client[] allClients =gson.fromJson(allClientsStr,Client[].class);
+                                    ServerGameRoom[] allRooms=gson.fromJson(allRoomsStr,ServerGameRoom[].class);
+                                    ClientPort.allOnlineClient.clear();
+                                    for(int i=0;i<allClients.length;i++)
+                                    {
+                                        ClientPort.allOnlineClient.add(allClients[i]);
+                                    }
+                                    for(int i=0;i<allRooms.length;i++)
+                                    {
+                                        ClientPort.allServerRoom.add(allRooms[i]);
+                                    }
+
+
+                                    break sign;
+                                }
+                            }
+
+                        }
+                        catch (IOException ioe)
+                        {
+                            ioe.printStackTrace();
+                        }
+                    }
+                }
+            });
 
             URL url= SinglePersonModel.class.getResource("/images/logo/usingWeaponFlag.png");
             ImageIcon icon=new ImageIcon(url);
@@ -1171,5 +1229,16 @@ public class MultiPlayerModel extends JFrame
         {
             ex.printStackTrace();
         }
+    }
+    /**
+     * 游戏结束
+     */
+    private void gameOver()
+    {
+        gameOverFlag=true;
+        MusicPlayer.stopActionMusic();
+        stopAllThread();
+        gameHall.setVisible(true);
+        gameRoom.setVisible(true);
     }
 }
