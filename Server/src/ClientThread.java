@@ -57,6 +57,7 @@ class ClientThread extends Thread {
             if (isConnected)
             {
                     //TODO:服务线程run待完成
+                if(!line.startsWith(Sign.CreateBullet )&& !line.startsWith(Sign.PlayerMove))
                     System.out.println("收到一个命令信息" + line);
                     /**
                      * 如果是登陆则采取如下操作
@@ -438,7 +439,7 @@ class ClientThread extends Thread {
                                 }
 
                         //创建复活信息发送线程
-                        new PlayerReliveThread(currentGameRoom,diePlayerFlag);
+                        new PlayerReliveThread(currentGameRoom,diePlayerFlag).start();
                     }
                 /**
                  * 玩家中途离开游戏

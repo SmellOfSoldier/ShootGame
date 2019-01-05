@@ -744,6 +744,8 @@ public class MultiPlayerModel extends JFrame
                                     else
                                     {
                                         person.reduceHealthPoint(bullet.getDamageValue());
+                                        if(person.equals(me));
+                                            healthLevel.setValue(me.getHealthPoint());
                                     }
                                     break;
                                 }
@@ -797,6 +799,8 @@ public class MultiPlayerModel extends JFrame
                                     else
                                     {
                                         person.reduceHealthPoint(bullet.getDamageValue());
+                                        if(person.equals(me));
+                                            healthLevel.setValue(me.getHealthPoint());
                                     }
                                     break;
                                 }
