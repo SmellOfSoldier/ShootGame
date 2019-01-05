@@ -219,15 +219,14 @@ public class MultiPlayerModel extends JFrame
                         //被地雷炸死的玩家，用set存放
                         Set<Player> diePlayer=new HashSet<>();
                         //使用迭代器遍历地雷，判断是否踩到地雷
-                       Iterator<Mine> mineIterator=mineList.iterator();
-                        while(mineIterator.hasNext())
+                        for(int i=0;i<mineList.size();i++)
                         {
-                            Mine mine=mineIterator.next();
+                            Mine mine=mineList.get(i);
                             //如果踩到地雷,并且玩家不是死亡状态
                             if(ifStepMine(mine,player) && !player.ifDie())
                             {
                                 gameArea.remove(mine);
-                                mineIterator.remove();
+                                mineList.remove(i);
                                 //地雷爆炸特效
                                 mine.boom(gameArea, mine.getLocation());
                                 //地雷的爆炸半径
@@ -301,15 +300,13 @@ public class MultiPlayerModel extends JFrame
 
                         //被地雷炸死的玩家，用set存放
                         Set<Player> diePlayer=new HashSet<>();
-                        Iterator<Mine> mineIterator=mineList.iterator();
-                        //判断玩家是否踩到地雷
-                        while(mineIterator.hasNext())
+                        for(int i=0;i<mineList.size();i++)
                         {
-                            Mine mine=mineIterator.next();
+                            Mine mine=mineList.get(i);
                             //如果踩到地雷,并且玩家不是死亡状态
                             if(ifStepMine(mine,me) && !me.ifDie())
                             {
-                               mineIterator.remove();
+                               mineList.remove(i);
                                gameArea.remove(mine);
                                 //地雷爆炸特效
                                 mine.boom(gameArea, mine.getLocation());
@@ -789,17 +786,16 @@ public class MultiPlayerModel extends JFrame
                     try {
                         //存放被手雷炸死的玩家
                         Set<Player> diePlayer = new HashSet<>();
-                        //手雷链表迭代器
-                        Iterator<Grenade> grenadeIterator=grenadeList.iterator();
-                        while(grenadeIterator.hasNext())
+
+                        for(int i=0;i<grenadeList.size();i++)
                         {
-                            Grenade grenade=grenadeIterator.next();
+                            Grenade grenade=grenadeList.get(i);
                             //如果手榴弹到达指定地点，或者超出地图范围
                             int x = grenade.getLocation().x;
                             int y = grenade.getLocation().y;
                             if (grenade.ifArrive() || x > SinglePersonModel.gameAreaWidth || x <= 0 || y > SinglePersonModel.gameAreaHeight || y <= 0)
                             {
-                                grenadeIterator.remove();
+                                grenadeList.remove(i);
                                 gameArea.remove(grenade);
                                 grenade.boom(gameArea);
                                 //位于爆炸半径内的玩家将全部死亡
