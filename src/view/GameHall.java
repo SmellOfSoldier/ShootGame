@@ -759,12 +759,12 @@ public class GameHall
                         List<Player> players= Collections.synchronizedList(new ArrayList<Player>());
                         for(int i=0;i<pointIndex.length;i++)
                         {
-                            players.add(createPlayer(i+"",entrance[pointIndex[i]],currentGameRoom.getClientIdModel().get(i)));
+                            players.add(createPlayer(i+"",entrance[pointIndex[i]],currentGameRoom.getClientIdModel().get(i),currentClient.getId()));
                         }
                         sendstream.println(Sign.GameReadyStart);
-                        //gameHallJFrame.setVisible(false);
-                        //currentGameRoom.setVisible(false);
-                        new MultiPlayerModel(players.get(myPlayerIndex),players,gameHallJFrame,currentGameRoom);
+                        gameHallJFrame.setVisible(false);
+                        currentGameRoom.setVisible(false);
+                        new MultiPlayerModel(players.get(myPlayerIndex),players,gameHallJFrame,currentGameRoom,GameHall.this);
                         //停止播放大厅背景音乐
                         MusicPlayer.stopGameHallBGM();
                         //业务线程睡眠，等待游戏结束后被唤醒
@@ -814,13 +814,13 @@ public class GameHall
      * @param startPoint：玩家出生位置
      * @return
      */
-    private Player createPlayer(String id,Point startPoint,String name)
+    private Player createPlayer(String id,Point startPoint,String name,String clientId)
     {
         Player player = null;
         try
         {
             Rotate rotate = new Rotate();
-            player = new Player(id, name);
+            player = new Player(id, name,clientId);
             int size = 2 * (player.getRadius());
             player.setSize(size, size);
             InputStream is = startGame.class.getResourceAsStream("/images/player/"+ Person.playerImageFile[Integer.parseInt(id)]);
@@ -862,10 +862,10 @@ public class GameHall
      * @param allclient
      * @param allgameroom
      */
-    public void RefreshList(List<Client> allclient,List<ServerGameRoom> allgameroom)
+    public void refreshList(List<Client> allclient,List<ServerGameRoom> allgameroom)
     {
-        onlinePlayer.removeAllElements();
-        rooms.removeAllElements();
+        onlinePlayer.clear();
+        rooms.clear();
         for(Client c:allclient)
         {
             onlinePlayer.addElement(c.getId());

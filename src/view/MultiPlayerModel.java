@@ -3,8 +3,6 @@ package view;
 import Weapon.*;
 import bullet.*;
 import com.google.gson.Gson;
-import com.sun.deploy.panel.ITreeNode;
-import com.sun.org.apache.xml.internal.resolver.readers.ExtendedXMLCatalogReader;
 import person.*;
 import person.Map;
 import reward.MedicalPackage;
@@ -68,28 +66,21 @@ public class MultiPlayerModel extends JFrame
     private Timer sniperBulletThread=null;      //狙击步枪子弹飞行线程
     private Timer playerMoveThread=null;        //玩家移动的线程
     private Timer grenadeMoveThread=null;       //控制手雷移动的线程
-    private JFrame gameHall=null;             //游戏大厅
+    private JFrame gameHallJframe =null;             //游戏大厅JFrame
+    private GameHall gameHall=null;                  //游戏大厅类
     private GameHall.GameRoom gameRoom=null;    //游戏房间
     private boolean gameOverFlag=false;         //游戏结束标志
-    MultiPlayerModel(Player me, java.util.List<Player> allPerson, JFrame gameHall, GameHall.GameRoom gameRoom)
+    MultiPlayerModel(Player me, java.util.List<Player> allPerson, JFrame gameHallJframe, GameHall.GameRoom gameRoom,GameHall gameHall)
     {
 
         playerList =allPerson;
         MultiPlayerModel.me =me;
-        this.gameHall=gameHall;
+        this.gameHallJframe =gameHallJframe;
         this.gameRoom=gameRoom;
+        this.gameHall=gameHall;
         gameArea=new GameArea();
         //将所有玩家加入到游戏画面中
         initialPersonMoveThread();
-        //关闭窗口推出程序
-        this.addWindowListener(new WindowAdapter()
-        {
-            @Override
-            public void windowClosing(WindowEvent e)
-            {
-                JOptionPane.showMessageDialog(null,"请不要中途退出游戏！","这是不可以的",JOptionPane.OK_OPTION);
-            }
-        });
         this.setSize(gameFrameWidth,gameFrameHeight);
         this.setResizable(false);
         this.setLocationRelativeTo(null);
@@ -128,7 +119,27 @@ public class MultiPlayerModel extends JFrame
                     //如果收到游戏结束的命令
                     if(line.startsWith(Sign.GameOver))
                     {
+                        System.out.println("准备结束游戏");
+                        realMessage=getRealMessage(line,Sign.GameOver);
+                        String allClientsStr=realMessage.split(Sign.SplitSign)[0];
+                        String allRoomsStr=realMessage.split(Sign.SplitSign)[1];
+                        Gson gson=new Gson();
+                        Client[] allClients =gson.fromJson(allClientsStr,Client[].class);
+                        ServerGameRoom[] allRooms=gson.fromJson(allRoomsStr,ServerGameRoom[].class);
+                        ClientPort.allOnlineClient.clear();
+                        ClientPort.allServerRoom.clear();
+                        for(int i=0;i<allClients.length;i++)
+                        {
+                            ClientPort.allOnlineClient.add(allClients[i]);
+                        }
+                        for(int i=0;i<allRooms.length;i++)
+                        {
+                            ClientPort.allServerRoom.add(allRooms[i]);
+                        }
+                        gameHall.refreshList(ClientPort.allOnlineClient,ClientPort.allServerRoom);
                         gameOver();
+                        System.out.println("游戏正在退出");
+                        JOptionPane.showMessageDialog(null,"哎时间总是很短暂，游戏时间到啦","系统提示",JOptionPane.OK_OPTION);
                     }
                     //如果收到手雷扔出的消息
                     else if(line.startsWith(Sign.CreateGrenade))
@@ -413,42 +424,10 @@ public class MultiPlayerModel extends JFrame
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     int choice=JOptionPane.showConfirmDialog(null,"真的要退出游戏吗？","提示",JOptionPane.YES_NO_OPTION);
-                    if(choice==0) {
+                    if(choice==0)
+                    {
                         //向服务端发送玩家离开游戏的消息
-                        ClientPort.sendStream.println(Sign.LeaveRoom + gameRoom.getClientIdModel().get(Integer.parseInt(me.getId())));
-                        String line = null;
-                        try
-                        {
-                            sign:while ((line = ClientPort.getStream.readLine()) != null)
-                            {
-                                if(line.startsWith(Sign.GameOver))
-                                {
-                                    String realMessage=getRealMessage(line,Sign.GameOver);
-                                    String allClientsStr=realMessage.split(Sign.SplitSign)[0];
-                                    String allRoomsStr=realMessage.split(Sign.SplitSign)[1];
-                                    Gson gson=new Gson();
-                                    Client[] allClients =gson.fromJson(allClientsStr,Client[].class);
-                                    ServerGameRoom[] allRooms=gson.fromJson(allRoomsStr,ServerGameRoom[].class);
-                                    ClientPort.allOnlineClient.clear();
-                                    for(int i=0;i<allClients.length;i++)
-                                    {
-                                        ClientPort.allOnlineClient.add(allClients[i]);
-                                    }
-                                    for(int i=0;i<allRooms.length;i++)
-                                    {
-                                        ClientPort.allServerRoom.add(allRooms[i]);
-                                    }
-
-
-                                    break sign;
-                                }
-                            }
-
-                        }
-                        catch (IOException ioe)
-                        {
-                            ioe.printStackTrace();
-                        }
+                        ClientPort.sendStream.println(Sign.LeaveGame + gameRoom.getClientIdModel().get(Integer.parseInt(me.getId())));
                     }
                 }
             });
@@ -469,6 +448,7 @@ public class MultiPlayerModel extends JFrame
             playerId.setEditable(false);
             playerId.setFocusable(false);
 
+            this.add(leaveGame);
             this.add(playerId);
             this.add(usingWeaponFlag);
             this.add(healthLevel);
@@ -1238,7 +1218,7 @@ public class MultiPlayerModel extends JFrame
         gameOverFlag=true;
         MusicPlayer.stopActionMusic();
         stopAllThread();
-        gameHall.setVisible(true);
+        gameHallJframe.setVisible(true);
         gameRoom.setVisible(true);
     }
 }

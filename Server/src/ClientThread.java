@@ -325,7 +325,7 @@ class ClientThread extends Thread {
 
                                 }
                                 //设置定时游戏结束
-                                new MultiPlayTimeStop(currentGameRoom,120).start();
+                                new MultiPlayTimeStop(currentGameRoom,4).start();
 
                                 client.setPlaying(true);//设置当前玩家为正在对战状态
                                 GuiShowMes.append("服务器消息：房间："+currentGameRoom.getId()+" 开始游戏。\n");
@@ -368,15 +368,11 @@ class ClientThread extends Thread {
                         realMessage=check.getRealMessage(line,Sign.MineBoom);
                         int mineflag=Integer.parseInt(realMessage.split(Sign.SplitSign)[0]);
                         //转发给房间内其他玩家
-
-
-                                for(Client c:currentGameRoom.getAllClients())//给房间内所有玩家发送mineflag号地雷爆炸的消息
-                                {
-                                    PrintStream sendstream= StartServer.clientPrintStreamMap.get(c);
-                                    sendstream.println(Sign.MineBoom+mineflag);//发送地雷爆炸消息
-                                }
-
-
+                        for(Client c:currentGameRoom.getAllClients())//给房间内所有玩家发送mineflag号地雷爆炸的消息
+                            {
+                                PrintStream sendstream= StartServer.clientPrintStreamMap.get(c);
+                                sendstream.println(Sign.MineBoom+mineflag);//发送地雷爆炸消息
+                            }
                     }
                 /**
                  * 游戏内手雷爆炸消息
@@ -449,7 +445,6 @@ class ClientThread extends Thread {
                 else if(client.isPlaying()&&line.startsWith(Sign.LeaveGame))
                 {
                     client.setPlaying(false);
-                    currentGameRoom=null;
                     //序列化初始化信息
                     String allclientsStr = gson.toJson(StartServer.onlineClients);
                     String roomStr = gson.toJson(StartServer.allGameRoom);

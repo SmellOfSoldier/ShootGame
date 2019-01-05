@@ -1065,7 +1065,7 @@ public class SinglePersonModel extends JFrame
     {
         try {
             Rotate rotate = new Rotate();
-            player = new Player("0", "DJF");
+            player = new Player("0", "DJF",null);
             int size = 2 * (player.getRadius());
             player.setSize(size, size);
            URL url= startGame.class.getResource("/images/player/"+Person.playerImageFile[0]);
