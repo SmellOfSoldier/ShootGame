@@ -830,9 +830,9 @@ public class GameHall
             icon.setImage(icon.getImage().getScaledInstance(size, size, Image.SCALE_DEFAULT));
             player.setIcon(icon);
             //player.peekWeapon(new AWM(), 100);
-            player.peekWeapon(new Mine(), 10);
-            player.peekWeapon(new Grenade(), 30);
-            player.peekWeapon(new M4A1(), 10000);
+            player.peekWeapon(new Mine(), 5);
+            player.peekWeapon(new Grenade(), 10);
+            player.peekWeapon(new M4A1(), 210);
             player.setLocation(startPoint);
         }
         catch (IOException ioe)

@@ -28,7 +28,7 @@ public class RandomReward extends Thread{
         {
             boolean right=false;
             try {
-                Thread.sleep(2000);//每20秒发送随机坐标
+                Thread.sleep(20000);//每20秒发送随机坐标
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

@@ -28,7 +28,6 @@ import java.util.concurrent.locks.Lock;
  */
 public class MultiPlayerModel extends JFrame
 {
-    private JTextField playerId=new JTextField();
     private static  int num=0;
     private JFrame superiorMenu;
     private static Gson gson=new Gson();
@@ -233,7 +232,9 @@ public class MultiPlayerModel extends JFrame
                         int rewardType= Integer.parseInt(realMessage.split(Sign.SplitSign)[0]);
                         String pointStr=realMessage.split(Sign.SplitSign)[1];
                         Point point=gson.fromJson(pointStr,Point.class);
-                        gameArea.add(new RewardProp(rewardType,point));
+                        RewardProp rewardProp=new RewardProp(rewardType,point);
+                        gameArea.add(rewardProp);
+                        rewardPropList.add(rewardProp);
                     }
                     //如果收到玩家复活的消息
                     else if(line.startsWith(Sign.OnePlayerRelive))
@@ -474,14 +475,8 @@ public class MultiPlayerModel extends JFrame
             flagPoint[2]=new Point(790,820);
             flagPoint[3]=new Point(1020,820);
 
-            playerId.setText("玩家ID："+me.getId());
-            playerId.setSize(120,40);
-            playerId.setLocation(400,40);
-            playerId.setEditable(false);
-            playerId.setFocusable(false);
 
             this.add(leaveGame);
-            this.add(playerId);
             this.add(usingWeaponFlag);
             this.add(healthLevel);
             this.add(healthLevelTip);
@@ -583,14 +578,18 @@ public class MultiPlayerModel extends JFrame
                                     //如果道具是枪
                                     else
                                     {
+
+                                        System.out.println("捡起枪");
                                         Gun gun=(Gun) rewardProp.getReward();
                                         if(gun instanceof SniperRifle)
                                         {
                                             me.peekWeapon(gun,10);
+                                            System.out.println("捡起步枪");
                                         }
                                         else
                                         {
                                             me.peekWeapon(gun,300);
+                                            System.out.println("捡起狙击枪");
                                         }
                                     }
                                     index=i;
