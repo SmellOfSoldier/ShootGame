@@ -47,7 +47,6 @@ class ClientThread extends Thread {
      */
     public void run() {
         String line = null;//接收到的初始字符串（信息）
-        String command = null;//当前获取的信息需要执行的命令
         String realMessage = null;//去除头部命令的信息
         //线程不被interrupted则持续接收玩家发来的信息
         Gson gson=new Gson();
