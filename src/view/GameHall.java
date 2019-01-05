@@ -48,14 +48,16 @@ public class GameHall
     private  JScrollPane lpanel;//右
     private JList currentOnlinePlayerJList;//当前在线用户
     private JList currentRoomJList;//当前可用房间
+    private String ip;//服务器ip
     private boolean isCreatRoom=false;//是否创建房间
     private boolean isEnterRoom=false;//是否加入房间
     private  GameRoom currentGameRoom=null;//当前房间
     private  ClientThread clientThread=null;
     private Point[] entrance=new Point[]{new Point(800,20),new Point(1040,280),new Point(1160,600), new Point(320,760),new Point(20,520)};         //刷怪位置
-    GameHall(Client currentClient)
+    GameHall(Client currentClient,String ip)
     {
         this.currentClient=currentClient;
+        this.ip=ip;
         gameHallJFrame=new JFrame("游戏大厅");
         gameHallJFrame.setSize(1000,800);
         gameHallJFrame.setLocationRelativeTo(null);
@@ -108,7 +110,7 @@ public class GameHall
                 }
                 ClientPort.sendStream.println(Sign.Logout);
                 ClientPort.sendStream.flush();
-                new LoginFrame(gameHallJFrame);
+                new LoginFrame(gameHallJFrame,ip);
                 MusicPlayer.stopGameHallBGM();
                 gameHallJFrame.dispose();
             }

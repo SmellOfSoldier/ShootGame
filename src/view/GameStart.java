@@ -17,11 +17,15 @@ public class GameStart {
     private MyButton singlePlay;
     private MyButton multiPlay;
     private JTextArea contentArea;
+    private JTextField ipInput;
+    private JLabel ip;
     private JPanel size1;
     private JPanel size2;
 
     GameStart() {
         contentArea = new JTextArea();
+        ipInput=new JTextField("127.0.0.1");
+        ip=new JLabel("服务器地址：");
         contentArea.setEditable(false);
         contentArea.setText("");
         gameStartFrame=new JFrame("游戏开始");
@@ -44,11 +48,17 @@ public class GameStart {
         gameStartFrame.add(contentArea);
         gameStartFrame.add(singlePlay);
         gameStartFrame.add(multiPlay);
+        gameStartFrame.add(ipInput);
+        gameStartFrame.add(ip);
         //位置设置
         contentArea.setSize(520,220);
         contentArea.setLocation(40,20);
         contentArea.setText(defaultmes);
         contentArea.setFont(new Font(Font.DIALOG,1,20));
+        ipInput.setSize(100,30);
+        ipInput.setLocation(250,360);
+        ip.setSize(80,30);
+        ip.setLocation(170,360);
         singlePlay.setBounds(100,260,150,90);
         multiPlay.setBounds(350,260,150,90);
         /**
@@ -59,7 +69,6 @@ public class GameStart {
             public void actionPerformed(ActionEvent e) {
                 gameStartFrame.setVisible(false);
                 new SinglePersonModel(gameStartFrame);
-
             }
         });
         /**
@@ -69,7 +78,7 @@ public class GameStart {
             @Override
             public void actionPerformed(ActionEvent e) {
                 gameStartFrame.setVisible(false);
-                new LoginFrame(gameStartFrame);
+                new LoginFrame(gameStartFrame,ipInput.getText().toString());
             }
         });
         /**

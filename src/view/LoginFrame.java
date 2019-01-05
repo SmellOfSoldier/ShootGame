@@ -40,7 +40,7 @@ public class LoginFrame{
     //private  volatile boolean  isConnected = false;
     //private Map<String,User> onlineUsers=new HashMap<String, User>();
 
-    LoginFrame(JFrame superiorMenu){
+    LoginFrame(JFrame superiorMenu,String ip){
         this.superiorMenu=superiorMenu;
         loginJFrame=new JFrame();
         loginJFrame.setTitle("登陆界面");
@@ -64,7 +64,7 @@ public class LoginFrame{
             allServerRoom.removeAll(allServerRoom);
             //开始连接服务器
             ClientPort.socket=new Socket();
-            InetSocketAddress address=new InetSocketAddress("127.0.0.1", 25565);
+            InetSocketAddress address=new InetSocketAddress(ip, 25565);
             socket.connect(address,2000);
             ClientPort.sendStream=new PrintStream(ClientPort.socket.getOutputStream());//获取写出流
             ClientPort.getStream=new BufferedReader(new InputStreamReader(ClientPort.socket.getInputStream()));//获取写入流
@@ -141,7 +141,7 @@ public class LoginFrame{
                             for (ServerGameRoom r:rooms){
                                 allServerRoom.add(r);
                             }
-                        new GameHall(me);//创建游戏大厅并传入登陆者的实例对象
+                        new GameHall(me,ip);//创建游戏大厅并传入登陆者的实例对象
                             //登陆界面关闭
                             loginJFrame.dispose();
                         break;
