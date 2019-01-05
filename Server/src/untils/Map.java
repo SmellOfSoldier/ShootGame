@@ -1,4 +1,4 @@
-package person;
+package untils;
 
 /**
  * 地图：以40*60的二维数组保存

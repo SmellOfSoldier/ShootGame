@@ -18,6 +18,7 @@ class ClientThread extends Thread {
     private ServerGameRoom currentGameRoom;
     private JTextArea GuiShowMes;
     private MultiPlayTimeStop timeStop;
+    private RandomReward randomReward;
     private boolean isConnected = false;//是否连接
     private boolean isLogin = false;//是否登陆
 
@@ -326,8 +327,11 @@ class ClientThread extends Thread {
                                     StartServer.clientPrintStreamMap.get(c).println(Sign.GameStart+randomStr+Sign.SplitSign+(i++));//为每位在房间内的玩家发送初始化的出生坐标
 
                                 }
+                                //开始随机产生奖励线程
+                                randomReward=new RandomReward(sendStream);
+                                randomReward.start();
                                 //设置定时游戏结束
-                                timeStop=new MultiPlayTimeStop(currentGameRoom,6000);
+                                timeStop=new MultiPlayTimeStop(currentGameRoom,randomReward,120);
                                 timeStop.start();
                                 client.setPlaying(true);//设置当前玩家为正在对战状态
                                 GuiShowMes.append("服务器消息：房间："+currentGameRoom.getId()+" 开始游戏。\n");
