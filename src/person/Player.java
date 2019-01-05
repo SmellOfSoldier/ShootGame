@@ -19,9 +19,11 @@ public class Player extends Person implements Serializable
     private int rSpeed=0;                           //人物每次右边方向移动的像素
     private int uSpeed=0;                           //人物每次上边方向移动的像素
     private int dSpeed=0;                           //人物每次下边方向移动的像素
-    public Player(String id,String name)
+    private String clientId=null;                   //玩家的用户id
+    public Player(String id,String name,String clientId)
     {
         super(id,name,maxHealthPoint,10,20);
+        this.clientId=clientId;
     }
     public Player(){}
     public void setlSpeed(int lSpeed){this.lSpeed=lSpeed;}
@@ -32,6 +34,7 @@ public class Player extends Person implements Serializable
     public int getrSpeed(){return rSpeed;}
     public int getuSpeed(){return uSpeed;}
     public int getdSpeed(){return dSpeed;}
+    public String getClientId(){return clientId;}
 
     /**
      * 重写父类的方法,增添修改屏幕上显示击杀/死亡数目的功能

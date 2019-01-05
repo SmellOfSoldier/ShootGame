@@ -449,7 +449,6 @@ class ClientThread extends Thread {
                 else if(client.isPlaying()&&line.startsWith(Sign.LeaveGame))
                 {
                     client.setPlaying(false);
-                    currentGameRoom=null;
                     //序列化初始化信息
                     String allclientsStr = gson.toJson(StartServer.onlineClients);
                     String roomStr = gson.toJson(StartServer.allGameRoom);
