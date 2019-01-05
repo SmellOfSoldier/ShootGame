@@ -388,6 +388,7 @@ public class MultiPlayerModel extends JFrame
             killAndDieField.setSize(180,30);
             killAndDieField.setLocation(1000,10);
             killAndDieField.setBackground(new Color(0xED4078));
+            killAndDieField.setEditable(false);
 
             URL url= SinglePersonModel.class.getResource("/images/logo/usingWeaponFlag.png");
             ImageIcon icon=new ImageIcon(url);
@@ -798,6 +799,9 @@ public class MultiPlayerModel extends JFrame
                                 grenadeList.remove(i);
                                 gameArea.remove(grenade);
                                 grenade.boom(gameArea);
+                                //手雷的爆炸中心位置
+                                Point grenadePoint = getCentralPoint(grenade.getLocation());
+                                int damageRadius=grenade.getDamageRadius();
                                 //位于爆炸半径内的玩家将全部死亡
                                 for (Player player : playerList)
                                 {
@@ -806,10 +810,8 @@ public class MultiPlayerModel extends JFrame
                                     {
                                         //玩家的中心位置
                                         Point playerPoint = getCentralPoint(player.getLocation());
-                                        //手雷的爆炸中心位置
-                                        Point grenadePoint = getCentralPoint(grenade.getLocation());
                                         //如果该玩家位于爆炸半径内
-                                        if (playerPoint.distance(grenadePoint) < grenade.getDamageRadius()) {
+                                        if (playerPoint.distance(grenadePoint) < damageRadius) {
                                             //向服务器发送该玩家死亡的消息
                                             diePlayer.add(player);
                                             if (player.equals(me)) {
@@ -818,6 +820,19 @@ public class MultiPlayerModel extends JFrame
                                         }
                                     }
                                 }
+                                List<Mine> boomMineList=new LinkedList<Mine>();
+                                for(int j=0;j<mineList.size();j++)
+                                {
+                                    Mine mine=mineList.get(j);
+                                    Point minePoint=getCentralPoint(mine.getLocation());
+                                    if(minePoint.distance(grenadePoint)<damageRadius)
+                                    {
+                                       boomMineList.add(mine);
+                                       mine.boom(gameArea,minePoint);
+                                       gameArea.remove(mine);
+                                    }
+                                }
+                                mineList.remove(boomMineList);
                             }
                             //否则手雷继续移动
                             else

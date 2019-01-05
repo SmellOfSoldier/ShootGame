@@ -23,7 +23,7 @@ public class MultiPlayTimeStop extends Thread {
             PrintStream sendstream=StartServer.clientPrintStreamMap.get(c);
             sendstream.println(Sign.GameOver);
             //设置玩家不在玩耍状态
-            //c.setPlaying(false);
+           // c.setPlaying(false);
         }
         System.out.println("已经通知完"+currentgame.getId()+"所有玩家游戏结束。");
     }

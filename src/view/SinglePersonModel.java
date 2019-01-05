@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Random;
 
@@ -129,17 +128,17 @@ public class SinglePersonModel extends JFrame
                 for (EliteSoldier eliteSoldier:eliteSoldierList)
                 {
                     //判断精英战士是否踩了地雷
-                    Iterator<Mine> mineIterator=mineList.iterator();
-                    while(mineIterator.hasNext())
+
+                   for(int i=0;i<mineList.size();i++)
                     {
-                        Mine mine=mineIterator.next();
+                        Mine mine=mineList.get(i);
                         int damageValue=mine.getDamageValue();
                         Point minePoint=getCentralPoint(mine.getLocation());
                         Point eliteSoldierPoint=getCentralPoint(eliteSoldier.getLocation());
                         //如果精英战士踩到地雷,并且这个地雷不是自己埋下的
                         if(ifStepMine(mine,eliteSoldier))
                         {
-                            mineIterator.remove();
+                            mineList.remove(i);
                             mine.boom(gameArea,eliteSoldierPoint);
                             gameArea.remove(mine);
                             mine.setVisible(false);
@@ -305,6 +304,7 @@ public class SinglePersonModel extends JFrame
             killAndDieField.setSize(180,30);
             killAndDieField.setLocation(1000,10);
             killAndDieField.setBackground(new Color(0xED4078));
+            killAndDieField.setEditable(false);
 
             URL url= SinglePersonModel.class.getResource("/images/logo/usingWeaponFlag.png");
             ImageIcon icon=new ImageIcon(url);
@@ -559,10 +559,10 @@ public class SinglePersonModel extends JFrame
                 {
                     if(!sniperBulletList.isEmpty())
                     {
-                        Iterator<Bullet> bulletIterator=sniperBulletList.iterator();
-                        while(bulletIterator.hasNext())
+
+                       for(int i=0;i<sniperBulletList.size();i++)
                         {
-                            Bullet bullet=bulletIterator.next();
+                            Bullet bullet=sniperBulletList.get(i);
                             boolean flag=false;             //标记该子弹是否击中人
                             Point oldPoint=bullet.getLocation();
                             Point newPoint=new Point(oldPoint.x+bullet.getxSpeed(),oldPoint.y+bullet.getySpeed());
@@ -572,7 +572,7 @@ public class SinglePersonModel extends JFrame
                                 if((ifHitPerson(bullet,person)) && !person.ifDie() && !person.equals(bullet.getFromPerson()))    //如果击中AI
                                 {
                                     flag=true;
-                                    bulletIterator.remove();
+                                    sniperBulletList.remove(i);
                                     gameArea.remove(bullet);
                                     int healthPoint =person.getHealthPoint();
                                     if(healthPoint-bullet.getDamageValue()<=0)      //如果目标死亡
@@ -613,7 +613,7 @@ public class SinglePersonModel extends JFrame
                             }
                             if(!flag && (ifHitWall(bullet.getLocation(),bullet.getRadius(),true)))    //判断子弹是否撞墙
                             {
-                                bulletIterator.remove();
+                                sniperBulletList.remove(i);
                                 gameArea.remove(bullet);
                                 // MusicPlayer.playBulletHitWallMusic();
                             }
@@ -633,11 +633,10 @@ public class SinglePersonModel extends JFrame
                 {
                     if(!automaticBulletList.isEmpty())
                     {
-                        int i=-1;
-                        Iterator<Bullet> bulletIterator=automaticBulletList.iterator();
-                        while(bulletIterator.hasNext())
+
+                        for(int i=0;i<automaticBulletList.size();i++)
                             {
-                                Bullet bullet=bulletIterator.next();
+                                Bullet bullet=automaticBulletList.get(i);
                             boolean flag=false;             //标记该子弹是否击中人
                             Point oldPoint=bullet.getLocation();
                             Point newPoint=new Point(oldPoint.x+bullet.getxSpeed(),oldPoint.y+bullet.getySpeed());
@@ -648,7 +647,7 @@ public class SinglePersonModel extends JFrame
                                 {
                                     flag=true;
                                     gameArea.remove(bullet);
-                                    bulletIterator.remove();
+                                    automaticBulletList.remove(i);
                                     int healthPoint =person.getHealthPoint();
                                     if(healthPoint-bullet.getDamageValue()<=0)
                                     {
@@ -689,7 +688,7 @@ public class SinglePersonModel extends JFrame
                             }
                             if(!flag && (ifHitWall(bullet.getLocation(),bullet.getRadius(),true)))    //判断子弹是否撞墙
                             {
-                                bulletIterator.remove();
+                                automaticBulletList.remove(i);
                                 gameArea.remove(bullet);
                                // MusicPlayer.playBulletHitWallMusic();
                             }
@@ -702,17 +701,16 @@ public class SinglePersonModel extends JFrame
             grenadeMoveThread=new Timer(Grenade.speed, new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    Iterator<Grenade> grenadeIterator=grenadeList.iterator();
-                    while (grenadeIterator.hasNext())
+                    for(int i=0;i<grenadeList.size();i++)
                     {
-                        Grenade grenade=grenadeIterator.next();
+                        Grenade grenade=grenadeList.get(i);
                         //如果手榴弹到达指定地点，或者超出地图范围
                         int x=grenade.getLocation().x;
                         int y=grenade.getLocation().y;
                         if(grenade.ifArrive() || x  > SinglePersonModel.gameAreaWidth ||x<=0 || y> SinglePersonModel.gameAreaHeight || y<=0)
                         {
                             gameArea.remove(grenade);
-                            grenadeIterator.remove();
+                            grenadeList.remove(i);
                             boolean gameOver=false;             //判断游戏是否结束
                             int damageRadius=grenade.getDamageRadius();     //爆炸杀伤半径
                             java.util.List<Person> pList=new LinkedList<Person>();   //用于存放被炸死的person

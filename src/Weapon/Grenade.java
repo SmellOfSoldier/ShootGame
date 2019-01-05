@@ -114,7 +114,7 @@ public class Grenade extends Weapon implements Serializable
     public void boom(JPanel gameArea)
     {
         Point point=this.getLocation();
-        Point boomPoint =new Point(point.x-damageRadius,point.y-damageRadius);
+        Point boomPoint =new Point(point.x+(SinglePersonModel.CELL/2)-damageRadius,point.y+(SinglePersonModel.CELL/2)-damageRadius);
         boomEffect.setLocation(boomPoint);
         boomMusicPlayer.play();
         new Thread(new Runnable() {
