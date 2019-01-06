@@ -631,6 +631,7 @@ class ClientThread extends Thread {
                     StartServer.clientPrintStreamMap.get(c).println(Sign.OneClientOffline + client.getId());
                 }
             }
+            timeStop.stopThisThread();
             sendStream.close();
             getStream.close();
             socket.close();
