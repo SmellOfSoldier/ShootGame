@@ -111,9 +111,11 @@ public class GameHall
                 }
                 ClientPort.sendStream.println(Sign.Logout);
                 ClientPort.sendStream.flush();
-                new LoginFrame(gameHallJFrame,ip);
+                new LoginFrame(ClientPort.gameStart.getJFrame(),ip);
                 MusicPlayer.stopGameHallBGM();
                 gameHallJFrame.dispose();
+                //通知系统回收游戏大厅内所有的废物数据
+                System.gc();
             }
         });
         //加入房间事件
@@ -172,6 +174,7 @@ public class GameHall
                     e1.printStackTrace();
                 }
                gameHallJFrame.dispose();
+                new LoginFrame(ClientPort.gameStart.getJFrame(),ip);
             }
         });
 
@@ -829,7 +832,7 @@ public class GameHall
             icon.setImage(bufferedImage);
             icon.setImage(icon.getImage().getScaledInstance(size, size, Image.SCALE_DEFAULT));
             player.setIcon(icon);
-            //player.peekWeapon(new AWM(), 100);
+            player.peekWeapon(new AWM(), 0);
             player.peekWeapon(new Mine(), 5);
             player.peekWeapon(new Grenade(), 10);
             player.peekWeapon(new M4A1(), 210);

@@ -92,4 +92,8 @@ public class GameStart {
             }
         });
     }
+    public JFrame getJFrame()
+    {
+        return gameStartFrame;
+    }
 }

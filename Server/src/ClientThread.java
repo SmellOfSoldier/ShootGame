@@ -278,7 +278,7 @@ class ClientThread extends Thread {
                         GuiShowMes.append("服务器消息：玩家："+client.getId()+" 下线。\n");
                         client.setOline(false);
                         client=null;
-
+                        isLogin=false;
                         //设置当前玩家所在房间为空
                         currentGameRoom=null;
                         break sign;
@@ -328,8 +328,11 @@ class ClientThread extends Thread {
 
                                 }
 
+                                //为房主开始随机产生奖励线程
+                                randomReward=new RandomReward(sendStream);
+                                randomReward.start();
                                 //设置定时游戏结束
-                                timeStop=new MultiPlayTimeStop(currentGameRoom,randomReward,120);
+                                timeStop=new MultiPlayTimeStop(currentGameRoom,randomReward,3000);
                                 timeStop.start();
                                 client.setPlaying(true);//设置当前玩家为正在对战状态
                                 GuiShowMes.append("服务器消息：房间："+currentGameRoom.getId()+" 开始游戏。\n");
@@ -342,9 +345,12 @@ class ClientThread extends Thread {
                     else if(line.startsWith(Sign.GameReadyStart))
                     {
                         client.setPlaying(true);
-                        //开始随机产生奖励线程
-                        randomReward=new RandomReward(sendStream);
-                        randomReward.start();
+                        //为不是房主的玩家开始随机产生奖励线程
+                        if(!currentGameRoom.getMaster().equals(client))
+                        {
+                            randomReward = new RandomReward(sendStream);
+                            randomReward.start();
+                        }
                     }
                 /**
                  * 下面为游戏内服务的命令
@@ -463,29 +469,6 @@ class ClientThread extends Thread {
                     }
                     if(playeringamenum==0) timeStop.stopThisThread();
                 }
-                /**
-                 *收到刷新消息
-                 */
-                /*else if(line.startsWith(Sign.RefreshInformation))
-                {
-                    //序列化初始化信息
-                    String allclientsStr = gson.toJson(StartServer.onlineClients);
-                    String roomStr = gson.toJson(StartServer.allGameRoom);
-                    //转发给房间内其他玩家
-
-                            for(Client c:currentGameRoom.getAllClients())
-                            {
-                                PrintStream sendstream= StartServer.clientPrintStreamMap.get(c);
-                                sendstream.println(Sign.RefreshInformation+allclientsStr+Sign.SplitSign+roomStr);//发送大厅刷新消息
-                                //设置房间内玩家游玩状态为false
-                                c.setPlaying(false);
-                            }
-                            //退出房间
-                            currentGameRoom=null;
-                }*/
-                /**
-                 *
-                 */
                 //TODO:待完成的玩家服务线程
 
                 }
@@ -608,6 +591,7 @@ class ClientThread extends Thread {
                 sendStream.close();
                 getStream.close();
                 socket.close();
+                isConnected=false;
                 this.interrupt();//停止玩家服务线程
     }
 }
