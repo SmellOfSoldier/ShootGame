@@ -44,7 +44,13 @@ public class MultiPlayTimeStop extends Thread {
     }
     public void stopThisThread()
     {
-        randomReward.stopThisThread();
-        destroy=true;
+        try {
+            randomReward.stopThisThread();
+            destroy = true;
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
     }
 }

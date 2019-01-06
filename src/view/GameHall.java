@@ -111,11 +111,9 @@ public class GameHall
                 }
                 ClientPort.sendStream.println(Sign.Logout);
                 ClientPort.sendStream.flush();
-                new LoginFrame(ClientPort.gameStart.getJFrame(),ip);
+                new LoginFrame(gameHallJFrame,ip);
                 MusicPlayer.stopGameHallBGM();
                 gameHallJFrame.dispose();
-                //通知系统回收游戏大厅内所有的废物数据
-                System.gc();
             }
         });
         //加入房间事件
@@ -127,7 +125,7 @@ public class GameHall
                 if(e.getClickCount()==2)
                 {
                     System.out.println(currentClient.getRoomID()+"当前玩家所在房间的id为：");
-                    if(currentClient.getRoomID()==null)
+                    if(currentGameRoom==null)
                     {
                         System.out.println("加入房间中。");
                         JList currentRooms=(JList)e.getSource();
@@ -163,18 +161,12 @@ public class GameHall
                 //先使大厅不可见
                 gameHallJFrame.setVisible(false);
                 //离开大厅（注销账号）
-                //发送注销命令
-                ClientPort.sendStream.println(Sign.Logout);
                 //如果在房间则发送离开房间命令
-                if(currentClient.getRoomID()!=null) leaveRoom();
+                if(currentGameRoom!=null) leaveRoom();
+                //发送注销命令
+                ClientPort.sendStream.println(Sign.Disconnect);
                 //睡眠一会将最后的命令发送到服务器
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e1) {
-                    e1.printStackTrace();
-                }
-               gameHallJFrame.dispose();
-                new LoginFrame(ClientPort.gameStart.getJFrame(),ip);
+                System.exit(0);
             }
         });
 
@@ -603,178 +595,162 @@ public class GameHall
             sign:while (!this.isInterrupted())
             {
                 try {
-                    line=getstream.readLine();
-                    System.out.println("客户端收到来自服务器的消息"+line);
+                     if((line=getstream.readLine())!=null) {
+                         System.out.println("客户端收到来自服务器的消息" + line);
 
-                    //如果有用户上线
-                    if(line.startsWith(Sign.OneClientOnline))
-                    {
-                        realMessage=getRealMessage(line,Sign.OneClientOnline);
-                        onlinePlayer.addElement(realMessage);
-                    }
-                    //如果有用户下线
-                    else if(line.startsWith(Sign.OneClientOffline))
-                    {
-                        realMessage=getRealMessage(line,Sign.OneClientOffline);
-                        onlinePlayer.removeElement(realMessage);
-                    }
-                    //如果有用户加入当前房间
-                    else if(line.startsWith(Sign.NewClientEnter))
-                    {
-                        realMessage=getRealMessage(line,Sign.NewClientEnter);
-                        //进入房间的用户ID
-                        String clientId=realMessage;
-                        //获取大厅房间中用户id的列表;   （客户端大厅显示的房间类）
-                        DefaultListModel<String> clientIdInRoom=currentGameRoom.getClientIdModel();
-                        clientIdInRoom.addElement(clientId);
-                    }
-                    //如果有用户离开当前房间或被踢出房间 （非房主）
-                    else if(line.startsWith(Sign.ClientLeaveRoom))
-                    {
-                        realMessage=getRealMessage(line,Sign.ClientLeaveRoom);
-                        //进入房间的用户ID
-                        String clientId=realMessage.split(Sign.SplitSign)[0];
-                        //进入的房间ID
-                        String roomId=realMessage.split(Sign.SplitSign)[1];
-                        //获取大厅房间中用户id的列表;   （客户端大厅显示的房间类）
-                        DefaultListModel<String> clientIdInRoom=currentGameRoom.getClientIdModel();
-                        //将用户从当前房间用户id列表中删除
-                        System.out.println(clientIdInRoom.size());
-                        System.out.println(clientIdInRoom.contains(clientId)+clientId+"\n");
-                        for(int i=0;i<clientIdInRoom.size();i++){
-                            System.out.println(clientIdInRoom.get(i));
-                        }
-                        clientIdInRoom.removeElement(clientId);
-                        System.out.println(clientIdInRoom.size());
-                    }
-                    //如果用户注销，并且收到服务端关闭业务线程的命令
-                    else if(line.startsWith(Sign.CloseLocalThread))
-                    {
-                        break sign;
-                    }
-                    //如果房间被解散（房主离开房间）
-                    else if(line.startsWith(Sign.RoomDismiss))
-                    {
-                        //该用户目前所处房间的id
-                        String roomId=currentGameRoom.getId();
-                        System.out.println("需要移除的房间id为"+roomId);
-                        //将该房间从房间链表中删除
-                        ClientPort.allServerRoom.remove(new ServerGameRoom(roomId,new Client(null,null),null));
-                        //将该房间从大厅房间列表中删除
-                        System.out.println("delete position");
-                        rooms.removeElement(roomId);
-                        System.out.println("rooms .remove");
-                        currentClient.setRoomNull();
-                        System.out.println("set null");
-                        currentGameRoom.setVisible(false);
-                        System.out.println("dispose");
-                        if(currentGameRoom!=null)
-                            currentGameRoom=null;
-                        System.out.println("roomdis run out");
-                    }
-                    //如果被房主踢出房间
-                    else if(line.startsWith(Sign.BeenTicked))
-                    {
-                        DefaultListModel<String> clientIdInRoom=currentGameRoom.getClientIdModel();
-                        //将用户从当前房间用户id列表中删除
-                        clientIdInRoom.removeElement(currentClient.getId());
-                        currentGameRoom.setVisible(false);
-                        currentClient.setRoomNull();
-                        currentGameRoom=null;
-                        JOptionPane.showConfirmDialog(null,"你被房主踢出了房间","提示",JOptionPane.OK_OPTION);
-                    }
-                    //如果有房间新建
-                    else if(line.startsWith(Sign.NewRoomCreate))
-                    {
-                        realMessage=getRealMessage(line,Sign.NewRoomCreate);
-                        Gson gson=new Gson();
-                        ServerGameRoom serverGameRoom=gson.fromJson(realMessage,ServerGameRoom.class);
-                        String roomId=serverGameRoom.getId();
-                        //更新大厅房间信息列表
-                        rooms.addElement(roomId);
-                        ClientPort.allServerRoom.add(serverGameRoom);
-                    }
-                    //如果有房间被解散
-                    else if(line.startsWith(Sign.DeleteRoom))
-                    {
-                        String roomId=getRealMessage(line,Sign.DeleteRoom);
-                        for(int i=0;i<ClientPort.allServerRoom.size();i++)
-                        {
-                            if(ClientPort.allServerRoom.get(i).getId().equals(roomId))
-                            {
-                                ClientPort.allServerRoom.remove(i);
-                                break;
-                            }
-                        }
-                        rooms.removeElement(roomId);
-                    }
-                    //如果收到房间里面其他玩家发来的消息
-                    else if(line.startsWith(Sign.FromServerMessage) && currentClient.getRoomID()!=null)
-                    {
-                        realMessage=getRealMessage(line,Sign.FromServerMessage);
-                        currentGameRoom.putMessage(realMessage);
-                    }
-                    //如果收到服务器退出的消息
-                    else if(line.startsWith(Sign.ServerExit))
-                    {
-                        getstream.close();
-                        sendstream.close();
-                        socket.close();
-                        JOptionPane.showMessageDialog(null,"服务器已经关闭，客户端即将退出","警告",JOptionPane.OK_OPTION);
-                        System.exit(0);
-                    }
+                         //如果有用户上线
+                         if (line.startsWith(Sign.OneClientOnline)) {
+                             realMessage = getRealMessage(line, Sign.OneClientOnline);
+                             onlinePlayer.addElement(realMessage);
+                         }
+                         //如果有用户下线
+                         else if (line.startsWith(Sign.OneClientOffline)) {
+                             realMessage = getRealMessage(line, Sign.OneClientOffline);
+                             onlinePlayer.removeElement(realMessage);
+                         }
+                         //如果有用户加入当前房间
+                         else if (line.startsWith(Sign.NewClientEnter)) {
+                             realMessage = getRealMessage(line, Sign.NewClientEnter);
+                             //进入房间的用户ID
+                             String clientId = realMessage;
+                             //获取大厅房间中用户id的列表;   （客户端大厅显示的房间类）
+                             DefaultListModel<String> clientIdInRoom = currentGameRoom.getClientIdModel();
+                             clientIdInRoom.addElement(clientId);
+                         }
+                         //如果有用户离开当前房间或被踢出房间 （非房主）
+                         else if (line.startsWith(Sign.ClientLeaveRoom)) {
+                             realMessage = getRealMessage(line, Sign.ClientLeaveRoom);
+                             //进入房间的用户ID
+                             String clientId = realMessage.split(Sign.SplitSign)[0];
+                             //进入的房间ID
+                             String roomId = realMessage.split(Sign.SplitSign)[1];
+                             //获取大厅房间中用户id的列表;   （客户端大厅显示的房间类）
+                             DefaultListModel<String> clientIdInRoom = currentGameRoom.getClientIdModel();
+                             //将用户从当前房间用户id列表中删除
+                             System.out.println(clientIdInRoom.size());
+                             System.out.println(clientIdInRoom.contains(clientId) + clientId + "\n");
+                             for (int i = 0; i < clientIdInRoom.size(); i++) {
+                                 System.out.println(clientIdInRoom.get(i));
+                             }
+                             clientIdInRoom.removeElement(clientId);
+                             System.out.println(clientIdInRoom.size());
+                         }
+                         //如果用户注销，并且收到服务端关闭业务线程的命令
+                         else if (line.startsWith(Sign.CloseLocalThread)) {
+                             break sign;
+                         }
+                         //如果房间被解散（房主离开房间）
+                         else if (line.startsWith(Sign.RoomDismiss)) {
+                             //该用户目前所处房间的id
+                             String roomId = currentGameRoom.getId();
+                             System.out.println("需要移除的房间id为" + roomId);
+                             //将该房间从房间链表中删除
+                             ClientPort.allServerRoom.remove(new ServerGameRoom(roomId, new Client(null, null), null));
+                             //将该房间从大厅房间列表中删除
+                             System.out.println("delete position");
+                             rooms.removeElement(roomId);
+                             System.out.println("rooms .remove");
+                             currentClient.setRoomNull();
+                             System.out.println("set null");
+                             currentGameRoom.setVisible(false);
+                             System.out.println("dispose");
+                             if (currentGameRoom != null)
+                                 currentGameRoom = null;
+                             System.out.println("roomdis run out");
+                         }
+                         //如果被房主踢出房间
+                         else if (line.startsWith(Sign.BeenTicked)) {
+                             DefaultListModel<String> clientIdInRoom = currentGameRoom.getClientIdModel();
+                             //将用户从当前房间用户id列表中删除
+                             clientIdInRoom.removeElement(currentClient.getId());
+                             currentGameRoom.setVisible(false);
+                             currentClient.setRoomNull();
+                             currentGameRoom = null;
+                             JOptionPane.showConfirmDialog(null, "你被房主踢出了房间", "提示", JOptionPane.OK_OPTION);
+                         }
+                         //如果有房间新建
+                         else if (line.startsWith(Sign.NewRoomCreate)) {
+                             realMessage = getRealMessage(line, Sign.NewRoomCreate);
+                             Gson gson = new Gson();
+                             ServerGameRoom serverGameRoom = gson.fromJson(realMessage, ServerGameRoom.class);
+                             String roomId = serverGameRoom.getId();
+                             //更新大厅房间信息列表
+                             rooms.addElement(roomId);
+                             ClientPort.allServerRoom.add(serverGameRoom);
+                         }
+                         //如果有房间被解散
+                         else if (line.startsWith(Sign.DeleteRoom)) {
+                             String roomId = getRealMessage(line, Sign.DeleteRoom);
+                             for (int i = 0; i < ClientPort.allServerRoom.size(); i++) {
+                                 if (ClientPort.allServerRoom.get(i).getId().equals(roomId)) {
+                                     ClientPort.allServerRoom.remove(i);
+                                     break;
+                                 }
+                             }
+                             rooms.removeElement(roomId);
+                         }
+                         //如果收到房间里面其他玩家发来的消息
+                         else if (line.startsWith(Sign.FromServerMessage) && currentClient.getRoomID() != null) {
+                             realMessage = getRealMessage(line, Sign.FromServerMessage);
+                             currentGameRoom.putMessage(realMessage);
+                         }
+                         //如果收到服务器退出的消息
+                         else if (line.startsWith(Sign.ServerExit)) {
+                             getstream.close();
+                             sendstream.close();
+                             socket.close();
+                             JOptionPane.showMessageDialog(null, "服务器已经关闭，客户端即将退出", "警告", JOptionPane.OK_OPTION);
+                             System.exit(0);
+                         }
 
-                    //如果创建房间成功
-                    else if(line.startsWith(Sign.PermissionCreateRoom))
-                    {
-                        realMessage=getRealMessage(line,Sign.PermissionCreateRoom);
-                        Gson gson=new Gson();
-                        ServerGameRoom serverGameRoom=gson.fromJson(realMessage,ServerGameRoom.class);
-                        //当前玩家的房间设置为自己创建的房间
-                        currentClient.setGameRoomID(serverGameRoom.getId());
-                        currentGameRoom = new GameRoom(currentClient, currentClient.getId(),serverGameRoom.getAllClients());
+                         //如果创建房间成功
+                         else if (line.startsWith(Sign.PermissionCreateRoom)) {
+                             realMessage = getRealMessage(line, Sign.PermissionCreateRoom);
+                             Gson gson = new Gson();
+                             ServerGameRoom serverGameRoom = gson.fromJson(realMessage, ServerGameRoom.class);
+                             //当前玩家的房间设置为自己创建的房间
+                             currentClient.setGameRoomID(serverGameRoom.getId());
+                             currentGameRoom = new GameRoom(currentClient, currentClient.getId(), serverGameRoom.getAllClients());
 
-                    }
-                    //如果允许进入房间
-                    else if(line.startsWith(Sign.PermissionEnterRoom))
-                    {
-                        String roomStr=getRealMessage(line,Sign.PermissionEnterRoom);
-                        //将玩家所在房间设为加入的房间
-                        Gson gson=new Gson();
-                       ServerGameRoom serverGameRoom=gson.fromJson(roomStr,ServerGameRoom.class);
-                       currentClient.setGameRoomID(serverGameRoom.getId());
-                       currentGameRoom=new GameRoom(serverGameRoom.getMaster(),serverGameRoom.getName(),serverGameRoom.getAllClients());
-                    }
-                    //如果房间已满
-                    else if(line.startsWith(Sign.RoomFull)){
-                        JOptionPane.showMessageDialog(null,"房间已满","提示",JOptionPane.OK_OPTION);
-                    }
-                    //如果收到游戏已经开始的命令
-                    else if(line.startsWith(Sign.GameStart))
-                    {
-                        realMessage=getRealMessage(line,Sign.GameStart);
-                        //本地玩家的下标
-                        int myPlayerIndex=Integer.parseInt(realMessage.split(Sign.SplitSign)[1]);
-                        Gson gson=new Gson();
-                        String pointsIndexStr=realMessage.split(Sign.SplitSign)[0];
-                        System.out.println(pointsIndexStr);
-                        Integer [] pointIndex=gson.fromJson(pointsIndexStr,Integer[].class);
-                        List<Player> players= Collections.synchronizedList(new ArrayList<Player>());
-                        for(int i=0;i<pointIndex.length;i++)
-                        {
-                            players.add(createPlayer(i+"",entrance[pointIndex[i]],currentGameRoom.getClientIdModel().get(i),currentGameRoom.getClientIdModel().get(i)));
-                        }
-                        sendstream.println(Sign.GameReadyStart);
-                        gameHallJFrame.setVisible(false);
-                        currentGameRoom.setVisible(false);
-                        new MultiPlayerModel(players.get(myPlayerIndex),players,gameHallJFrame,currentGameRoom,GameHall.this);
-                        //停止播放大厅背景音乐
-                        MusicPlayer.stopGameHallBGM();
-                        //业务线程睡眠，等待游戏结束后被唤醒
-                        condition.await();
+                         }
+                         //如果允许进入房间
+                         else if (line.startsWith(Sign.PermissionEnterRoom)) {
+                             String roomStr = getRealMessage(line, Sign.PermissionEnterRoom);
+                             //将玩家所在房间设为加入的房间
+                             Gson gson = new Gson();
+                             ServerGameRoom serverGameRoom = gson.fromJson(roomStr, ServerGameRoom.class);
+                             currentClient.setGameRoomID(serverGameRoom.getId());
+                             currentGameRoom = new GameRoom(serverGameRoom.getMaster(), serverGameRoom.getName(), serverGameRoom.getAllClients());
+                         }
+                         //如果房间已满
+                         else if (line.startsWith(Sign.RoomFull)) {
+                             JOptionPane.showMessageDialog(null, "房间已满", "提示", JOptionPane.OK_OPTION);
+                         }
+                         //如果收到游戏已经开始的命令
+                         else if (line.startsWith(Sign.GameStart)) {
+                             realMessage = getRealMessage(line, Sign.GameStart);
+                             //本地玩家的下标
+                             int myPlayerIndex = Integer.parseInt(realMessage.split(Sign.SplitSign)[1]);
+                             Gson gson = new Gson();
+                             String pointsIndexStr = realMessage.split(Sign.SplitSign)[0];
+                             System.out.println(pointsIndexStr);
+                             Integer[] pointIndex = gson.fromJson(pointsIndexStr, Integer[].class);
+                             List<Player> players = Collections.synchronizedList(new ArrayList<Player>());
+                             for (int i = 0; i < pointIndex.length; i++) {
+                                 players.add(createPlayer(i + "", entrance[pointIndex[i]], currentGameRoom.getClientIdModel().get(i), currentGameRoom.getClientIdModel().get(i)));
+                             }
+                             sendstream.println(Sign.GameReadyStart);
+                             gameHallJFrame.setVisible(false);
+                             currentGameRoom.setVisible(false);
+                             new MultiPlayerModel(players.get(myPlayerIndex), players, gameHallJFrame, currentGameRoom, GameHall.this);
+                             //停止播放大厅背景音乐
+                             MusicPlayer.stopGameHallBGM();
+                             //业务线程睡眠，等待游戏结束后被唤醒
+                             condition.await();
 
-                    }
-                    //TODO:客户端线程
+                         }
+                         //TODO:客户端线程
+                     }
                 }
                 catch (IOException e)
                 {
@@ -784,6 +760,7 @@ public class GameHall
                 {
                     ex.printStackTrace();
                 }
+
             }
             System.out.println("线程关闭");
             lock.unlock();
@@ -804,7 +781,7 @@ public class GameHall
     {
         PrintStream ps=ClientPort.sendStream;
         //将人物的id与将要离开的房间的id发送给服务端
-        ps.println(Sign.ClientLeaveRoom);
+        ps.println(Sign.LeaveRoom);
         if(currentGameRoom!=null && !currentGameRoom.getId().equals(currentClient.getId()))
         {
             currentGameRoom.setVisible(false);
@@ -832,7 +809,7 @@ public class GameHall
             icon.setImage(bufferedImage);
             icon.setImage(icon.getImage().getScaledInstance(size, size, Image.SCALE_DEFAULT));
             player.setIcon(icon);
-            player.peekWeapon(new AWM(), 0);
+            //player.peekWeapon(new AWM(), 100);
             player.peekWeapon(new Mine(), 5);
             player.peekWeapon(new Grenade(), 10);
             player.peekWeapon(new M4A1(), 210);

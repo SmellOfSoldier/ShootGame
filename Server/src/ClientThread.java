@@ -256,7 +256,7 @@ class ClientThread extends Thread {
                     /**
                      * 如果收到离开房间的消息(房间内的人)
                      */
-                    else if (isLogin && line.startsWith(Sign.ClientLeaveRoom)) {
+                    else if (isLogin && line.startsWith(Sign.LeaveRoom)) {
                         System.out.println("服务器收到" + client.getId() + "发来的离开房间的信息。");
                         leaveRoom();//离开房间
                     }
@@ -300,6 +300,7 @@ class ClientThread extends Thread {
                      * 如果收到断开连接请求（返回到单人与多人游戏选择界面)
                      */
                     else if (line.startsWith(Sign.Disconnect)) {
+
                         stopThisClient( sendStream, getStream);
                         //关闭此服务线程 tips:原因：玩家请求断开连接退回到单人多人游戏选择界面
                     }
@@ -357,124 +358,144 @@ class ClientThread extends Thread {
                     /**
                      * 如果收到玩家移动的消息
                      */
-                    else if(client.isPlaying()&&line.startsWith(Sign.PlayerMove))
+                    else if(line.startsWith(Sign.PlayerMove))
                     {
-                        //直接获取玩家移动的消息
-                        realMessage=line;
-                        System.out.println(currentGameRoom.getAllClients().size());
-                        for(Client c:currentGameRoom.getAllClients())
+                        if(client.isPlaying())
                         {
-                            //直接转发给房间内所有的在线玩家
-                            if(!c.equals(client)) {
-                                PrintStream sendstream = StartServer.clientPrintStreamMap.get(c);
-                                sendstream.println(realMessage);
+                            //直接获取玩家移动的消息
+                            realMessage = line;
+                            System.out.println(currentGameRoom.getAllClients().size());
+                            for (Client c : currentGameRoom.getAllClients()) {
+                                //直接转发给房间内所有的在线玩家
+                                if (!c.equals(client)) {
+                                    PrintStream sendstream = StartServer.clientPrintStreamMap.get(c);
+                                    sendstream.println(realMessage);
+                                }
                             }
                         }
                     }
                     /**
                      * 游戏内地雷爆炸的消息
                      */
-                    else if (client.isPlaying() && line.startsWith(Sign.MineBoom))
+                    else if (  line.startsWith(Sign.MineBoom))
                     {
-                        //获取爆炸的地雷的下标
-                        realMessage=check.getRealMessage(line,Sign.MineBoom);
-                        int mineflag=Integer.parseInt(realMessage.split(Sign.SplitSign)[0]);
-                        //转发给房间内其他玩家
-                        for(Client c:currentGameRoom.getAllClients())//给房间内所有玩家发送mineflag号地雷爆炸的消息
+                        if(client.isPlaying())
+                        {
+                            //获取爆炸的地雷的下标
+                            realMessage = check.getRealMessage(line, Sign.MineBoom);
+                            int mineflag = Integer.parseInt(realMessage.split(Sign.SplitSign)[0]);
+                            //转发给房间内其他玩家
+                            for (Client c : currentGameRoom.getAllClients())//给房间内所有玩家发送mineflag号地雷爆炸的消息
                             {
-                                PrintStream sendstream= StartServer.clientPrintStreamMap.get(c);
-                                sendstream.println(Sign.MineBoom+mineflag);//发送地雷爆炸消息
+                                PrintStream sendstream = StartServer.clientPrintStreamMap.get(c);
+                                sendstream.println(Sign.MineBoom + mineflag);//发送地雷爆炸消息
                             }
+                        }
                     }
                 /**
                  * 游戏内手雷爆炸消息
                  */
-                    else if (client.isPlaying() && line.startsWith(Sign.GrenadeBoom))
+                    else if ( line.startsWith(Sign.GrenadeBoom))
                     {
-                        //转发给房间内其他玩家
-                        for(Client c:currentGameRoom.getAllClients())//给房间内所有玩家发送nadeflag号手雷爆炸的消息
+                        if(client.isPlaying() ) {
+                            //转发给房间内其他玩家
+                            for (Client c : currentGameRoom.getAllClients())//给房间内所有玩家发送nadeflag号手雷爆炸的消息
                             {
-                                PrintStream sendstream= StartServer.clientPrintStreamMap.get(c);
+                                PrintStream sendstream = StartServer.clientPrintStreamMap.get(c);
                                 sendstream.println(line);//发送手雷爆炸消息
                             }
+                        }
                     }
 
                     /**
                      * 游戏内玩家开火消息
                       */
-                    else if(client.isPlaying()&&line.startsWith(Sign.CreateBullet))
+                    else if(line.startsWith(Sign.CreateBullet))
                     {
-                        for (Client c:currentGameRoom.getAllClients())
-                        {
-                            PrintStream sendstream=StartServer.clientPrintStreamMap.get(c);
-                            sendstream.println(line);
+                        if(client.isPlaying()) {
+                            for (Client c : currentGameRoom.getAllClients()) {
+                                PrintStream sendstream = StartServer.clientPrintStreamMap.get(c);
+                                System.out.println(sendstream==null);
+                                sendstream.println(line);
+                            }
                         }
                     }
                     /**
                      * 游戏内玩家放置地雷消息
                      */
-                    else if(client.isPlaying()&&line.startsWith(Sign.CreateMine))
+                    else if(line.startsWith(Sign.CreateMine))
                     {
-                        for (Client c:currentGameRoom.getAllClients())
-                        {
-                            PrintStream sendstream=StartServer.clientPrintStreamMap.get(c);
-                            sendstream.println(line);
+                        if(client.isPlaying()) {
+                            for (Client c : currentGameRoom.getAllClients()) {
+                                PrintStream sendstream = StartServer.clientPrintStreamMap.get(c);
+                                sendstream.println(line);
+                            }
                         }
                     }
                     /**
                      * 游戏内玩家丢出手雷消息
                      */
-                    else if(client.isPlaying()&&line.startsWith(Sign.CreateGrenade))
+                    else if(line.startsWith(Sign.CreateGrenade))
                     {
-                        for(Client c:currentGameRoom.getAllClients())
-                        {
-                            PrintStream sendstream=StartServer.clientPrintStreamMap.get(c);
-                            sendstream.println(line);
+                        if(client.isPlaying()) {
+                            for (Client c : currentGameRoom.getAllClients()) {
+                                PrintStream sendstream = StartServer.clientPrintStreamMap.get(c);
+                                sendstream.println(line);
+                            }
                         }
                     }
                     /**
                      * 玩家死亡消息
                      */
-                    else if (client.isPlaying() && line.startsWith(Sign.OnePlayerDie))
+                    else if (  line.startsWith(Sign.OnePlayerDie))
                     {
-                        //获取爆炸的地雷的下标
-                        realMessage=check.getRealMessage(line,Sign.OnePlayerDie);
-                        int diePlayerFlag=Integer.parseInt(realMessage);
+                        if(client.isPlaying()) {
+                            //获取爆炸的地雷的下标
+                            realMessage = check.getRealMessage(line, Sign.OnePlayerDie);
+                            int diePlayerFlag = Integer.parseInt(realMessage);
+                            //转发给房间内其他玩家
+                            for (Client c : currentGameRoom.getAllClients())//给房间内所有玩家发送flag玩家死亡的消息
+                            {
+                                PrintStream sendstream = StartServer.clientPrintStreamMap.get(c);
+                                sendstream.println(line);//发送玩家死亡消息
+                            }
 
-                        //转发给房间内其他玩家
-                                for(Client c:currentGameRoom.getAllClients())//给房间内所有玩家发送flag玩家死亡的消息
-                                {
-                                    PrintStream sendstream= StartServer.clientPrintStreamMap.get(c);
-                                    sendstream.println(line);//发送玩家死亡消息
-                                }
-
-                        //创建复活信息发送线程
-                        new PlayerReliveThread(currentGameRoom,diePlayerFlag).start();
+                            //创建复活信息发送线程
+                            new PlayerReliveThread(currentGameRoom, diePlayerFlag).start();
+                        }
                     }
                 /**
                  * 玩家中途离开游戏
                  */
-                else if(client.isPlaying()&&line.startsWith(Sign.LeaveGame))
+                else if(line.startsWith(Sign.LeaveGame))
                 {
-                    client.setPlaying(false);
-                    //序列化初始化信息
-                    String allclientsStr = gson.toJson(StartServer.onlineClients);
-                    String roomStr = gson.toJson(StartServer.allGameRoom);
-                    sendStream.println(Sign.GameOver+allclientsStr+Sign.SplitSign+roomStr);
-                    int playeringamenum=0;
-                    for(Client c:currentGameRoom.getAllClients())
+                    if(client.isPlaying())
                     {
-                        if(c.isPlaying()) playeringamenum++;
+                        client.setPlaying(false);
+                        //序列化初始化信息
+                        String allclientsStr = gson.toJson(StartServer.onlineClients);
+                        String roomStr = gson.toJson(StartServer.allGameRoom);
+                        sendStream.println(Sign.GameOver + allclientsStr + Sign.SplitSign + roomStr);
+                        int playeringamenum = 0;
+                        for (Client c : currentGameRoom.getAllClients()) {
+                            if (c.isPlaying()) playeringamenum++;
+                        }
+                        if (playeringamenum == 0) timeStop.stopThisThread();
                     }
-                    if(playeringamenum==0) timeStop.stopThisThread();
                 }
                 //TODO:待完成的玩家服务线程
 
                 }
             }
         }
-        catch (IOException e) {
+        catch (IOException e)
+        {
+            /**
+             * 在信息传输过程中如果出现危害服务器的问题，则服务器会断开与客户端的连接
+             * 将该客户的状态置为最初始的状态
+             */
             e.printStackTrace();
+            stopThisClient(sendStream,getStream);
         }
     }
 
@@ -535,6 +556,7 @@ class ClientThread extends Thread {
             }
             //清除此房间
             StartServer.allGameRoom.remove(currentGameRoom);
+            System.out.println("房主退出房间后房间数目大小"+StartServer.allGameRoom.size());
             //设置当前所在房间为空
             currentGameRoom=null;
         }
@@ -585,25 +607,31 @@ class ClientThread extends Thread {
      * @param sendStream 获取输出流以回复客户端消息和扫尾停止
      * @param getStream 获取输入流进行扫尾停止
      */
-    private void stopThisClient(PrintStream sendStream,BufferedReader getStream) throws IOException {
-                //扫尾工作
-                if(client!=null)
-                {
-                    StartServer.onlineClients.remove(client);
-                    StartServer.clientPrintStreamMap.remove(client);
-                    if(currentGameRoom!=null) leaveRoom();
-                    client.setPlaying(false);
-                    client.setOline(false);
-                    //告诉其他在线玩家client离线了
-                    for(Client c:StartServer.onlineClients)
-                    {
-                        StartServer.clientPrintStreamMap.get(c).println(Sign.OneClientOffline+client.getId());
-                    }
+    private void stopThisClient(PrintStream sendStream,BufferedReader getStream)
+    {
+        try {
+            //扫尾工作
+            if (client != null) {
+                StartServer.onlineClients.remove(client);
+                StartServer.clientPrintStreamMap.remove(client);
+                if (currentGameRoom != null) leaveRoom();
+                client.setPlaying(false);
+                client.setOline(false);
+                //告诉其他在线玩家client离线了
+                for (Client c : StartServer.onlineClients) {
+                    StartServer.clientPrintStreamMap.get(c).println(Sign.OneClientOffline + client.getId());
                 }
-                sendStream.close();
-                getStream.close();
-                socket.close();
-                isConnected=false;
-                this.interrupt();//停止玩家服务线程
+            }
+            sendStream.close();
+            getStream.close();
+            socket.close();
+            isConnected = false;
+            this.interrupt();//停止玩家服务线程
+        }
+        catch (IOException ioe)
+        {
+            ioe.printStackTrace();
+        }
+
     }
 }

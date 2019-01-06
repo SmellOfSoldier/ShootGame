@@ -570,6 +570,7 @@ public class MultiPlayerModel extends JFrame
                                     {
                                         MedicalPackage medicalPackage=(MedicalPackage) rewardProp.getReward();
                                         me.addHealthPoint(medicalPackage.getHealthPoint());
+                                        healthLevel.setValue(me.getHealthPoint());
                                     }
                                     //如果是地雷或者是手雷
                                     else if(rewardProp.getType()== RewardType.Mine || rewardProp.getType()==RewardType.Grenade)
