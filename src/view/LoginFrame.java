@@ -116,6 +116,11 @@ public class LoginFrame{
                 String allInfo=null;//初始化开启大厅信息
                 String playerid=txt_account.getText().trim();
                 String password=String.valueOf(txt_password.getPassword());
+                if(playerid==null||password==null)
+                {
+                    JOptionPane.showMessageDialog(loginJFrame,"账号密码不能为空","提示",JOptionPane.ERROR_MESSAGE);//弹出警告框
+                    return;
+                }
                 ClientPort.sendStream.println(Sign.Login+playerid+Sign.SplitSign+password);
                 ClientPort.sendStream.flush();
 

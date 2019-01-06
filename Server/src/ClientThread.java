@@ -300,13 +300,6 @@ class ClientThread extends Thread {
                      * 如果收到断开连接请求（返回到单人与多人游戏选择界面)
                      */
                     else if (line.startsWith(Sign.Disconnect)) {
-                        if(client!=null)
-                        {
-                            client.setPlaying(false);
-                            client.setOline(false);
-                            StartServer.onlineClients.remove(client);
-                            StartServer.clientPrintStreamMap.remove(client);
-                        }
                         stopThisClient( sendStream, getStream);
                         //关闭此服务线程 tips:原因：玩家请求断开连接退回到单人多人游戏选择界面
                     }
@@ -594,6 +587,19 @@ class ClientThread extends Thread {
      */
     private void stopThisClient(PrintStream sendStream,BufferedReader getStream) throws IOException {
                 //扫尾工作
+                if(client!=null)
+                {
+                    StartServer.onlineClients.remove(client);
+                    StartServer.clientPrintStreamMap.remove(client);
+                    if(currentGameRoom!=null) leaveRoom();
+                    client.setPlaying(false);
+                    client.setOline(false);
+                    //告诉其他在线玩家client离线了
+                    for(Client c:StartServer.onlineClients)
+                    {
+                        StartServer.clientPrintStreamMap.get(c).println(Sign.OneClientOffline+client.getId());
+                    }
+                }
                 sendStream.close();
                 getStream.close();
                 socket.close();
