@@ -300,7 +300,13 @@ class ClientThread extends Thread {
                      * 如果收到断开连接请求（返回到单人与多人游戏选择界面)
                      */
                     else if (line.startsWith(Sign.Disconnect)) {
-                        StartServer.clientPrintStreamMap.remove(client);
+                        if(client!=null)
+                        {
+                            client.setPlaying(false);
+                            client.setOline(false);
+                            StartServer.onlineClients.remove(client);
+                            StartServer.clientPrintStreamMap.remove(client);
+                        }
                         stopThisClient( sendStream, getStream);
                         //关闭此服务线程 tips:原因：玩家请求断开连接退回到单人多人游戏选择界面
                     }
@@ -483,8 +489,7 @@ class ClientThread extends Thread {
      * 退出当前所处房间
      * @return
      */
-    public void leaveRoom()
-    {
+    public void leaveRoom() throws IOException {
         System.out.println(currentGameRoom==null);
         List<Client> roomClientList=currentGameRoom.getAllClients();
         System.out.println("循环房间玩家链表大小为"+roomClientList.size());
@@ -533,6 +538,7 @@ class ClientThread extends Thread {
                 GuiShowMes.append("服务器消息：房间："+client.getId()+" 被注销（房主退出）。\n");//gui显示房间注销的消息
             }catch (Exception e){
                 e.printStackTrace();
+                stopThisClient(sendStream,getStream);
             }
             //清除此房间
             StartServer.allGameRoom.remove(currentGameRoom);
