@@ -528,6 +528,7 @@ class ClientThread extends Thread {
             try{
                 //遍历全部在线玩家
                 PrintStream sendStream=null;
+                Gson gson=new Gson();
                 for(Client c: StartServer.onlineClients)
                 {
                     //如果玩家属于该房间
@@ -536,6 +537,14 @@ class ClientThread extends Thread {
                         System.out.println("给房间内"+c.getId()+"发送房间关闭消息");
                         //告知房间里面其他人房间已经被删除
                         sendStream = StartServer.clientPrintStreamMap.get(c);
+                        String allclientsStr = gson.toJson(StartServer.onlineClients);
+                        String roomStr = gson.toJson(StartServer.allGameRoom);
+                        if(client.isPlaying())
+                        {
+                            sendStream.println(Sign.GameOver+allclientsStr+Sign.SplitSign+roomStr);
+                            Thread.sleep(1000);
+                        }
+
                         sendStream.println(Sign.RoomDismiss);
                         //删除该房间内该玩家
                         roomClientList.remove(c);
