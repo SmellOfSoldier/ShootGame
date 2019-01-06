@@ -81,7 +81,7 @@ public class Player extends Person implements Serializable
         int healthPoint =getHealthPoint();
         if(healthPoint+hp>maxHealthPoint)
         {
-            super.setHealthPoint(hp);
+            super.setHealthPoint(maxHealthPoint);
         }
         else
         {

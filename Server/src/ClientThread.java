@@ -406,6 +406,22 @@ class ClientThread extends Thread {
                             }
                         }
                     }
+                    /**
+                     * 游戏内玩家血量增加
+                     */
+                    else if(line.startsWith(Sign.AddHealthPoint))
+                    {
+                        if(client.isPlaying())
+                        {
+                            for (Client c : currentGameRoom.getAllClients()) {
+                                //直接转发给房间内所有的在线玩家(除了自己)
+                                if (!c.equals(client)) {
+                                    PrintStream sendstream = StartServer.clientPrintStreamMap.get(c);
+                                    sendstream.println(line);
+                                }
+                            }
+                        }
+                    }
 
                     /**
                      * 游戏内玩家开火消息

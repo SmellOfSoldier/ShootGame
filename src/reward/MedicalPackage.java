@@ -10,7 +10,7 @@ public class MedicalPackage extends JLabel
     private int healthPoint;
     MedicalPackage()
     {
-        healthPoint=random.nextInt(300);
+        healthPoint=500;
     }
     public int getHealthPoint(){return healthPoint;}
 }
