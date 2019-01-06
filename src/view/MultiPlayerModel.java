@@ -239,6 +239,14 @@ public class MultiPlayerModel extends JFrame
                         rewardPropList.add(rewardProp);
                         gameArea.repaint();
                     }
+                    //如果收到玩家加血的指令
+                    else if(line.startsWith(Sign.AddHealthPoint))
+                    {
+                        realMessage=getRealMessage(line,Sign.AddHealthPoint);
+                        int playerIndex=Integer.parseInt(realMessage.split(Sign.SplitSign)[0]);
+                        int healthPoint=Integer.parseInt(realMessage.split(Sign.SplitSign)[1]);
+                        playerList.get(playerIndex).addHealthPoint(healthPoint);
+                    }
                     //如果收到玩家复活的消息
                     else if(line.startsWith(Sign.OnePlayerRelive))
                     {
@@ -571,6 +579,7 @@ public class MultiPlayerModel extends JFrame
                                         MedicalPackage medicalPackage=(MedicalPackage) rewardProp.getReward();
                                         me.addHealthPoint(medicalPackage.getHealthPoint());
                                         healthLevel.setValue(me.getHealthPoint());
+                                        ClientPort.sendStream.println(Sign.AddHealthPoint+me.getId()+Sign.SplitSign+medicalPackage.getHealthPoint());
                                     }
                                     //如果是地雷或者是手雷
                                     else if(rewardProp.getType()== RewardType.Mine || rewardProp.getType()==RewardType.Grenade)

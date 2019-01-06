@@ -67,4 +67,5 @@ public interface Sign
     String RepeatLogin="REPEAT_LOGIN";                                 //多次登陆
     String LeaveGame="LEAVE_GAME";                                      //玩家在游戏中途退出游戏
     String RandomReward="RAND_REWARD";                                 //随机奖励
+    String AddHealthPoint="ADD_HEALTH_POINT";                           //玩家加血
 }
