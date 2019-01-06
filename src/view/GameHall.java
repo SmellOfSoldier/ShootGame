@@ -809,7 +809,7 @@ public class GameHall
             icon.setImage(bufferedImage);
             icon.setImage(icon.getImage().getScaledInstance(size, size, Image.SCALE_DEFAULT));
             player.setIcon(icon);
-            //player.peekWeapon(new AWM(), 100);
+            player.peekWeapon(new AWM(), 0);
             player.peekWeapon(new Mine(), 5);
             player.peekWeapon(new Grenade(), 10);
             player.peekWeapon(new M4A1(), 210);

@@ -6,6 +6,7 @@ import java.util.List;
 /**
  * 分配管理房间数量的玩家
  */
+
 public class ServerGameRoom implements Serializable
 {
     private String id;
